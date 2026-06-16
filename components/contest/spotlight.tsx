@@ -2,11 +2,12 @@ import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { dismissContestSpotlight, getDismissedContestSpotlightIds } from "@/models/contest-spotlight";
 import { clientAtom, credentialAtom } from "@/models/atoms/credential";
+import { contestSpotlightAtom } from "@/models/atoms/contests";
 import { Image } from "@/components/ui/image";
 import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
 import dayjs from "dayjs";
 import { useRouter } from "expo-router";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { ArrowRight, CalendarDays, Camera, Trophy, Vote, X } from "lucide-react-native";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -222,7 +223,7 @@ ContestSpotlight.displayName = "ContestSpotlight";
 
 export const CurrentContestSpotlight = memo(() => {
   const client = useAtomValue(clientAtom);
-  const [contests, setContests] = useState<CatalystContest[]>([]);
+  const [contests, setContests] = useAtom(contestSpotlightAtom);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
