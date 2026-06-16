@@ -8,8 +8,10 @@
     "prebuilt": "run-s -c bin:*",
     "bin:emoji-gen": "tsx ./bin/emoji-gen.ts",
     "bin:license-list": "tsx ./bin/license-list.ts",
-    "run:android": "pnpm run prebuilt && expo run:android",
-    "run:ios": "pnpm run prebuilt && expo run:ios",
+    "run:android": "pnpm run prebuilt && pnpm with-env expo run:android",
+    "run:ios": "pnpm run prebuilt && pnpm with-env expo run:ios",
+    "run:android:op": "pnpm run prebuilt && pnpm with-op expo run:android",
+    "run:ios:op": "pnpm run prebuilt && pnpm with-op expo run:ios",
     "build:production": "run-s -c build:*:production",
     "build:android:development": "pnpm run prebuilt && eas build --platform android --profile development --local",
     "build:android:preview": "pnpm run prebuilt && eas build --platform android --profile preview --local",
@@ -22,7 +24,9 @@
     "submit:ios:preview": "eas submit --platform ios --profile preview",
     "submit:ios:production": "eas submit --platform ios --profile production",
     "lint": "expo lint",
-    "expo": "expo"
+    "expo": "expo",
+    "with-env": "dotenv -e .env.local --",
+    "with-op": "cross-env FORCE_COLOR=true op run --env-file=./.env --"
   },
   "dependencies": {
     "@expo/dom-webview": "^56.0.5",
@@ -101,9 +105,13 @@
   },
   "devDependencies": {
     "@callstack/licenses": "^0.3.1",
+    "@oxfmt/binding-darwin-arm64": "^0.53.0",
+    "@oxfmt/binding-win32-x64-msvc": "^0.53.0",
     "@types/react": "latest",
     "@types/twitter-text": "^3.1.10",
     "babel-preset-expo": "^56.0.14",
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "eas-cli": "^20.1.0",
     "eas-cli-local-build-plugin": "^20.1.0",
     "eslint": "^9.25.0",

@@ -48,3 +48,7 @@ app-example
 *.apk
 *.aab
 *.ipa
+
+# Google Services
+google-services.json
+GoogleService-Info.plist
