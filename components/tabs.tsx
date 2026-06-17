@@ -1,7 +1,10 @@
 import { cn } from "@/lib/utils";
-import React, { useRef, useState } from "react";
-import { Animated, ListRenderItem, NativeScrollEvent, NativeSyntheticEvent, Pressable, Text, View, useWindowDimensions } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+import React, { useMemo, useRef, useState } from "react";
+import { Animated, FlatList, ListRenderItem, NativeScrollEvent, NativeSyntheticEvent, Pressable, Text, View, useWindowDimensions } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
+
+const AnimatedFlatList = Animated.FlatList as unknown as typeof FlatList;
 
 export type Tab = {
   key: string;
@@ -13,9 +16,23 @@ type Props = {
   renderScene: (tab: Tab) => React.ReactNode;
   defaultIndex?: number;
   onTabChange?: (tab: Tab, index: number) => void;
+  /**
+   * 先頭ページを表示中に左→右へスワイプした際に呼ばれる。
+   * （逆向きスワイプは通常どおりタブ切り替えに使われる）
+   */
+  onSwipeRightFromStart?: () => void;
+  /** onSwipeRightFromStart が発火する横移動量のしきい値 (px) */
+  swipeRightThreshold?: number;
 };
 
-export function Tabs({ tabs, renderScene, defaultIndex = 0, onTabChange }: Props) {
+export function Tabs({
+  tabs,
+  renderScene,
+  defaultIndex = 0,
+  onTabChange,
+  onSwipeRightFromStart,
+  swipeRightThreshold = 70,
+}: Props) {
   const [activeIndex, setActiveIndex] = useState(defaultIndex);
   const { width: screenWidth } = useWindowDimensions();
   const scrollX = useRef(new Animated.Value(defaultIndex * screenWidth)).current;
@@ -61,6 +78,29 @@ export function Tabs({ tabs, renderScene, defaultIndex = 0, onTabChange }: Props
     }
   };
 
+  // FlatList 自身の横スクロール（ネイティブジェスチャー）。
+  const nativeScrollGesture = useMemo(() => Gesture.Native(), []);
+
+  // 先頭ページで左→右にスワイプしたときのジェスチャー。
+  // スクロールと同時に動かし、右方向のみ反応・左方向は FlatList のタブ切り替えに委ねる。
+  const swipeRightGesture = useMemo(() => {
+    const callback = onSwipeRightFromStart;
+    return Gesture.Pan()
+      .enabled(activeIndex === 0 && !!callback)
+      .activeOffsetX(20)
+      .failOffsetX(-20)
+      .onEnd((e) => {
+        if (callback && e.translationX > swipeRightThreshold && e.velocityX >= 0) {
+          runOnJS(callback)();
+        }
+      });
+  }, [activeIndex, onSwipeRightFromStart, swipeRightThreshold]);
+
+  const composedGesture = useMemo(
+    () => Gesture.Simultaneous(swipeRightGesture, nativeScrollGesture),
+    [swipeRightGesture, nativeScrollGesture],
+  );
+
   const renderItem: ListRenderItem<Tab> = ({ item }) => (
     <View style={{ width: screenWidth, flex: 1 }}>{renderScene(item)}</View>
   );
@@ -97,22 +137,26 @@ export function Tabs({ tabs, renderScene, defaultIndex = 0, onTabChange }: Props
       </View>
 
       {/* スワイプ可能なコンテンツ */}
-      <FlatList
-        ref={flatListRef}
-        data={tabs}
-        horizontal
-        pagingEnabled
-        scrollEnabled={true}
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.key}
-        renderItem={renderItem}
-        getItemLayout={(_, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
-        initialScrollIndex={defaultIndex}
-        scrollEventThrottle={16}
-        onScroll={handleScroll}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-        className="flex-1"
-      />
+      <GestureDetector gesture={composedGesture}>
+        <AnimatedFlatList
+          ref={flatListRef}
+          data={tabs}
+          horizontal
+          pagingEnabled
+          scrollEnabled={true}
+          bounces={false}
+          overScrollMode="never"
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.key}
+          renderItem={renderItem}
+          getItemLayout={(_, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
+          initialScrollIndex={defaultIndex}
+          scrollEventThrottle={16}
+          onScroll={handleScroll}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          className="flex-1"
+        />
+      </GestureDetector>
     </View>
   );
 }

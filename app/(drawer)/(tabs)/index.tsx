@@ -5,8 +5,8 @@ import { FirehoseTimeline } from "@/components/timeline/firehose";
 import { FollowingTimeline } from "@/components/timeline/following";
 import { FloatingActionButton } from "@/components/ui/floating-action-button";
 import { credentialAtom } from "@/models/atoms/credential";
-import { useScrollToTop } from "expo-router/react-navigation";
-import { useRouter } from "expo-router";
+import { DrawerActions, useScrollToTop } from "expo-router/react-navigation";
+import { useNavigation, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { View } from "react-native";
@@ -19,6 +19,7 @@ const TABS: Tab[] = [
 export default function HomeScreen() {
   const credential = useAtomValue(credentialAtom);
   const router = useRouter();
+  const navigation = useNavigation();
   const [activeTab, setActiveTab] = React.useState<string>(
     () => (credential.accessToken ? "following" : "firehose"),
   );
@@ -72,12 +73,17 @@ export default function HomeScreen() {
 
   useScrollToTop(scrollable);
 
+  const openDrawer = useCallback(() => {
+    navigation.dispatch(DrawerActions.openDrawer());
+  }, [navigation]);
+
   return (
     <View className="flex-1 bg-light-background dark:bg-dark-background">
       {credential.accessToken ? (
         <Tabs
           tabs={TABS}
           onTabChange={(w) => setActiveTab(w.key)}
+          onSwipeRightFromStart={openDrawer}
           renderScene={(tab) => {
             if (tab.key === "firehose") return <FirehoseTimeline ref={firehoseTabRef} />;
             return <FollowingTimeline ref={followingTabRef} />;
