@@ -52,10 +52,10 @@ jobs:
 
       - name: Write Environment Values
         run: |
-          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_ID=" >> .env.local
-          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_SECRET=" >> .env.local
-          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_ID=${{ secrets.CATALYST_FOR_IOS_CLIENT_ID }}" >> .env.local
-          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_SECRET=${{ secrets.CATALYST_FOR_IOS_CLIENT_SECRET }}" >> .env.local
+          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_ID=" >> .env
+          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_SECRET=" >> .env
+          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_ID=${{ secrets.CATALYST_FOR_IOS_CLIENT_ID }}" >> .env
+          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_SECRET=${{ secrets.CATALYST_FOR_IOS_CLIENT_SECRET }}" >> .env
           echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}" > GoogleService-Info.plist
 
       - name: Build package

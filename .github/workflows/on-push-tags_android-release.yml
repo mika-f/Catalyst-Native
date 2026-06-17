@@ -50,15 +50,15 @@ jobs:
       - name: Write Environment Values
         run: |
           export json='${{ secrets.GOOGLE_SERVICES_JSON }}'
-          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_ID=${{ secrets.CATALYST_FOR_ANDROID_CLIENT_ID }}" >> .env.local
-          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_SECRET=${{ secrets.CATALYST_FOR_ANDROID_CLIENT_SECRET }}" >> .env.local
-          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_ID=" >> .env.local
-          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_SECRET=" >> .env.local
+          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_ID=${{ secrets.CATALYST_FOR_ANDROID_CLIENT_ID }}" >> .env
+          echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_SECRET=${{ secrets.CATALYST_FOR_ANDROID_CLIENT_SECRET }}" >> .env
+          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_ID=" >> .env
+          echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_SECRET=" >> .env
           echo "$json" > google-services.json
 
       - name: Build package
         run: |
-          pnpm run build:android:production --non-interactive --output=./dist/app.aab
+          SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} pnpm run build:android:production --non-interactive --output=./dist/app.aab
 
       # - name: Publish to EAS
       #   run: |
