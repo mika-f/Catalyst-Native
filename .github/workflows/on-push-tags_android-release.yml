@@ -56,6 +56,19 @@ jobs:
           echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_SECRET=" >> .env
           echo "$json" > google-services.json
 
+      - name: Prebuild
+        run: pnpm run expo prebuild --platform android --no-install
+
+      - name: Tune Gradle memory
+        run: |
+          cat >> android/gradle.properties <<'EOF'
+            org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
+            org.gradle.workers.max=2
+            org.gradle.parallel=false
+            org.gradle.daemon=false
+            kotlin.daemon.jvmargs=-Xmx2g
+          EOF
+
       - name: Build package
         run: |
           SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} pnpm run build:android:production --non-interactive --output=./dist/app.aab
