@@ -209,11 +209,9 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
       <View className="mx-4 mb-4 mt-2 bg-light-surface dark:bg-dark-surface rounded-xl px-4">
         <Text className="text-base font-bold text-light-text dark:text-dark-text pt-4 pb-2">応募要項</Text>
 
-        {contest.application && (
-          <InfoRow label="応募期間">
-            <InfoText value={`${fmt(contest.application.since)} ～ ${fmt(contest.application.until)}`} />
-          </InfoRow>
-        )}
+        <InfoRow label="応募期間">
+          <InfoText value={`${fmt(contest.since)} ～ ${fmt(contest.until)}`} />
+        </InfoRow>
 
         {contest.theme?.length > 0 && (
           <InfoRow label="テーマ">
@@ -391,9 +389,7 @@ export default function ContestDetailPage() {
       try {
         await client.catalyst.addContestVoteToStatus(slug, statusId);
         setVoteRights((prev) =>
-          prev
-            ? { remaining: prev.remaining - 1, statuses: [...prev.statuses, statusId] }
-            : prev,
+          prev ? { remaining: prev.remaining - 1, statuses: [...prev.statuses, statusId] } : prev,
         );
       } catch {
         Alert.alert("エラー", "投票に失敗しました");
@@ -408,9 +404,7 @@ export default function ContestDetailPage() {
       try {
         await client.catalyst.removeContestVoteFromStatus(slug, statusId);
         setVoteRights((prev) =>
-          prev
-            ? { remaining: prev.remaining + 1, statuses: prev.statuses.filter((id) => id !== statusId) }
-            : prev,
+          prev ? { remaining: prev.remaining + 1, statuses: prev.statuses.filter((id) => id !== statusId) } : prev,
         );
       } catch {
         Alert.alert("エラー", "投票の取り消しに失敗しました");
@@ -438,12 +432,7 @@ export default function ContestDetailPage() {
       <View>
         <TimelineStatus status={item} />
         {voteRights && (
-          <VoteButton
-            statusId={item.id}
-            voteRights={voteRights}
-            onVote={handleVote}
-            onUnvote={handleUnvote}
-          />
+          <VoteButton statusId={item.id} voteRights={voteRights} onVote={handleVote} onUnvote={handleUnvote} />
         )}
       </View>
     ),
@@ -479,11 +468,7 @@ export default function ContestDetailPage() {
     }
 
     return (
-      <TimelineBase
-        fetcher={fetcher}
-        renderItem={voteRights ? renderItem : undefined}
-        ListHeaderComponent={Header}
-      />
+      <TimelineBase fetcher={fetcher} renderItem={voteRights ? renderItem : undefined} ListHeaderComponent={Header} />
     );
   };
 
