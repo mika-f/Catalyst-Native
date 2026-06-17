@@ -25,12 +25,12 @@ jobs:
           node-version-file: ".node-version"
           registry-url: "https://registry.npmjs.org"
 
-      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           version: "10"
 
       - name: Setup Expo
-        uses: expo/expo-github-action@eab7a230208c952974db8c3245cfd78402c7b385
+        uses: expo/expo-github-action@eab7a230208c952974db8c3245cfd78402c7b385 # 9.0.0
         with:
           expo-version: latest
           eas-version: latest
