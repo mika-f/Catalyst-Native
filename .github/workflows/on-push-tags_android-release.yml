@@ -62,15 +62,14 @@ jobs:
       - name: Tune Gradle memory
         run: |
           cat >> android/gradle.properties <<'EOF'
-            org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
-            org.gradle.workers.max=2
-            org.gradle.parallel=false
+            org.gradle.jvmargs=-Xmx3584m -XX:MaxMetaspaceSize=512m
             org.gradle.daemon=false
-            kotlin.daemon.jvmargs=-Xmx2g
             reactNativeArchitectures=arm64-v8a,armeabi-v7a
           EOF
 
       - name: Build package
+        env:
+          GRADLE_OPTS: "-Xmx3584m -XX:MaxMetaspaceSize=512m"
         run: |
           SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} pnpm run build:android:production --non-interactive --output=./dist/app.aab
 
