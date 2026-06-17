@@ -49,11 +49,12 @@ jobs:
 
       - name: Write Environment Values
         run: |
+          export json='${{ secrets.GOOGLE_SERVICES_JSON }}''
           echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_ID=${{ secrets.CATALYST_FOR_ANDROID_CLIENT_ID }}" >> .env.local
           echo "EXPO_PUBLIC_CATALYST_FOR_ANDROID_CLIENT_SECRET=${{ secrets.CATALYST_FOR_ANDROID_CLIENT_SECRET }}" >> .env.local
           echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_ID=" >> .env.local
           echo "EXPO_PUBLIC_CATALYST_FOR_IOS_CLIENT_SECRET=" >> .env.local
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > google-services.json
+          echo "$json" > google-services.json
 
       - name: Build package
         run: |
