@@ -171,6 +171,15 @@ pnpm submit:android:production
 - [CatalystSDK](https://github.com/mika-f/CatalystSDK) — API クライアント SDK
 - [Catalyst](https://catalyst.natsuneko.com) — サービス本体
 
+## トラブルシューティング
+
+ビルド時にたまに出るエラー
+
+### Distill failed for unknown
+
+Expo が画像生成に失敗したケースに出ます。
+`ios/Catalyst/Images.xcassets/SplashScreenLogo.imageset/image@3x.png` が壊れるケースが見かけられるので、同ディレクトリにある `image@2x.png` を `image@3x.png` としてコピーしてください。
+
 ## ライセンス
 
 [MIT License](./LICENSE) のもとで公開されています。
