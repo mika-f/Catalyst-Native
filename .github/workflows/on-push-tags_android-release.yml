@@ -69,6 +69,13 @@ jobs:
             kotlin.daemon.jvmargs=-Xmx2g
           EOF
 
+      - name: Add swap
+        run: |
+          sudo fallocate -l 8G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+
       - name: Build package
         run: |
           SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} pnpm run build:android:production --non-interactive --output=./dist/app.aab
