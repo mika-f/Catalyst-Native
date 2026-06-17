@@ -19,7 +19,9 @@ const TABS: Tab[] = [
 export default function HomeScreen() {
   const credential = useAtomValue(credentialAtom);
   const router = useRouter();
-  const [activeTab, setActiveTab] = React.useState<string | undefined>();
+  const [activeTab, setActiveTab] = React.useState<string>(
+    () => (credential.accessToken ? "following" : "firehose"),
+  );
   const selectorSheetRef = useRef<ContentTypeSelectorSheetRef>(null);
   const followingTabRef = useRef<TimelineHandle>(null);
   const firehoseTabRef = useRef<TimelineHandle>(null);
@@ -69,12 +71,6 @@ export default function HomeScreen() {
   }, [scrollActiveTimelineToTopHandler]);
 
   useScrollToTop(scrollable);
-
-  if (activeTab === undefined) {
-    const defaultTab = credential.accessToken ? "following" : "firehose";
-    setActiveTab(defaultTab);
-    return null; // skip render
-  }
 
   return (
     <View className="flex-1 bg-light-background dark:bg-dark-background">
