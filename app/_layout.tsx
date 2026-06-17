@@ -75,9 +75,9 @@ export default Sentry.wrap(function RootLayout() {
 
   useAsyncOneTimeEffect(async () => {
     try {
-      const { credential, isLoggedIn } = await Credential.tryRestore();
+      const { credential, isLoggedIn, user } = await Credential.tryRestore();
 
-      setAccount(isLoggedIn ? { user: Credential.currentUser()!, credential } : null);
+      setAccount(isLoggedIn && user ? { user, credential } : null);
     } finally {
       setIsLoaded(true);
       await SplashScreen.hideAsync();

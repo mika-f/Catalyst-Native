@@ -100,9 +100,9 @@ export default function AccountSettingsPage() {
   const footerText = !canEditScreenName ? "すでに1度ユーザー名を変更しているため、変更できません。" : errorMessage;
 
   const handleLogin = useCallback(async () => {
-    const { credential, isLoggedIn: loggedIn } = await Credential.login();
-    if (loggedIn) {
-      setAccount({ user: Credential.currentUser()!, credential });
+    const { credential, isLoggedIn: loggedIn, user } = await Credential.login();
+    if (loggedIn && user) {
+      setAccount({ user, credential });
     }
   }, [setAccount]);
 

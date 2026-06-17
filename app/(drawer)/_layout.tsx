@@ -80,9 +80,9 @@ export default function DrawerLayout() {
   }, []);
 
   const handleLogin = useCallback(async () => {
-    const { credential, isLoggedIn } = await Credential.login();
-    if (isLoggedIn) {
-      setAccount({ user: Credential.currentUser()!, credential });
+    const { credential, isLoggedIn, user } = await Credential.login();
+    if (isLoggedIn && user) {
+      setAccount({ user, credential });
     }
   }, [setAccount]);
 

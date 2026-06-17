@@ -5,16 +5,17 @@ import { PKCE } from "@natsuneko-laboratory/catalyst-sdk";
 import * as WebBrowser from "expo-web-browser";
 import { v4 } from "uuid";
 
-let _currentUser: EgeriaUser | undefined = undefined;
+type AuthResult = {
+  credential: CredentialStore.Credential;
+  isLoggedIn: boolean;
+  user: EgeriaUser | undefined;
+};
 
 /**
  * アプリ起動時に保存済みトークンからセッションを復元する。
  * OAuth フローは開始しない。
  */
-export const tryRestore = async (): Promise<{
-  credential: CredentialStore.Credential;
-  isLoggedIn: boolean;
-}> => {
+export const tryRestore = async (): Promise<AuthResult> => {
   const credential = await CredentialStore.getCredential();
 
   if (credential.accessToken && credential.refreshToken) {
@@ -22,8 +23,7 @@ export const tryRestore = async (): Promise<{
       const me = await credential.client.egeria.me();
 
       if (me?.user) {
-        _currentUser = me.user;
-        return { credential, isLoggedIn: true };
+        return { credential, isLoggedIn: true, user: me.user };
       }
     } catch {
       try {
@@ -31,7 +31,6 @@ export const tryRestore = async (): Promise<{
         const me = await credential.client.egeria.me();
 
         if (me?.user) {
-          _currentUser = me.user;
           await CredentialStore.saveCredential({
             accessToken: newTokens.accessToken,
             refreshToken: newTokens.refreshToken,
@@ -44,6 +43,7 @@ export const tryRestore = async (): Promise<{
               refreshToken: newTokens.refreshToken,
             },
             isLoggedIn: true,
+            user: me.user,
           };
         }
       } catch (refreshErr) {
@@ -54,16 +54,13 @@ export const tryRestore = async (): Promise<{
 
   // トークンが無い or 復元失敗 → 未ログイン状態で返す
   await logout();
-  return { credential: CredentialStore.EMPTY_CREDENTIAL, isLoggedIn: false };
+  return { credential: CredentialStore.EMPTY_CREDENTIAL, isLoggedIn: false, user: undefined };
 };
 
 /**
  * OAuth PKCE フローを開始してログインする。
  */
-export const login = async (): Promise<{
-  credential: CredentialStore.Credential;
-  isLoggedIn: boolean;
-}> => {
+export const login = async (): Promise<AuthResult> => {
   const credential = await CredentialStore.getCredential();
 
   const pcke = await PKCE.create();
@@ -99,7 +96,6 @@ export const login = async (): Promise<{
         const me = await newCredential.client.egeria.me();
 
         if (me?.user) {
-          _currentUser = me.user;
           return {
             credential: {
               ...newCredential,
@@ -107,6 +103,7 @@ export const login = async (): Promise<{
               refreshToken: token.refreshToken,
             },
             isLoggedIn: true,
+            user: me.user,
           };
         }
       } catch (err) {
@@ -115,17 +112,9 @@ export const login = async (): Promise<{
     }
   }
 
-  return { credential: CredentialStore.EMPTY_CREDENTIAL, isLoggedIn: false };
+  return { credential: CredentialStore.EMPTY_CREDENTIAL, isLoggedIn: false, user: undefined };
 };
-
-/** @deprecated Use tryRestore() for startup and login() for explicit auth */
-export const init = login;
 
 export const logout = async (): Promise<void> => {
   await CredentialStore.clear();
-  _currentUser = undefined;
-};
-
-export const currentUser = () => {
-  return _currentUser;
 };
