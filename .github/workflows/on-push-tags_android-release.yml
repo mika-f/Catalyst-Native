@@ -13,7 +13,7 @@ jobs:
   publish:
     if: github.repository == 'mika-f/Catalyst-Native'
     name: Build and Publish Android App
-    runs-on: ubuntu-2404-arm
+    runs-on: ubuntu-latest
     concurrency:
       group: android-build
       cancel-in-progress: false
