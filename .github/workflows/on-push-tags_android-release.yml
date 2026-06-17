@@ -13,7 +13,7 @@ jobs:
   publish:
     if: github.repository == 'mika-f/Catalyst-Native'
     name: Build and Publish Android App
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-2404-arm
     concurrency:
       group: android-build
       cancel-in-progress: false
@@ -67,14 +67,8 @@ jobs:
             org.gradle.parallel=false
             org.gradle.daemon=false
             kotlin.daemon.jvmargs=-Xmx2g
+            reactNativeArchitectures=arm64-v8a,armeabi-v7a
           EOF
-
-      - name: Add swap
-        run: |
-          sudo fallocate -l 8G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
 
       - name: Build package
         run: |
