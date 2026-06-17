@@ -8,7 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": {
-      "buildType": "apk"
+        "buildType": "apk"
       },
       "ios": {
         "enterpriseProvisioning": "universal"
@@ -24,7 +24,7 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": false
     }
   },
   "submit": {
