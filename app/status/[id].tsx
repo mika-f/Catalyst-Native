@@ -6,6 +6,7 @@ import { StatusText } from "@/components/status/text";
 import { MediaCarousel } from "@/components/ui/media-carousel";
 import { abs, rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
+import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
@@ -37,11 +38,9 @@ import {
   Pressable,
   ScrollView,
   Share,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -91,8 +90,10 @@ type MenuAction =
   | "copyPost"
   | "share";
 
+const UniArrowLeft = withUniwind(ArrowLeft);
 const UniBookmark = withUniwind(Bookmark);
 const UniBookmarkMinus = withUniwind(BookmarkMinus);
+const UniCheck = withUniwind(Check);
 const UniClipboardIcon = withUniwind(ClipboardIcon);
 const UniExternalLink = withUniwind(ExternalLink);
 const UniFileQuestion = withUniwind(FileQuestion);
@@ -107,7 +108,6 @@ const UniTrash2 = withUniwind(Trash2);
 export default function StatusDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const theme = useColorScheme() ?? "light";
   const account = useAtomValue(accountAtom);
   const client = useAtomValue(clientAtom);
 
@@ -465,25 +465,25 @@ export default function StatusDetailsPage() {
       {/* Edit caption sheet */}
       {Platform.OS === "ios" ? (
         <Modal visible={isEditSheetVisible} animationType="slide" presentationStyle="pageSheet">
-          <View className="bg-light-background dark:bg-dark-background" style={[styles.editSheetContainer]}>
-            <View style={styles.editSheetHeader}>
+          <View className="flex-1 bg-light-background dark:bg-dark-background">
+            <View className="flex-row justify-between items-center px-4 py-3 border-b border-light-border dark:border-dark-border">
               <TouchableOpacity onPress={() => setIsEditSheetVisible(false)}>
-                <Text style={styles.editSheetCancel}>キャンセル</Text>
+                <Text className="text-[17px] text-light-tint dark:text-dark-tint">キャンセル</Text>
               </TouchableOpacity>
-              <Text style={styles.editSheetTitle}>キャプションを編集</Text>
+              <Text className="text-[17px] font-semibold text-light-text dark:text-dark-text">キャプションを編集</Text>
               <TouchableOpacity onPress={handleEditSave} disabled={isEditingSaving || editingCaption.length === 0}>
                 <Text
-                  style={[
-                    styles.editSheetSave,
-                    (isEditingSaving || editingCaption.length === 0) && styles.editSheetSaveDisabled,
-                  ]}
+                  className={cn(
+                    "text-[17px] font-semibold text-light-tint dark:text-dark-tint",
+                    (isEditingSaving || editingCaption.length === 0) && "opacity-40",
+                  )}
                 >
                   保存
                 </Text>
               </TouchableOpacity>
             </View>
             <TextInput
-              style={styles.editSheetInput}
+              className="flex-1 p-4 text-base text-light-text dark:text-dark-text"
               value={editingCaption}
               onChangeText={setEditingCaption}
               multiline
@@ -494,30 +494,30 @@ export default function StatusDetailsPage() {
         </Modal>
       ) : (
         <Modal visible={isEditSheetVisible} animationType="fade">
-          <UniSafeAreaView
-            className="bg-light-background dark:bg-dark-background"
-            style={[styles.editSheetContainerAndroid]}
-          >
-            <View style={[styles.editSheetToolbar, { backgroundColor: theme === "dark" ? "#1E1E1E" : "#FFFFFF" }]}>
-              <TouchableOpacity onPress={() => setIsEditSheetVisible(false)} style={styles.toolbarIconButton}>
-                <ArrowLeft size={24} color={theme === "dark" ? "#FFFFFF" : "#000000"} />
+          <UniSafeAreaView className="flex-1 bg-light-background dark:bg-dark-background">
+            <View
+              className="flex-row items-center px-1 py-2 bg-light-background dark:bg-dark-background"
+              style={{ elevation: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 2 }}
+            >
+              <TouchableOpacity onPress={() => setIsEditSheetVisible(false)} className="p-3">
+                <UniArrowLeft size={24} className="text-light-text dark:text-dark-text" />
               </TouchableOpacity>
-              <Text style={[styles.toolbarTitle, { color: theme === "dark" ? "#FFFFFF" : "#000000" }]}>
+              <Text className="flex-1 text-lg font-medium ml-2 text-light-text dark:text-dark-text">
                 キャプションを編集
               </Text>
               <TouchableOpacity
                 onPress={handleEditSave}
                 disabled={isEditingSaving || editingCaption.length === 0}
-                style={[
-                  styles.toolbarSaveButton,
-                  (isEditingSaving || editingCaption.length === 0) && styles.toolbarSaveButtonDisabled,
-                ]}
+                className={cn(
+                  "m-2 px-4 py-2 rounded-full bg-[#1976D2]",
+                  (isEditingSaving || editingCaption.length === 0) && "bg-[#90CAF9]",
+                )}
               >
-                <Check size={22} color="#FFFFFF" />
+                <UniCheck size={22} className="text-white" />
               </TouchableOpacity>
             </View>
             <TextInput
-              style={[styles.editSheetInput, { color: theme === "dark" ? "#FFFFFF" : "#000000" }]}
+              className="flex-1 p-4 text-base text-light-text dark:text-dark-text"
               value={editingCaption}
               onChangeText={setEditingCaption}
               multiline
@@ -612,71 +612,3 @@ export default function StatusDetailsPage() {
   );
 }
 
-const styles = StyleSheet.create({
-  editSheetContainer: {
-    flex: 1,
-  },
-  editSheetHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5EA",
-  },
-  editSheetTitle: {
-    fontSize: 17,
-    fontWeight: "600",
-  },
-  editSheetCancel: {
-    fontSize: 17,
-    color: "#007AFF",
-  },
-  editSheetSave: {
-    fontSize: 17,
-    color: "#007AFF",
-    fontWeight: "600",
-  },
-  editSheetSaveDisabled: {
-    opacity: 0.4,
-  },
-  editSheetInput: {
-    flex: 1,
-    padding: 16,
-    fontSize: 16,
-  },
-  editSheetContainerAndroid: {
-    flex: 1,
-  },
-  editSheetToolbar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 4,
-    paddingVertical: 8,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  toolbarIconButton: {
-    padding: 12,
-  },
-  toolbarTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: "500",
-    marginLeft: 8,
-  },
-  toolbarSaveButton: {
-    margin: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#1976D2",
-  },
-  toolbarSaveButtonDisabled: {
-    backgroundColor: "#90CAF9",
-  },
-});
