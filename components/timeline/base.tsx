@@ -1,15 +1,13 @@
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { merge } from "@/lib/merge";
-import { cn } from "@/lib/utils";
 import { CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import React, { useCallback, useImperativeHandle, useRef, useState } from "react";
-import { ActivityIndicator, RefreshControl, StyleProp, useColorScheme, View, ViewStyle } from "react-native";
+import { ActivityIndicator, RefreshControl, StyleProp, View, ViewStyle } from "react-native";
 import { TimelineStatus } from "./status";
 
 const ItemSeparator = () => {
-  const theme = useColorScheme();
-  return <View className={cn("h-px", theme === "dark" ? "bg-gray-700" : "bg-gray-300")} />;
+  return <View className="h-px bg-light-divider dark:bg-dark-divider" />;
 };
 
 const LoadingIndicator = () => {
