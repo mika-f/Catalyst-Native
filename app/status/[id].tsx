@@ -80,6 +80,17 @@ type EpicleseMediaMetadata = {
 
 type EpicleseMetadata = Record<string, EpicleseMediaMetadata>;
 
+type MenuAction =
+  | "addToAlbum"
+  | "removeFromAlbum"
+  | "edit"
+  | "delete"
+  | "report"
+  | "openInBrowser"
+  | "copyUrl"
+  | "copyPost"
+  | "share";
+
 const UniBookmark = withUniwind(Bookmark);
 const UniBookmarkMinus = withUniwind(BookmarkMinus);
 const UniClipboardIcon = withUniwind(ClipboardIcon);
@@ -203,41 +214,41 @@ export default function StatusDetailsPage() {
   }, [account, id, editingCaption]);
 
   const handleMenuAction = useCallback(
-    (action: string) => {
+    (action: MenuAction) => {
       switch (action) {
-        case "アルバムへ追加":
+        case "addToAlbum":
           setAlbumSelectionMode("add");
           setIsAlbumSelectionVisible(true);
           break;
-        case "アルバムから削除":
+        case "removeFromAlbum":
           setAlbumSelectionMode("remove");
           setIsAlbumSelectionVisible(true);
           break;
-        case "編集する":
+        case "edit":
           setEditingCaption(status?.body ?? "");
           setIsEditSheetVisible(true);
           break;
-        case "削除する":
+        case "delete":
           Alert.alert("この投稿を削除しますか？", "この操作は取り消せません", [
             { text: "キャンセル", style: "cancel" },
             { text: "削除", style: "destructive", onPress: handleDeleteStatus },
           ]);
           break;
-        case "報告する":
+        case "report":
           router.push(`/report/${id}`);
           break;
-        case "ブラウザで開く":
+        case "openInBrowser":
           openUrlWithBrowser(statusUrl);
           break;
-        case "URL をコピー":
+        case "copyUrl":
           Clipboard.setStringAsync(statusUrl);
           break;
-        case "投稿をコピー":
+        case "copyPost":
           Clipboard.setStringAsync(
             `${buildShareText(status?.body ?? "", status?.user?.displayName ?? "", "")}\n\n${statusUrl}`,
           );
           break;
-        case "共有":
+        case "share":
           if (Platform.OS === "ios") {
             Share.share({
               message: buildShareText(status?.body ?? "", status?.user?.displayName ?? "", ""),
@@ -259,7 +270,7 @@ export default function StatusDetailsPage() {
   }, []);
 
   const handleMenuItemPress = useCallback(
-    (action: string) => {
+    (action: MenuAction) => {
       menuSheetRef.current?.dismiss();
       handleMenuAction(action);
     },
@@ -535,13 +546,13 @@ export default function StatusDetailsPage() {
             <BottomSheetItem
               prefixIcon={UniBookmark}
               title="アルバムへ追加"
-              onPress={() => handleMenuItemPress("アルバムへ追加")}
+              onPress={() => handleMenuItemPress("addToAlbum")}
               highlight
             />
             <BottomSheetItem
               prefixIcon={UniBookmarkMinus}
               title="アルバムから削除"
-              onPress={() => handleMenuItemPress("アルバムから削除")}
+              onPress={() => handleMenuItemPress("removeFromAlbum")}
               highlight
             />
 
@@ -550,11 +561,11 @@ export default function StatusDetailsPage() {
         )}
         {isMyself && (
           <View>
-            <BottomSheetItem prefixIcon={UniPencil} title="編集する" onPress={() => handleMenuItemPress("編集する")} />
+            <BottomSheetItem prefixIcon={UniPencil} title="編集する" onPress={() => handleMenuItemPress("edit")} />
             <BottomSheetItem
               prefixIcon={UniTrash2}
               title="削除する"
-              onPress={() => handleMenuItemPress("削除する")}
+              onPress={() => handleMenuItemPress("delete")}
               destructive
             />
           </View>
@@ -564,7 +575,7 @@ export default function StatusDetailsPage() {
             <BottomSheetItem
               prefixIcon={UniFlag}
               title="報告する"
-              onPress={() => handleMenuItemPress("報告する")}
+              onPress={() => handleMenuItemPress("report")}
               destructive
             />
           </View>
@@ -574,25 +585,25 @@ export default function StatusDetailsPage() {
           <BottomSheetItem
             prefixIcon={UniExternalLink}
             title="ブラウザで開く"
-            onPress={() => handleMenuItemPress("ブラウザで開く")}
+            onPress={() => handleMenuItemPress("openInBrowser")}
             highlight
           />
           <BottomSheetItem
             prefixIcon={UniClipboardIcon}
             title="URL をコピー"
-            onPress={() => handleMenuItemPress("URL をコピー")}
+            onPress={() => handleMenuItemPress("copyUrl")}
             highlight
           />
           <BottomSheetItem
             prefixIcon={UniClipboardIcon}
             title="投稿をコピー"
-            onPress={() => handleMenuItemPress("投稿をコピー")}
+            onPress={() => handleMenuItemPress("copyPost")}
             highlight
           />
           <BottomSheetItem
             prefixIcon={UniSend}
             title="共有する"
-            onPress={() => handleMenuItemPress("共有")}
+            onPress={() => handleMenuItemPress("share")}
             highlight
           />
         </View>
