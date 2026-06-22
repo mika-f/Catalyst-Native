@@ -123,10 +123,10 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
 
           <View className="flex-row items-center flex-1 ml-2 overflow-hidden">
             <Pressable className="flex flex-row items-center shrink overflow-hidden" onPress={navigateToUser}>
-              <Text className="font-bold text-sm text-black dark:text-white" numberOfLines={1}>
+              <Text className="font-bold text-sm text-black dark:text-white shrink-0" numberOfLines={1}>
                 {user.displayName}
               </Text>
-              <Text className="font-sm ml-1 text-neutral-500" numberOfLines={1}>
+              <Text className="font-sm ml-1 text-neutral-500 shrink" numberOfLines={1}>
                 @{user.screenName}
               </Text>
             </Pressable>
