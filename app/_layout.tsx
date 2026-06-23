@@ -5,15 +5,28 @@ import "react-native-get-random-values";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { accountAtom } from "@/models/atoms/account";
-import { timelineImageQualityAtom, timelineWifiUpgradeAtom } from "@/models/atoms/image-quality";
+import {
+  timelineImageQualityAtom,
+  timelineWifiUpgradeAtom,
+} from "@/models/atoms/image-quality";
 import * as Credential from "@/models/credential";
-import { loadTimelineImageQuality, loadWifiUpgrade } from "@/models/image-quality-settings";
+import {
+  loadTimelineImageQuality,
+  loadWifiUpgrade,
+} from "@/models/image-quality-settings";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { getMessaging, setBackgroundMessageHandler } from "@react-native-firebase/messaging";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router/react-navigation";
+import {
+  getMessaging,
+  setBackgroundMessageHandler,
+} from "@react-native-firebase/messaging";
 import * as Sentry from "@sentry/react-native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useSetAtom } from "jotai";
@@ -67,10 +80,12 @@ export default Sentry.wrap(function RootLayout() {
   });
 
   useEffect(() => {
-    Promise.all([loadTimelineImageQuality(), loadWifiUpgrade()]).then(([quality, wifiUpgrade]) => {
-      setTimelineImageQuality(quality);
-      setTimelineWifiUpgrade(wifiUpgrade);
-    });
+    Promise.all([loadTimelineImageQuality(), loadWifiUpgrade()]).then(
+      ([quality, wifiUpgrade]) => {
+        setTimelineImageQuality(quality);
+        setTimelineWifiUpgrade(wifiUpgrade);
+      },
+    );
   }, []);
 
   useAsyncOneTimeEffect(async () => {
@@ -96,18 +111,41 @@ export default Sentry.wrap(function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <KeyboardProvider>
-          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
             <Stack>
-              <Stack.Screen name="(drawer)" options={{ headerShown: false, gestureEnabled: false }} />
-              <Stack.Screen name="album/[id]/index" options={{ title: "", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="album/[id]/edit" options={{ title: "アルバム編集", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="smart-album/[id]/index" options={{ title: "", headerBackTitle: "戻る" }} />
+              <Stack.Screen
+                name="(drawer)"
+                options={{ headerShown: false, gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="album/[id]/index"
+                options={{ title: "", headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="album/[id]/edit"
+                options={{ title: "アルバム編集", headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="smart-album/[id]/index"
+                options={{ title: "", headerBackTitle: "戻る" }}
+              />
               <Stack.Screen
                 name="smart-album/[id]/edit"
-                options={{ title: "スマートアルバム編集", headerBackTitle: "戻る" }}
+                options={{
+                  title: "スマートアルバム編集",
+                  headerBackTitle: "戻る",
+                }}
               />
-              <Stack.Screen name="status/[id]" options={{ title: "投稿", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="user/[screenName]/index" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="status/[id]"
+                options={{ title: "投稿", headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="user/[screenName]/index"
+                options={{ headerShown: false }}
+              />
               <Stack.Screen
                 name="user/[screenName]/followers"
                 options={{ title: "フォロワー", headerBackTitle: "戻る" }}
@@ -117,33 +155,88 @@ export default Sentry.wrap(function RootLayout() {
                 options={{ title: "フォロー", headerBackTitle: "戻る" }}
               />
               <Stack.Screen name="authorize" options={{ headerShown: false }} />
-              <Stack.Screen name="contest" options={{ title: "コンテスト", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="contest/[slug]" options={{ headerShown: false }} />
-              <Stack.Screen name="gallery" options={{ title: "ギャラリー", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="settings" options={{ title: "設定とプライバシー", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="settings/account" options={{ title: "アカウント", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="settings/notifications" options={{ title: "通知", headerBackTitle: "戻る" }} />
-              <Stack.Screen name="settings/display" options={{ title: "表示", headerBackTitle: "戻る" }} />
+              <Stack.Screen
+                name="contest"
+                options={{ title: "コンテスト", headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="contest/[slug]"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="gallery"
+                options={{ title: "ギャラリー", headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="settings"
+                options={{
+                  title: "設定とプライバシー",
+                  headerBackTitle: "戻る",
+                }}
+              />
+              <Stack.Screen
+                name="settings/account"
+                options={{ title: "アカウント", headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="settings/notifications"
+                options={{ title: "通知", headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="settings/display"
+                options={{ title: "表示", headerBackTitle: "戻る" }}
+              />
               <Stack.Screen
                 name="settings/accessibility"
                 options={{ title: "アクセシビリティ", headerBackTitle: "戻る" }}
               />
-              <Stack.Screen name="settings/privacy" options={{ title: "プライバシー", headerBackTitle: "戻る" }} />
+              <Stack.Screen
+                name="settings/privacy"
+                options={{ title: "プライバシー", headerBackTitle: "戻る" }}
+              />
               {__DEV__ ? (
-                <Stack.Screen name="settings/debug" options={{ title: "デバッグ", headerBackTitle: "戻る" }} />
+                <Stack.Screen
+                  name="settings/debug"
+                  options={{ title: "デバッグ", headerBackTitle: "戻る" }}
+                />
               ) : null}
-              <Stack.Screen name="settings/legal" options={{ title: "法的情報", headerBackTitle: "戻る" }} />
+              <Stack.Screen
+                name="settings/legal"
+                options={{ title: "法的情報", headerBackTitle: "戻る" }}
+              />
               <Stack.Screen
                 name="settings/legal/licenses"
-                options={{ title: "オープンソースソフトウェア", headerBackTitle: "戻る" }}
+                options={{
+                  title: "オープンソースソフトウェア",
+                  headerBackTitle: "戻る",
+                }}
               />
-              <Stack.Screen name="search/[query]" options={{ headerBackTitle: "戻る" }} />
-              <Stack.Screen name="compose/post" options={{ title: "新しい投稿", headerBackTitle: "キャンセル" }} />
-              <Stack.Screen name="compose/fleet" options={{ title: "Fleet", headerBackTitle: "キャンセル" }} />
-              <Stack.Screen name="report/[id]" options={{ title: "投稿を報告", headerBackTitle: "キャンセル" }} />
+              <Stack.Screen
+                name="search/[query]"
+                options={{ headerBackTitle: "戻る" }}
+              />
+              <Stack.Screen
+                name="compose/post"
+                options={{ title: "新しい投稿", headerBackTitle: "キャンセル" }}
+              />
+              <Stack.Screen
+                name="compose/fleet"
+                options={{ title: "Fleet", headerBackTitle: "キャンセル" }}
+              />
+              <Stack.Screen
+                name="report/[id]"
+                options={{ title: "投稿を報告", headerBackTitle: "キャンセル" }}
+              />
               <Stack.Screen
                 name="profile/edit"
-                options={{ title: "プロフィールを編集", headerBackTitle: "キャンセル" }}
+                options={{
+                  title: "プロフィールを編集",
+                  headerBackTitle: "キャンセル",
+                }}
+              />
+              <Stack.Screen
+                name="tags/[name]"
+                options={{ headerBackTitle: "戻る" }}
               />
             </Stack>
             <StatusBar style="auto" />
