@@ -49,9 +49,7 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const account = useAtomValue(accountAtom);
   const client = useAtomValue(clientAtom);
-  const accountUser =
-    account?.user.screenName === screenName ? account.user : null;
-  const [user, setUser] = useState<EgeriaUser | null>(accountUser);
+  const [user, setUser] = useState<EgeriaUser | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -108,12 +106,16 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
       return;
     }
 
+    const accountUser =
+      account?.user.screenName === screenName ? account.user : null;
+
     if (accountUser) {
-      setUser(accountUser);
       const { tags } = await client.catalyst
         .getProfileTagsByUser(accountUser.id)
         .catch(() => ({ tags: [] }));
+
       setInitialTags(tags);
+      setUser(accountUser);
       return;
     }
 
@@ -141,7 +143,7 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
     } catch (e) {
       console.error(`failed to fetch user: @${screenName}, ${e}`);
     }
-  }, [accountUser, client, screenName]);
+  }, [account, client, screenName]);
 
   const handleScroll = useMemo(
     () =>
