@@ -6,7 +6,11 @@ import { UserTimelineHandle } from "@/components/profile/timeline";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
-import type { CatalystRelationships, EgeriaUser, ProfileTag } from "@natsuneko-laboratory/catalyst-sdk";
+import type {
+  CatalystRelationships,
+  EgeriaUser,
+  ProfileTag,
+} from "@natsuneko-laboratory/catalyst-sdk";
 import { useScrollToTop } from "expo-router/react-navigation";
 import { useAtomValue } from "jotai";
 import { useMemo, useRef, useState } from "react";
@@ -45,7 +49,8 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const account = useAtomValue(accountAtom);
   const client = useAtomValue(clientAtom);
-  const accountUser = account?.user.screenName === screenName ? account.user : null;
+  const accountUser =
+    account?.user.screenName === screenName ? account.user : null;
   const [user, setUser] = useState<EgeriaUser | null>(accountUser);
   const [activeTab, setActiveTab] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -53,7 +58,8 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
   const NAV_BAR_HEIGHT = insets.top + 44;
   const isMyself = user?.id === account?.user.id;
   const tabContentRef = useRef<UserTimelineHandle>(null);
-  const [relationships, setRelationships] = useState<CatalystRelationships | null>(null);
+  const [relationships, setRelationships] =
+    useState<CatalystRelationships | null>(null);
   const [initialTags, setInitialTags] = useState<ProfileTag[]>([]);
   const tabs: Tab[] = useMemo(
     () =>
@@ -104,7 +110,9 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
 
     if (accountUser) {
       setUser(accountUser);
-      const { tags } = await client.catalyst.getProfileTagsByUser(accountUser.id).catch(() => ({ tags: [] }));
+      const { tags } = await client.catalyst
+        .getProfileTagsByUser(accountUser.id)
+        .catch(() => ({ tags: [] }));
       setInitialTags(tags);
       return;
     }
@@ -119,8 +127,11 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
       ]);
 
       if (userResult) {
+        const { tags } = await client.catalyst
+          .getProfileTagsByUser(userResult.user.id)
+          .catch(() => ({ tags: [] }));
+
         setUser(userResult.user);
-        const { tags } = await client.catalyst.getProfileTagsByUser(userResult.user.id).catch(() => ({ tags: [] }));
         setInitialTags(tags);
       }
 
@@ -137,8 +148,10 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
       Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
         useNativeDriver: false,
         listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
-          const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
+          const { contentOffset, layoutMeasurement, contentSize } =
+            event.nativeEvent;
+          const distanceFromBottom =
+            contentSize.height - layoutMeasurement.height - contentOffset.y;
           if (distanceFromBottom < LOAD_MORE_THRESHOLD) {
             tabContentRef.current?.loadMore();
           }
@@ -157,7 +170,11 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
 
   return (
     <View className="flex-1 bg-light-background dark:bg-dark-background">
-      <Animated.ScrollView ref={view} onScroll={handleScroll} scrollEventThrottle={16}>
+      <Animated.ScrollView
+        ref={view}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <ProfileHeader
           user={user}
           relationships={relationships}
@@ -170,7 +187,11 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
           className="flex-row border-b border-neutral-500 bg-light-background dark:bg-dark-background"
           style={{ width: screenWidth }}
         >
-          <ProfileTabs activeIndex={activeTab} tabs={tabs} onClickTab={setActiveTab} />
+          <ProfileTabs
+            activeIndex={activeTab}
+            tabs={tabs}
+            onClickTab={setActiveTab}
+          />
         </View>
 
         <GestureDetector gesture={swipeGesture}>
@@ -200,7 +221,11 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
         }}
         pointerEvents={headerHeight > 0 ? "auto" : "none"}
       >
-        <ProfileTabs activeIndex={activeTab} tabs={tabs} onClickTab={setActiveTab} />
+        <ProfileTabs
+          activeIndex={activeTab}
+          tabs={tabs}
+          onClickTab={setActiveTab}
+        />
       </Animated.View>
     </View>
   );
