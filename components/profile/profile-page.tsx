@@ -6,7 +6,7 @@ import { UserTimelineHandle } from "@/components/profile/timeline";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
-import type { CatalystRelationships, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystRelationships, EgeriaUser, ProfileTag } from "@natsuneko-laboratory/catalyst-sdk";
 import { useScrollToTop } from "expo-router/react-navigation";
 import { useAtomValue } from "jotai";
 import { useMemo, useRef, useState } from "react";
@@ -54,6 +54,7 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
   const isMyself = user?.id === account?.user.id;
   const tabContentRef = useRef<UserTimelineHandle>(null);
   const [relationships, setRelationships] = useState<CatalystRelationships | null>(null);
+  const [initialTags, setInitialTags] = useState<ProfileTag[]>([]);
   const tabs: Tab[] = useMemo(
     () =>
       [...DEFAULT_TABS, isMyself && { route: "likes", label: "いいね" }]
@@ -103,19 +104,24 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
 
     if (accountUser) {
       setUser(accountUser);
+      const { tags } = await client.catalyst.getProfileTagsByUser(accountUser.id).catch(() => ({ tags: [] }));
+      setInitialTags(tags);
       return;
     }
 
     setUser(null);
+    setInitialTags([]);
 
     try {
-      const [user, relationships] = await Promise.all([
+      const [userResult, relationships] = await Promise.all([
         client.egeria.userByUsername(screenName),
-        client.catalyst.relationships(screenName).catch((w) => null),
+        client.catalyst.relationships(screenName).catch(() => null),
       ]);
 
-      if (user) {
-        setUser(user?.user);
+      if (userResult) {
+        setUser(userResult.user);
+        const { tags } = await client.catalyst.getProfileTagsByUser(userResult.user.id).catch(() => ({ tags: [] }));
+        setInitialTags(tags);
       }
 
       if (relationships) {
@@ -155,6 +161,7 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
         <ProfileHeader
           user={user}
           relationships={relationships}
+          tags={initialTags}
           onUpdateRelationships={setRelationships}
           onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
         />

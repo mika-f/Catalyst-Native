@@ -25,11 +25,12 @@ const UniLinkIcon = withUniwind(LinkIcon);
 type Props = {
   user: EgeriaUser | null;
   relationships: CatalystRelationships | null;
+  tags: ProfileTag[];
   onUpdateRelationships?: (rel: CatalystRelationships) => void;
   onLayout: (e: LayoutChangeEvent) => void;
 };
 
-export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLayout }: Props) => {
+export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships, onLayout }: Props) => {
   const { width: screenWidth } = useWindowDimensions();
   const bannerHeight = screenWidth / 3;
   const account = useAtomValue(accountAtom);
@@ -39,7 +40,6 @@ export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLa
   const isMyself = account?.user.screenName === user?.screenName;
   const [counts, setCounts] = useState<RelationshipCounts | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [tags, setTags] = useState<ProfileTag[]>([]);
   const actionText = useMemo(() => {
     if (relationships === null) return "読み込み中";
 
@@ -80,12 +80,8 @@ export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLa
 
   useAsyncEffect(async () => {
     if (user) {
-      const [c, t] = await Promise.all([
-        client.catalyst.relationshipCounts(user.screenName),
-        client.catalyst.getProfileTagsByUser(user.id).catch(() => ({ tags: [] })),
-      ]);
+      const c = await client.catalyst.relationshipCounts(user.screenName);
       setCounts(c);
-      setTags(t.tags);
     }
   }, [user]);
 
