@@ -53,7 +53,7 @@ const UserMessageItem = memo(({ notification }: ItemProps) => {
           </Text>
         )}
       </View>
-      <Markdown body={message?.body ?? ""} />
+      <Markdown selectable body={message?.body ?? ""} />
     </View>
   );
 });
