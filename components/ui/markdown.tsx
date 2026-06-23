@@ -95,7 +95,7 @@ export const Markdown = React.memo(({ body }: Props) => {
           ),
           code: ({ children }: { children: React.ReactNode }) => (
             <Text className="font-mono text-sm bg-light-surface-muted dark:bg-dark-surface-muted text-light-text dark:text-dark-text px-1 rounded">
-              {children}
+              {" "}{children}{" "}
             </Text>
           ),
           pre: ({ children }: { children: React.ReactNode }) => (
