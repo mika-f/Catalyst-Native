@@ -1,6 +1,7 @@
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { rel } from "@/lib/dayjs";
 import { clientAtom } from "@/models/atoms/credential";
+import { Markdown } from "@/components/ui/markdown";
 import type { Notification, NotificationGroup } from "@natsuneko-laboratory/catalyst-sdk";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
@@ -52,7 +53,7 @@ const UserMessageItem = memo(({ notification }: ItemProps) => {
           </Text>
         )}
       </View>
-      <Text className="text-sm text-light-text dark:text-dark-text">{message?.body ?? ""}</Text>
+      <Markdown body={message?.body ?? ""} />
     </View>
   );
 });
