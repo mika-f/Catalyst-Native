@@ -221,7 +221,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ` },
-  "@natsuneko-laboratory/catalyst-sdk@0.5.4": { id: "@natsuneko-laboratory/catalyst-sdk@0.5.4", name: "@natsuneko-laboratory/catalyst-sdk", content: `undefined` },
+  "@natsuneko-laboratory/catalyst-sdk@0.6.0": { id: "@natsuneko-laboratory/catalyst-sdk@0.6.0", name: "@natsuneko-laboratory/catalyst-sdk", content: `undefined` },
   "js-sha256@0.11.1": { id: "js-sha256@0.11.1", name: "js-sha256", content: `undefined` },
   "@natsuneko-laboratory/react-native-twitter-text@0.1.0": { id: "@natsuneko-laboratory/react-native-twitter-text@0.1.0", name: "@natsuneko-laboratory/react-native-twitter-text", content: `MIT License
 

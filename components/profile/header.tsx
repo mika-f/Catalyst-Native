@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
-import { CatalystRelationships, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystRelationships, EgeriaUser, ProfileTag } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { LinkIcon } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import { LayoutChangeEvent, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
+import { LayoutChangeEvent, Pressable, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import { withUniwind } from "uniwind";
 import { StatusText } from "../status/text";
 import { SecondaryText } from "../ui/secondary-text";
@@ -25,11 +25,12 @@ const UniLinkIcon = withUniwind(LinkIcon);
 type Props = {
   user: EgeriaUser | null;
   relationships: CatalystRelationships | null;
+  tags: ProfileTag[];
   onUpdateRelationships?: (rel: CatalystRelationships) => void;
   onLayout: (e: LayoutChangeEvent) => void;
 };
 
-export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLayout }: Props) => {
+export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships, onLayout }: Props) => {
   const { width: screenWidth } = useWindowDimensions();
   const bannerHeight = screenWidth / 3;
   const account = useAtomValue(accountAtom);
@@ -171,6 +172,20 @@ export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLa
         <SecondaryText className="text-sm">@{user?.screenName}</SecondaryText>
 
         <StatusText status={user?.profile?.bio ?? ""} />
+
+        {tags.length > 0 && (
+          <View className="flex flex-row flex-wrap gap-1.5 mt-1">
+            {tags.map((tag) => (
+              <Pressable
+                key={tag.id}
+                onPress={() => router.push(`/tags/${encodeURIComponent(tag.name)}`)}
+                className="rounded-full bg-light-surface-muted dark:bg-dark-surface-muted px-2.5 py-1"
+              >
+                <Text className="text-xs text-light-tint dark:text-dark-tint">#{tag.name}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         <View className="flex flex-col gap-y-0.5">
           {user?.profile?.website ? (

@@ -1,16 +1,18 @@
+import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
-import type { EgeriaUser, EgeriaUserProfile } from "@natsuneko-laboratory/catalyst-sdk";
+import type { EgeriaUser, EgeriaUserProfile, ProfileTag, ProfileTagSuggestion } from "@natsuneko-laboratory/catalyst-sdk";
 import * as FileSystem from "expo-file-system";
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
-import { Camera, Plus, Trash2 } from "lucide-react-native";
-import { useCallback, useMemo, useState } from "react";
+import { Camera, Plus, Trash2, X } from "lucide-react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -25,10 +27,14 @@ import ImageCropPicker, { Image } from "react-native-image-crop-picker";
 import Toast from "react-native-toast-message";
 import { withUniwind } from "uniwind";
 
+const PROFILE_TAG_MAX_COUNT = 10;
+const PROFILE_TAG_MAX_LENGTH = 30;
+
 const UniImage = withUniwind(ExpoImage);
 const UniCamera = withUniwind(Camera);
 const UniPlus = withUniwind(Plus);
 const UniTrash2 = withUniwind(Trash2);
+const UniX = withUniwind(X);
 
 const BANNER_WIDTH = 1500;
 const BANNER_CROP_HEIGHT = 500;
@@ -63,6 +69,19 @@ export default function ProfileEditScreen() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const [tags, setTags] = useState<ProfileTag[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [suggestions, setSuggestions] = useState<ProfileTagSuggestion[]>([]);
+  const [isSavingTags, setIsSavingTags] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestQueryRef = useRef<string>("");
+
+  useAsyncEffect(async () => {
+    if (!user) return;
+    const result = await client.catalyst.getProfileTagsByUser(user.id).catch(() => ({ tags: [] }));
+    setTags(result.tags);
+  }, [user?.id]);
 
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
@@ -181,6 +200,59 @@ export default function ProfileEditScreen() {
   const handleUpdateWebsite = useCallback((index: number, value: string) => {
     setAdditionalWebsites((prev) => prev.map((w, i) => (i === index ? value : w)));
   }, []);
+
+  const handleTagInputChange = useCallback((value: string) => {
+    setTagInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const q = value.trim().replace(/^[#＃]/, "").trim();
+    if (q.length === 0) {
+      setSuggestions([]);
+      return;
+    }
+    latestQueryRef.current = q;
+    debounceRef.current = setTimeout(async () => {
+      if (q !== latestQueryRef.current) return;
+      const result = await client.catalyst.profileTagSuggestions(q).catch(() => ({ tags: [] }));
+      if (q !== latestQueryRef.current) return;
+      setSuggestions(result.tags);
+    }, 300);
+  }, [client]);
+
+  const handleAddTag = useCallback((name: string) => {
+    const trimmed = name.trim().replace(/^[#＃]/, "").trim();
+    if (!trimmed) return;
+    if (tags.length >= PROFILE_TAG_MAX_COUNT) {
+      Toast.show({ type: "error", text1: "エラー", text2: `ハッシュタグは最大${PROFILE_TAG_MAX_COUNT}個まで設定できます` });
+      return;
+    }
+    if (trimmed.length > PROFILE_TAG_MAX_LENGTH) {
+      Toast.show({ type: "error", text1: "エラー", text2: `ハッシュタグは最大${PROFILE_TAG_MAX_LENGTH}文字までです` });
+      return;
+    }
+    if (tags.some((t) => t.name.toLowerCase() === trimmed.toLowerCase())) {
+      Toast.show({ type: "error", text1: "エラー", text2: "同じハッシュタグがすでに追加されています" });
+      return;
+    }
+    setTags((prev) => [...prev, { id: `pending-${trimmed}`, name: trimmed, normalizedName: trimmed.toLowerCase() }]);
+    setTagInput("");
+    setSuggestions([]);
+  }, [tags]);
+
+  const handleRemoveTag = useCallback((id: string) => {
+    setTags((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const handleSaveTags = useCallback(async () => {
+    setIsSavingTags(true);
+    try {
+      await client.catalyst.updateProfileTags({ tags: tags.map((t) => t.name) });
+      Toast.show({ type: "success", text1: "保存しました", text2: "ハッシュタグを保存しました" });
+    } catch {
+      Toast.show({ type: "error", text1: "エラー", text2: "ハッシュタグの保存に失敗しました" });
+    } finally {
+      setIsSavingTags(false);
+    }
+  }, [client, tags]);
 
   const handleSave = useCallback(async () => {
     if (!canSave || !account) return;
@@ -348,7 +420,7 @@ export default function ProfileEditScreen() {
                   placeholder="自己紹介を入力..."
                   placeholderTextColor={theme === "dark" ? "#666" : "#999"}
                   multiline
-                  className="min-h-[80px] rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
+                  className="min-h-20 rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
                   textAlignVertical="top"
                 />
               </View>
@@ -417,6 +489,94 @@ export default function ProfileEditScreen() {
                   最大{MAX_ADDITIONAL_WEBSITES}件まで追加できます
                 </Text>
               )}
+
+              <View className="h-px bg-light-divider dark:bg-dark-divider" />
+
+              {/* プロフィールハッシュタグ */}
+              <View className="gap-2">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm font-medium text-light-text dark:text-dark-text">プロフィールハッシュタグ</Text>
+                  <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+                    {tags.length}/{PROFILE_TAG_MAX_COUNT}
+                  </Text>
+                </View>
+                <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+                  あなたの活動や好きなものを表すタグを追加してください。
+                </Text>
+
+                {/* 追加済みタグ */}
+                {tags.length > 0 && (
+                  <View className="flex-row flex-wrap gap-1.5">
+                    {tags.map((tag) => (
+                      <View
+                        key={tag.id}
+                        className="flex-row items-center gap-1 rounded-full bg-light-surface-muted dark:bg-dark-surface-muted px-2.5 py-1"
+                      >
+                        <Text className="text-xs text-light-tint dark:text-dark-tint">#{tag.name}</Text>
+                        <Pressable onPress={() => handleRemoveTag(tag.id)} hitSlop={6}>
+                          <UniX size={12} className="text-light-text-muted dark:text-dark-text-muted" />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* タグ入力 */}
+                {tags.length < PROFILE_TAG_MAX_COUNT && (
+                  <View className="relative">
+                    <View className="flex-row items-center gap-2">
+                      <TextInput
+                        value={tagInput}
+                        onChangeText={handleTagInputChange}
+                        onSubmitEditing={() => handleAddTag(tagInput)}
+                        returnKeyType="done"
+                        placeholder="タグを入力（# は任意）"
+                        placeholderTextColor={theme === "dark" ? "#666" : "#999"}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        className="flex-1 rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
+                        style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
+                      />
+                      <Pressable
+                        onPress={() => handleAddTag(tagInput)}
+                        disabled={!tagInput.trim()}
+                        className="rounded-lg bg-light-tint dark:bg-dark-tint px-3 py-2.5"
+                      >
+                        <Text className="text-sm font-semibold text-light-tint-foreground dark:text-dark-tint-foreground">追加</Text>
+                      </Pressable>
+                    </View>
+
+                    {/* サジェスト */}
+                    {suggestions.length > 0 && (
+                      <View className="mt-1 rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface overflow-hidden">
+                        {suggestions.map((s) => (
+                          <Pressable
+                            key={s.id}
+                            onPress={() => handleAddTag(s.name)}
+                            className="flex-row items-center justify-between px-3 py-2 border-b border-light-divider dark:border-dark-divider last:border-0"
+                          >
+                            <Text className="text-sm font-medium text-light-text dark:text-dark-text">#{s.name}</Text>
+                            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+                              {s.usageCount.toLocaleString()} 人
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {/* タグ保存ボタン */}
+                <Pressable
+                  onPress={handleSaveTags}
+                  disabled={isSavingTags}
+                  className="items-center rounded-lg border border-light-border dark:border-dark-border px-4 py-2.5"
+                >
+                  <Text className="text-sm font-semibold text-light-text dark:text-dark-text">
+                    {isSavingTags ? "保存中..." : "タグを保存"}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
