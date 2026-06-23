@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
-import { CatalystRelationships, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystRelationships, EgeriaUser, ProfileTag } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { LinkIcon } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import { LayoutChangeEvent, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
+import { LayoutChangeEvent, Pressable, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import { withUniwind } from "uniwind";
 import { StatusText } from "../status/text";
 import { SecondaryText } from "../ui/secondary-text";
@@ -39,6 +39,7 @@ export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLa
   const isMyself = account?.user.screenName === user?.screenName;
   const [counts, setCounts] = useState<RelationshipCounts | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [tags, setTags] = useState<ProfileTag[]>([]);
   const actionText = useMemo(() => {
     if (relationships === null) return "読み込み中";
 
@@ -79,8 +80,12 @@ export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLa
 
   useAsyncEffect(async () => {
     if (user) {
-      const c = await client.catalyst.relationshipCounts(user.screenName);
+      const [c, t] = await Promise.all([
+        client.catalyst.relationshipCounts(user.screenName),
+        client.catalyst.getProfileTagsByUser(user.id).catch(() => ({ tags: [] })),
+      ]);
       setCounts(c);
+      setTags(t.tags);
     }
   }, [user]);
 
@@ -171,6 +176,20 @@ export const ProfileHeader = ({ user, relationships, onUpdateRelationships, onLa
         <SecondaryText className="text-sm">@{user?.screenName}</SecondaryText>
 
         <StatusText status={user?.profile?.bio ?? ""} />
+
+        {tags.length > 0 && (
+          <View className="flex flex-row flex-wrap gap-1.5 mt-1">
+            {tags.map((tag) => (
+              <Pressable
+                key={tag.id}
+                onPress={() => router.push(`/tags/${encodeURIComponent(tag.name)}`)}
+                className="rounded-full bg-light-surface-muted dark:bg-dark-surface-muted px-2.5 py-1"
+              >
+                <Text className="text-xs text-light-tint dark:text-dark-tint">#{tag.name}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         <View className="flex flex-col gap-y-0.5">
           {user?.profile?.website ? (
