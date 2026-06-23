@@ -27,13 +27,12 @@ export default function NotificationsScreen() {
         } else if (activeTab === "system") {
           systemTabRef.current?.scrollToTop();
         }
-      }
-    }
-   }, [activeTab]);
+      },
+    };
+  }, [activeTab]);
   scroller.current = scrollActiveTimelineToTopHandler;
 
   useScrollToTop(scroller);
-
 
   return (
     <View className="flex-1 bg-light-background dark:bg-dark-background">
@@ -41,7 +40,8 @@ export default function NotificationsScreen() {
         onTabChange={(w) => setActiveTab(w.key)}
         tabs={TABS}
         renderScene={(tab) => {
-          if (tab.key === "message") return <UserMessageList />;
+          if (tab.key === "message")
+            return <UserMessageList ref={messageTabRef} />;
           return <SystemNotificationList ref={systemTabRef} />;
         }}
       />
