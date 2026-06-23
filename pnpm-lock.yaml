@@ -35,8 +35,8 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5(expo@56.0.8)
       '@natsuneko-laboratory/catalyst-sdk':
-        specifier: ^0.5.4
-        version: 0.5.4
+        specifier: ^0.6.0
+        version: 0.6.0
       '@natsuneko-laboratory/react-native-twitter-text':
         specifier: ^0.1.0
         version: 0.1.0(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
@@ -1644,8 +1644,8 @@ packages:
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
-  '@natsuneko-laboratory/catalyst-sdk@0.5.4':
-    resolution: {integrity: sha512-Be2kLfgbUDsz8bNSnKJFOv+MSVZlrCjeUHG1r4Rn9JiqWvR6a7xFKoftAt1Rwu4QIR8ahlXTAIPSZR55s4lUlw==}
+  '@natsuneko-laboratory/catalyst-sdk@0.6.0':
+    resolution: {integrity: sha512-3zJ5JoqV+eFi7MR5cSVzwR/vUGZL+W91hBgm2ltfEz5ijegEpL4Ozv0my2c8VeZa4pv1oeCbhKqYKkanG+N4IA==}
 
   '@natsuneko-laboratory/react-native-twitter-text@0.1.0':
     resolution: {integrity: sha512-umRAhpgBRqqBVWmyRCpaZta0fU1Jgy8xxc9oiaBb4ZnA2JuiNYY9HmVW9b2LdscmeVKneW4xW8fXiWmxo3NGLw==}
@@ -9272,7 +9272,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@natsuneko-laboratory/catalyst-sdk@0.5.4':
+  '@natsuneko-laboratory/catalyst-sdk@0.6.0':
     dependencies:
       js-sha256: 0.11.1
 
