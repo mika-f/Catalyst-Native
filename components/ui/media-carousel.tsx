@@ -23,6 +23,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-g
 import Animated, {
   interpolate,
   runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -84,6 +85,15 @@ export const MediaCarousel = memo(({ medias, onIndexChange }: Props) => {
 
   const modalTranslateY = useSharedValue(0);
   const zoomScale = useSharedValue(1);
+
+  useAnimatedReaction(
+    () => zoomScale.value > 1.01,
+    (isZoomedNow, wasZoomed) => {
+      if (isZoomedNow !== wasZoomed) {
+        runOnJS(setIsZoomed)(isZoomedNow);
+      }
+    },
+  );
 
   const dismissModal = () => setPresentedMediaIndex(null);
 
@@ -429,14 +439,6 @@ export const MediaCarousel = memo(({ medias, onIndexChange }: Props) => {
                           isDoubleTapEnabled
                           isPinchEnabled
                           isPanEnabled={isZoomed}
-                          onResetAnimationEnd={() => setIsZoomed(false)}
-                          onPinchEnd={(event) => {
-                            if (event.scale > 1) {
-                              setIsZoomed(true);
-                            } else {
-                              setIsZoomed(false);
-                            }
-                          }}
                           style={{
                             width: SCREEN_WIDTH,
                             height: SCREEN_HEIGHT,
