@@ -375,8 +375,12 @@ export default function ContestDetailPage() {
       }
 
       if (res.contest.state === "voting" && res.contest.voting?.isEnable) {
-        const rights = await client.catalyst.getContestVotes(slug);
-        setVoteRights(rights);
+        try {
+          const rights = await client.catalyst.getContestVotes(slug);
+          setVoteRights(rights);
+        } catch {
+          // 投票権情報の取得失敗はコンテスト表示自体には影響しない
+        }
       }
     } catch {
       setIsNotFound(true);
