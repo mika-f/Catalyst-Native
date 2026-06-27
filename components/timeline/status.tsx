@@ -61,12 +61,18 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
   const navigateToUser = () => user && router.push(`/user/${user.screenName}`);
 
   const handleReact = useCallback(
-    async (symbol: string) => {
+    async (symbol: string, url?: string) => {
       if (!account?.credential.client) return;
       const snapshot = cachedReactions ?? baseReactions;
       const updated = {
         ...snapshot,
-        [symbol]: { ...snapshot[symbol], symbol, count: (snapshot[symbol]?.count ?? 0) + 1, hasSelfReaction: true },
+        [symbol]: {
+          ...snapshot[symbol],
+          symbol,
+          url: url ?? snapshot[symbol]?.url,
+          count: (snapshot[symbol]?.count ?? 0) + 1,
+          hasSelfReaction: true,
+        },
       };
       setCachedReactions(updated);
       try {
