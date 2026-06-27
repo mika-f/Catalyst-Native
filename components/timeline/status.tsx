@@ -48,7 +48,7 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
     return Object.fromEntries(
       Object.entries(s.reactions ?? {}).map(([key, reaction]) => [
         key,
-        { ...reaction, hasSelfReaction: vr.includes(reaction.symbol) },
+        { ...reaction, hasSelfReaction: vr.includes(key) },
       ]),
     );
   }, [status]);
