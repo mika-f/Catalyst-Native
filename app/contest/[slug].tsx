@@ -6,13 +6,25 @@ import { abs } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { clientAtom } from "@/models/atoms/credential";
-import type { CatalystContest, CatalystContestAward, CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import type {
+  CatalystContest,
+  CatalystContestAward,
+  CatalystStatus,
+} from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { ArrowLeft, FileQuestion, ThumbsUp, Trophy } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
@@ -35,9 +47,24 @@ const STATE_LABEL: Record<string, string> = {
 
 const fmt = (d: string) => abs(d);
 
-const InfoRow = ({ label, noBorder, children }: { label: string; noBorder?: boolean; children: React.ReactNode }) => (
-  <View className={cn("flex-row py-3", !noBorder && "border-b border-light-divider dark:border-dark-divider")}>
-    <Text className="text-sm font-semibold text-light-text dark:text-dark-text w-28 shrink-0">{label}</Text>
+const InfoRow = ({
+  label,
+  noBorder,
+  children,
+}: {
+  label: string;
+  noBorder?: boolean;
+  children: React.ReactNode;
+}) => (
+  <View
+    className={cn(
+      "flex-row py-3",
+      !noBorder && "border-b border-light-divider dark:border-dark-divider",
+    )}
+  >
+    <Text className="text-sm font-semibold text-light-text dark:text-dark-text w-28 shrink-0">
+      {label}
+    </Text>
     <View className="flex-1">{children}</View>
   </View>
 );
@@ -65,7 +92,13 @@ const AwardWinnerCard = ({ status }: { status: WinnerStatus }) => {
       <View className="w-20 h-20 rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-800 shrink-0">
         {firstMedia ? (
           <UniImage
-            source={{ uri: getCdnUrl({ src: firstMedia.url, variant: "thumbnail", width: 256 }) }}
+            source={{
+              uri: getCdnUrl({
+                src: firstMedia.url,
+                variant: "thumbnail",
+                width: 256,
+              }),
+            }}
             className="w-full h-full"
             contentFit="cover"
           />
@@ -82,24 +115,39 @@ const AwardWinnerCard = ({ status }: { status: WinnerStatus }) => {
         <View className="flex-row items-center gap-1.5">
           {user?.profile?.iconUrl ? (
             <UniImage
-              source={{ uri: getCdnUrl({ src: user.profile.iconUrl, variant: "icon", width: 64 }) }}
+              source={{
+                uri: getCdnUrl({
+                  src: user.profile.iconUrl,
+                  variant: "icon",
+                  width: 64,
+                }),
+              }}
               className="w-5 h-5 rounded-full"
               contentFit="cover"
             />
           ) : (
             <View className="w-5 h-5 rounded-full bg-neutral-300 dark:bg-neutral-700" />
           )}
-          <Text className="text-xs font-semibold text-light-text dark:text-dark-text" numberOfLines={1}>
+          <Text
+            className="text-xs font-semibold text-light-text dark:text-dark-text"
+            numberOfLines={1}
+          >
             {user?.displayName}
           </Text>
-          <Text className="text-xs text-light-text-muted dark:text-dark-text-muted" numberOfLines={1}>
+          <Text
+            className="text-xs text-light-text-muted dark:text-dark-text-muted"
+            numberOfLines={1}
+          >
             @{user?.screenName}
           </Text>
         </View>
 
         {/* 本文 */}
         {status.body?.length > 0 && (
-          <Text className="text-sm text-light-text dark:text-dark-text" numberOfLines={3}>
+          <Text
+            className="text-sm text-light-text dark:text-dark-text"
+            numberOfLines={3}
+          >
             {status.body}
           </Text>
         )}
@@ -107,7 +155,10 @@ const AwardWinnerCard = ({ status }: { status: WinnerStatus }) => {
         {/* 主催者コメント */}
         {status.commentary && (
           <View className="mt-1 pl-2 border-l-2 border-light-accent dark:border-dark-accent">
-            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted" numberOfLines={2}>
+            <Text
+              className="text-xs text-light-text-muted dark:text-dark-text-muted"
+              numberOfLines={2}
+            >
               {status.commentary}
             </Text>
           </View>
@@ -121,18 +172,29 @@ const AwardSection = ({ award }: { award: CatalystContestAward }) => (
   <View className="mb-2">
     {/* 賞名ヘッダー */}
     <View className="flex-row items-center gap-2 px-4 py-3 bg-light-surface dark:bg-dark-surface">
-      <UniTrophy size={16} className="text-light-accent dark:text-dark-accent" />
-      <Text className="flex-1 text-base font-bold text-light-text dark:text-dark-text">{award.name}</Text>
-      <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">{award.winners.length}作品</Text>
+      <UniTrophy
+        size={16}
+        className="text-light-accent dark:text-dark-accent"
+      />
+      <Text className="flex-1 text-base font-bold text-light-text dark:text-dark-text">
+        {award.name}
+      </Text>
+      <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+        {award.winners.length}作品
+      </Text>
     </View>
 
     {/* 受賞作品リスト */}
     {award.winners.length === 0 ? (
       <View className="px-4 py-3">
-        <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">受賞作品はありません</Text>
+        <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
+          受賞作品はありません
+        </Text>
       </View>
     ) : (
-      (award.winners as unknown as WinnerStatus[]).map((winner) => <AwardWinnerCard key={winner.id} status={winner} />)
+      (award.winners as unknown as WinnerStatus[]).map((winner) => (
+        <AwardWinnerCard key={winner.id} status={winner} />
+      ))
     )}
   </View>
 );
@@ -140,9 +202,10 @@ const AwardSection = ({ award }: { award: CatalystContestAward }) => (
 type HeaderProps = {
   contest: CatalystContest;
   awards: CatalystContestAward[];
+  voteRights?: VoteRights | null;
 };
 
-const ContestHeader = ({ contest, awards }: HeaderProps) => {
+const ContestHeader = ({ contest, awards, voteRights }: HeaderProps) => {
   const { width: screenWidth } = useWindowDimensions();
   const terms = contest.terms
     ? contest.terms
@@ -158,7 +221,13 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
       <View style={{ aspectRatio: 3 / 1 }}>
         {contest.headerUrl ? (
           <UniImage
-            source={{ uri: getCdnUrl({ src: contest.headerUrl, variant: "header", width: 1500 }) }}
+            source={{
+              uri: getCdnUrl({
+                src: contest.headerUrl,
+                variant: "header",
+                width: 1500,
+              }),
+            }}
             style={{ width: "100%", height: imageHeight }}
             contentFit="cover"
           />
@@ -177,8 +246,10 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
         <View
           className={cn(
             "self-start px-2.5 py-1 rounded-full",
-            contest.state === "opening" && "bg-light-success-background dark:bg-dark-success-background",
-            contest.state === "voting" && "bg-light-info-background dark:bg-dark-info-background",
+            contest.state === "opening" &&
+              "bg-light-success-background dark:bg-dark-success-background",
+            contest.state === "voting" &&
+              "bg-light-info-background dark:bg-dark-info-background",
             (contest.state === "closing" || contest.state === "electing") &&
               "bg-light-warning-background dark:bg-dark-warning-background",
             (contest.state === "published" || contest.state === "closed") &&
@@ -188,8 +259,10 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
           <Text
             className={cn(
               "text-xs font-semibold",
-              contest.state === "opening" && "text-light-success-foreground dark:text-dark-success-foreground",
-              contest.state === "voting" && "text-light-info-foreground dark:text-dark-info-foreground",
+              contest.state === "opening" &&
+                "text-light-success-foreground dark:text-dark-success-foreground",
+              contest.state === "voting" &&
+                "text-light-info-foreground dark:text-dark-info-foreground",
               (contest.state === "closing" || contest.state === "electing") &&
                 "text-light-warning-foreground dark:text-dark-warning-foreground",
               (contest.state === "published" || contest.state === "closed") &&
@@ -200,14 +273,34 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
           </Text>
         </View>
 
-        <Text className="text-xl font-bold text-light-text dark:text-dark-text">{contest.title}</Text>
+        <Text className="text-xl font-bold text-light-text dark:text-dark-text">
+          {contest.title}
+        </Text>
 
-        {contest.description?.length > 0 && <Markdown body={contest.description} />}
+        {contest.description?.length > 0 && (
+          <Markdown body={contest.description} />
+        )}
       </View>
+
+      {/* 投票権バナー */}
+      {contest.state === "voting" && contest.voting?.isEnable && voteRights && (
+        <View className="mx-4 mb-2 px-4 py-2.5 bg-light-info-background dark:bg-dark-info-background rounded-xl flex-row items-center gap-2">
+          <UniThumbsUp
+            size={14}
+            className="text-light-info dark:text-dark-info"
+          />
+          <Text className="flex-1 text-sm text-light-info-foreground dark:text-dark-info-foreground">
+            残り {voteRights.remaining} / {contest.voting.maxVotes}{" "}
+            票を投票できます
+          </Text>
+        </View>
+      )}
 
       {/* 応募要項 */}
       <View className="mx-4 mb-4 mt-2 bg-light-surface dark:bg-dark-surface rounded-xl px-4">
-        <Text className="text-base font-bold text-light-text dark:text-dark-text pt-4 pb-2">応募要項</Text>
+        <Text className="text-base font-bold text-light-text dark:text-dark-text pt-4 pb-2">
+          応募要項
+        </Text>
 
         <InfoRow label="応募期間">
           <InfoText value={`${fmt(contest.since)} ～ ${fmt(contest.until)}`} />
@@ -228,13 +321,19 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
         <InfoRow label="審査方法">
           <View className="gap-1">
             <InfoText value="審査員選択" />
-            {contest.voting?.isEnable && <InfoText value={`ユーザー投票あり（1人${contest.voting.maxVotes}票まで）`} />}
+            {contest.voting?.isEnable && (
+              <InfoText
+                value={`ユーザー投票あり（1人${contest.voting.maxVotes}票まで）`}
+              />
+            )}
           </View>
         </InfoRow>
 
         {contest.voting?.isEnable && (
           <InfoRow label="投票期間">
-            <InfoText value={`${fmt(contest.voting.since)} ～ ${fmt(contest.voting.until)}`} />
+            <InfoText
+              value={`${fmt(contest.voting.since)} ～ ${fmt(contest.voting.until)}`}
+            />
           </InfoRow>
         )}
 
@@ -245,7 +344,9 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
             <View className="gap-3">
               {contest.ranks.map((rank) => (
                 <View key={rank.id}>
-                  <Text className="text-sm font-semibold text-light-text dark:text-dark-text">{rank.name}</Text>
+                  <Text className="text-sm font-semibold text-light-text dark:text-dark-text">
+                    {rank.name}
+                  </Text>
                   {rank.description && (
                     <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">
                       {rank.description}
@@ -253,7 +354,9 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
                   )}
                   {rank.prize.length > 0 && (
                     <View>
-                      <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">賞品:</Text>
+                      <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">
+                        賞品:
+                      </Text>
                       <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">
                         {rank.prize}
                       </Text>
@@ -269,12 +372,17 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
           <View className="gap-1">
             {terms.length ? (
               terms.map((term, i) => (
-                <Text key={`${i}-${term}`} className="text-sm text-light-text dark:text-dark-text">
+                <Text
+                  key={`${i}-${term}`}
+                  className="text-sm text-light-text dark:text-dark-text"
+                >
                   · {term}
                 </Text>
               ))
             ) : (
-              <Text className="text-sm text-light-text dark:text-dark-text">応募規定はありません</Text>
+              <Text className="text-sm text-light-text dark:text-dark-text">
+                応募規定はありません
+              </Text>
             )}
           </View>
         </InfoRow>
@@ -286,7 +394,9 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
       {contest.state === "closed" && awards.length > 0 && (
         <View className="mb-4">
           <View className="px-4 pb-2 border-b border-light-divider dark:border-dark-divider mb-2">
-            <Text className="text-base font-bold text-light-text dark:text-dark-text">受賞作品一覧</Text>
+            <Text className="text-base font-bold text-light-text dark:text-dark-text">
+              受賞作品一覧
+            </Text>
           </View>
           {awards.map((award) => (
             <AwardSection key={award.id} award={award} />
@@ -296,7 +406,9 @@ const ContestHeader = ({ contest, awards }: HeaderProps) => {
 
       {/* タイムラインタイトル */}
       <View className="px-4 pb-2 border-b border-light-divider dark:border-dark-divider">
-        <Text className="text-base font-bold text-light-text dark:text-dark-text">投稿作品一覧</Text>
+        <Text className="text-base font-bold text-light-text dark:text-dark-text">
+          投稿作品一覧
+        </Text>
       </View>
     </View>
   );
@@ -314,7 +426,12 @@ type VoteButtonProps = {
   onUnvote: (id: string) => void;
 };
 
-const VoteButton = ({ statusId, voteRights, onVote, onUnvote }: VoteButtonProps) => {
+const VoteButton = ({
+  statusId,
+  voteRights,
+  onVote,
+  onUnvote,
+}: VoteButtonProps) => {
   const isVoted = voteRights.statuses.includes(statusId);
   const canVote = isVoted || voteRights.remaining > 0;
 
@@ -335,7 +452,9 @@ const VoteButton = ({ statusId, voteRights, onVote, onUnvote }: VoteButtonProps)
         <UniThumbsUp
           size={14}
           className={cn(
-            isVoted ? "text-light-toggle-icon dark:text-dark-toggle-icon" : "text-light-icon dark:text-dark-icon",
+            isVoted
+              ? "text-light-toggle-icon dark:text-dark-toggle-icon"
+              : "text-light-icon dark:text-dark-icon",
           )}
         />
         <Text
@@ -393,7 +512,12 @@ export default function ContestDetailPage() {
       try {
         await client.catalyst.addContestVoteToStatus(slug, statusId);
         setVoteRights((prev) =>
-          prev ? { remaining: prev.remaining - 1, statuses: [...prev.statuses, statusId] } : prev,
+          prev
+            ? {
+                remaining: prev.remaining - 1,
+                statuses: [...prev.statuses, statusId],
+              }
+            : prev,
         );
       } catch {
         Alert.alert("エラー", "投票に失敗しました");
@@ -408,7 +532,12 @@ export default function ContestDetailPage() {
       try {
         await client.catalyst.removeContestVoteFromStatus(slug, statusId);
         setVoteRights((prev) =>
-          prev ? { remaining: prev.remaining + 1, statuses: prev.statuses.filter((id) => id !== statusId) } : prev,
+          prev
+            ? {
+                remaining: prev.remaining + 1,
+                statuses: prev.statuses.filter((id) => id !== statusId),
+              }
+            : prev,
         );
       } catch {
         Alert.alert("エラー", "投票の取り消しに失敗しました");
@@ -436,7 +565,12 @@ export default function ContestDetailPage() {
       <View>
         <TimelineStatus status={item} />
         {voteRights && (
-          <VoteButton statusId={item.id} voteRights={voteRights} onVote={handleVote} onUnvote={handleUnvote} />
+          <VoteButton
+            statusId={item.id}
+            voteRights={voteRights}
+            onVote={handleVote}
+            onUnvote={handleUnvote}
+          />
         )}
       </View>
     ),
@@ -444,15 +578,25 @@ export default function ContestDetailPage() {
   );
 
   const Header = useCallback(
-    () => (contest ? <ContestHeader contest={contest} awards={awards} /> : null),
-    [contest, awards],
+    () =>
+      contest ? (
+        <ContestHeader
+          contest={contest}
+          awards={awards}
+          voteRights={voteRights}
+        />
+      ) : null,
+    [contest, awards, voteRights],
   );
 
   const renderContent = () => {
     if (isNotFound) {
       return (
         <View className="flex-1 items-center justify-center">
-          <UniFileQuestion size={64} className="text-light-gray dark:text-dark-gray" />
+          <UniFileQuestion
+            size={64}
+            className="text-light-gray dark:text-dark-gray"
+          />
           <Text className="font-semibold text-light-gray dark:text-dark-gray mt-2 text-center">
             コンテストが見つかりません
           </Text>
@@ -472,7 +616,11 @@ export default function ContestDetailPage() {
     }
 
     return (
-      <TimelineBase fetcher={fetcher} renderItem={voteRights ? renderItem : undefined} ListHeaderComponent={Header} />
+      <TimelineBase
+        fetcher={fetcher}
+        renderItem={voteRights ? renderItem : undefined}
+        ListHeaderComponent={Header}
+      />
     );
   };
 
@@ -481,8 +629,15 @@ export default function ContestDetailPage() {
       {renderContent()}
 
       {/* 戻るボタンオーバーレイ */}
-      <View className="absolute left-0 right-0 top-0" style={{ paddingTop: insets.top }} pointerEvents="box-none">
-        <TouchableOpacity className="p-2 m-2 self-start" onPress={() => router.back()}>
+      <View
+        className="absolute left-0 right-0 top-0"
+        style={{ paddingTop: insets.top }}
+        pointerEvents="box-none"
+      >
+        <TouchableOpacity
+          className="p-2 m-2 self-start"
+          onPress={() => router.back()}
+        >
           <View className="w-9 h-9 rounded-full bg-black/75 items-center justify-center">
             <UniArrowLeft size={18} className="text-white" />
           </View>
