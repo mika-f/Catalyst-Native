@@ -1,5 +1,9 @@
 import { getCdnUrl } from "@/lib/media";
-import type { CatalystStatus, Notification } from "@natsuneko-laboratory/catalyst-sdk";
+import type {
+  CatalystStatus,
+  Notification,
+  NotificationGroup,
+} from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { memo } from "react";
@@ -7,6 +11,13 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { withUniwind } from "uniwind";
 
 const UniImage = withUniwind(Image);
+
+function getReactionImageUrl(entity: NotificationGroup): string {
+  if (entity.additionalContexts?.type === "custom-reaction") {
+    return entity.additionalContexts.url;
+  }
+  return `https://static.natsuneko.com/images/reactions/${entity.body}.png`;
+}
 
 type Props = {
   notification: Notification;
@@ -92,9 +103,7 @@ export const ReactionNotification = memo(({ notification }: Props) => {
                       <View className="w-8 h-8 rounded-full bg-[#888] opacity-25" />
                     )}
                     <UniImage
-                      source={{
-                        uri: `https://static.natsuneko.com/images/reactions/${entity.body}.png`,
-                      }}
+                      source={{ uri: getReactionImageUrl(entity) }}
                       className="w-4 h-4 absolute -bottom-0.5 -right-0.5"
                       contentFit="contain"
                     />

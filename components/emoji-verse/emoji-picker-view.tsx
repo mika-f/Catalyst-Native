@@ -10,6 +10,7 @@ import {
   Search,
   Smile,
   Star,
+  StarPlus,
   Trophy,
   Utensils,
   X,
@@ -47,6 +48,7 @@ const ICON_MAP: Record<
   heart: Heart,
   flag: Flag,
   star: Star,
+  "star-plus": StarPlus,
 };
 
 type Props = {
@@ -168,6 +170,7 @@ export function EmojiPickerView({
     if (categories.length === 0) return;
     const isValid = categories.some((c) => c.id === selectedCategoryId);
     if (!isValid) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedCategoryId(categories[0].id);
     }
   }, [categories, selectedCategoryId]);

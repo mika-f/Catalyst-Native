@@ -5,9 +5,12 @@ import {
   BottomSheetModal,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import type { CatalystCustomReaction } from "@natsuneko-laboratory/catalyst-sdk";
+import type {
+  CatalystCustomReaction,
+  CatalystCustomReactionList,
+} from "@natsuneko-laboratory/catalyst-sdk";
 import { useAtomValue } from "jotai";
-import React, {
+import {
   forwardRef,
   useCallback,
   useEffect,
@@ -60,15 +63,37 @@ export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
 
       const load = async () => {
         try {
-          const customReactions = account?.credential.client
-            ? await account.credential.client.catalyst
-                .customReactions()
-                .catch(() => [] as CatalystCustomReaction[])
-            : [];
+          const [customReactions, userReactionList] = await Promise.all([
+            account?.credential.client
+              ? account.credential.client.catalyst
+                  .customReactions()
+                  .catch(() => [] as CatalystCustomReaction[])
+              : Promise.resolve([] as CatalystCustomReaction[]),
+            account?.credential.client
+              ? account.credential.client.catalyst
+                  .customUserReactions()
+                  .catch(() => null as CatalystCustomReactionList | null)
+              : Promise.resolve(null as CatalystCustomReactionList | null),
+          ]);
 
           if (cancelled) return;
 
           const builtCategories: EmojiCategory[] = [];
+
+          const activeUserReactions =
+            userReactionList?.items.filter((r) => r.status === "active") ?? [];
+          if (activeUserReactions.length > 0) {
+            builtCategories.push({
+              id: "user-custom",
+              title: "マイリアクション",
+              icon: "star-plus",
+              emojis: activeUserReactions.map((r) => ({
+                id: `:${r.shortcode}:`,
+                type: { kind: "url" as const, url: r.imageUrl },
+                keywords: [r.displayName, r.shortcode],
+              })),
+            });
+          }
 
           if (customReactions.length > 0) {
             builtCategories.push({

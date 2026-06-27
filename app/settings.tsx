@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { router } from "expo-router";
-import { Accessibility, Bell, Bug, ChevronRight, FileText, Lock, Palette, UserCircle } from "lucide-react-native";
+import { Accessibility, Bell, Bug, ChevronRight, FileText, Lock, Palette, Smile, UserCircle } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 import { withUniwind } from "uniwind";
 
@@ -17,6 +17,7 @@ const sections: SettingsSection[] = [
   { route: "/settings/privacy", title: "プライバシー", icon: Lock },
   { route: "/settings/display", title: "表示", icon: Palette },
   { route: "/settings/accessibility", title: "アクセシビリティ", icon: Accessibility },
+  { route: "/settings/custom-reactions", title: "カスタムリアクション", icon: Smile },
   ...(__DEV__ ? [{ route: "/settings/debug", title: "デバッグ", icon: Bug }] : []),
   { route: "/settings/legal", title: "法的情報", icon: FileText },
 ];
