@@ -35,8 +35,8 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5(expo@56.0.8)
       '@natsuneko-laboratory/catalyst-sdk':
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.7.1
+        version: 0.7.1
       '@natsuneko-laboratory/react-native-twitter-text':
         specifier: ^0.1.0
         version: 0.1.0(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
@@ -155,8 +155,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2(jotai@2.18.1(@babel/core@7.29.7)(@babel/template@7.29.7)(@types/react@19.2.14)(react@19.2.3))
       lucide-react-native:
-        specifier: ^1.17.0
-        version: 1.17.0(react-native-svg@15.15.4(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
+        specifier: ^1.21.0
+        version: 1.21.0(react-native-svg@15.15.4(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -1644,8 +1644,8 @@ packages:
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
-  '@natsuneko-laboratory/catalyst-sdk@0.6.0':
-    resolution: {integrity: sha512-3zJ5JoqV+eFi7MR5cSVzwR/vUGZL+W91hBgm2ltfEz5ijegEpL4Ozv0my2c8VeZa4pv1oeCbhKqYKkanG+N4IA==}
+  '@natsuneko-laboratory/catalyst-sdk@0.7.1':
+    resolution: {integrity: sha512-v13Iy+oqHvQu8KGcfN0M66rx7J+jq4SQYO6DDXg5r2oNMjPhLm6dy4IQLfhng8rrxvfBYfk73d1zyKj/jvV39Q==}
 
   '@natsuneko-laboratory/react-native-twitter-text@0.1.0':
     resolution: {integrity: sha512-umRAhpgBRqqBVWmyRCpaZta0fU1Jgy8xxc9oiaBb4ZnA2JuiNYY9HmVW9b2LdscmeVKneW4xW8fXiWmxo3NGLw==}
@@ -5372,8 +5372,8 @@ packages:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
 
-  lucide-react-native@1.17.0:
-    resolution: {integrity: sha512-H5eM7dZkXJbYcrsjczlDC6Sq1/siWcM5O5BLLx6ljT0XDIGorZFjul+AdThuMs0I614nwowv5qbDivuQ+349Xw==}
+  lucide-react-native@1.21.0:
+    resolution: {integrity: sha512-kP5ZNvIPKDsdRz09GpB5rMC0uUwwF+yqUJZjRqLo0p+KRMu9mK6JavevxeHPSV0wbUGRLIZn+bGnf0d6Ufu8UQ==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-native: '*'
@@ -9272,7 +9272,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@natsuneko-laboratory/catalyst-sdk@0.6.0':
+  '@natsuneko-laboratory/catalyst-sdk@0.7.1':
     dependencies:
       js-sha256: 0.11.1
 
@@ -9867,7 +9867,9 @@ snapshots:
       metro-runtime: 0.84.4
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-colors@0.74.89': {}
 
@@ -13358,7 +13360,7 @@ snapshots:
     dependencies:
       yallist: 4.0.0
 
-  lucide-react-native@1.17.0(react-native-svg@15.15.4(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3):
+  lucide-react-native@1.21.0(react-native-svg@15.15.4(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3))(react-native@0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3):
     dependencies:
       react: 19.2.3
       react-native: 0.85.3(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3)
