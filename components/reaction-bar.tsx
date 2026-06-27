@@ -47,9 +47,7 @@ export const ReactionBar = ({ reactions, onReact, onUnreact, onAddReaction }: Pr
               />
             ) : (
               <Image
-                source={{
-                  uri: `https://static.natsuneko.com/images/reactions/${reaction.symbol}.png`,
-                }}
+                source={{ uri: reaction.url }}
                 style={{ width: 24, height: 24 }}
                 contentFit="contain"
               />
