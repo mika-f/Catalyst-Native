@@ -58,8 +58,15 @@ const getRemainingText = (contest: CatalystContest) => {
   if (contest.state !== "opening" && contest.state !== "voting") return null;
 
   const until = contest.state === "voting" ? contest.voting.until : contest.until;
-  const remainingDays = dayjs(until).diff(dayjs(), "day");
-  return remainingDays >= 0 && remainingDays <= 3 ? "まもなく終了" : null;
+  if (!dayjs(until).isBefore(dayjs().add(3, "days"))) return null;
+
+  const remainingMinutes = Math.max(0, dayjs(until).diff(dayjs(), "minute"));
+  const remainingHours = Math.max(0, dayjs(until).diff(dayjs(), "hour"));
+  const remainingDays = Math.max(0, dayjs(until).diff(dayjs(), "day"));
+
+  if (remainingHours < 1) return `あと${remainingMinutes}分`;
+  if (remainingHours < 24) return `あと${remainingHours}時間`;
+  return `あと${remainingDays}日`;
 };
 
 const StateIcon = ({ state }: { state: SpotlightState }) => {
