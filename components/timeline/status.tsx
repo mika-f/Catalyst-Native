@@ -1,12 +1,13 @@
 import { EmojiPickerSheet, type EmojiPickerSheetRef } from "@/components/emoji-verse";
 import { ReactionBar } from "@/components/reaction-bar";
 import { StatusText } from "@/components/status/text";
+import { StatusVisibilityBadge } from "@/components/status/visibility-badge";
 import { MediaCarousel } from "@/components/ui/media-carousel";
 import { rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { accountAtom } from "@/models/atoms/account";
 import { reactionCacheAtomFamily } from "@/models/atoms/reactions";
-import type { CatalystReaction, CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
@@ -22,6 +23,7 @@ type StatusWithReactions = CatalystStatus & {
     favorite?: boolean;
     reactions?: string[];
   };
+  privacy?: CatalystStatusPrivacy;
 };
 
 type Props = {
@@ -39,6 +41,7 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
   const user = status.user!;
   const medias = status.medias;
   const isLoggedIn = account !== null;
+  const privacy = (status as StatusWithReactions).privacy;
 
   const [cachedReactions, setCachedReactions] = useAtom(reactionCacheAtomFamily(status.id));
 
@@ -132,10 +135,8 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
               <Text className="font-bold text-sm text-black dark:text-white shrink-0" numberOfLines={1}>
                 {user.displayName}
               </Text>
-              <Text className="font-sm ml-1 text-neutral-500 shrink" numberOfLines={1}>
-                @{user.screenName}
-              </Text>
             </Pressable>
+            <StatusVisibilityBadge privacy={privacy} />
             <Text className="text-neutral-500 text-sm shrink-0">・{rel(status.createdAt)}</Text>
           </View>
         </View>

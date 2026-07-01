@@ -3,6 +3,7 @@ import { EmojiPickerSheet, type EmojiPickerSheetRef } from "@/components/emoji-v
 import { ReactionBar } from "@/components/reaction-bar";
 import { ActionBar } from "@/components/status/action-bar";
 import { StatusText } from "@/components/status/text";
+import { StatusVisibilityBadge } from "@/components/status/visibility-badge";
 import { MediaCarousel } from "@/components/ui/media-carousel";
 import { abs, rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
@@ -10,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
-import type { CatalystReaction, CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy } from "@natsuneko-laboratory/catalyst-sdk";
 import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -127,6 +128,7 @@ export default function StatusDetailsPage() {
 
   const isMyself = account?.user?.id === status?.user?.id;
   const isLoggedIn = account !== null;
+  const privacy = (status as (CatalystStatus & { privacy?: CatalystStatusPrivacy }) | null)?.privacy;
   const statusUrl = `https://catalyst.natsuneko.com/status/${id}`;
 
   useEffect(() => {
@@ -337,6 +339,8 @@ export default function StatusDetailsPage() {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            <StatusVisibilityBadge privacy={privacy} />
           </View>
 
           {/* Media */}
