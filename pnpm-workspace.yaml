@@ -1,6 +1,19 @@
 packages:
   - catalyst-native
+allowBuilds:
+  "@firebase/util": false
+  "@sentry/cli": true
+  core-js: false
+  dtrace-provider: false
+  esbuild: false
+  msgpackr-extract: false
+  protobufjs: false
+  unrs-resolver: true
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - "@natsuneko-laboratory/catalyst-sdk"
   - "@natsuneko-laboratory/react-native-twitter-text"
+patchedDependencies:
+  "@expo/cli": patches/@expo__cli.patch
+  "@likashefqet/react-native-image-zoom": patches/@likashefqet__react-native-image-zoom.patch
+  react-native: patches/react-native.patch
