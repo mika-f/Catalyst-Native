@@ -1,4 +1,5 @@
 import { getCdnUrl } from "@/lib/media";
+import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -36,9 +37,12 @@ export const UserCard = ({ user }: Props) => {
 
       {/* ユーザー情報 */}
       <View className="flex-1 gap-1">
-        <Text className="text-base font-bold text-neutral-900 dark:text-neutral-100" numberOfLines={1}>
-          {user.displayName}
-        </Text>
+        <View className="flex-row items-center gap-1">
+          <Text className="shrink text-base font-bold text-neutral-900 dark:text-neutral-100" numberOfLines={1}>
+            {user.displayName}
+          </Text>
+          <ProfileEmoji emoji={user.profileEmoji} size={16} />
+        </View>
         <Text className="text-sm text-neutral-500 dark:text-neutral-400" numberOfLines={1}>
           @{user.screenName}
         </Text>

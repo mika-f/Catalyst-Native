@@ -1,5 +1,6 @@
 import { BottomSheetItem } from "@/components/bottom-sheet/item";
 import { BottomSheetModal, BottomSheetModalHandle } from "@/components/bottom-sheet/sheet";
+import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { clientAtom } from "@/models/atoms/credential";
 import { CatalystRelationships, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
 import { useRouter } from "expo-router";
@@ -74,13 +75,15 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
         style={[StyleSheet.absoluteFill, { opacity: overlayOpacity }]}
       />
       <View className="relative flex-row flex-1 items-center">
-        <Animated.Text
-          className="flex-1 text-base font-semibold text-center text-light-text dark:text-dark-text"
+        <UniAnimatedView
+          className="flex-1 flex-row items-center justify-center gap-1 px-16"
           style={{ opacity: overlayOpacity }}
-          numberOfLines={1}
         >
-          {user?.displayName}
-        </Animated.Text>
+          <Text className="shrink text-base font-semibold text-center text-light-text dark:text-dark-text" numberOfLines={1}>
+            {user?.displayName}
+          </Text>
+          <ProfileEmoji emoji={user?.profileEmoji} size={16} />
+        </UniAnimatedView>
 
         {showBackButton && (
           <TouchableOpacity className="absolute p-2 m-2" onPress={handleBack}>

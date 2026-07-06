@@ -1,3 +1,4 @@
+import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { getCdnUrl } from "@/lib/media";
 import { clientAtom } from "@/models/atoms/credential";
 import type { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
@@ -49,9 +50,12 @@ const UserRow = ({ user }: { user: EgeriaUser & { matchedTags: string[] } }) => 
       )}
 
       <View className="flex-1 gap-0.5">
-        <Text className="text-sm font-semibold text-light-text dark:text-dark-text" numberOfLines={1}>
-          {user.displayName}
-        </Text>
+        <View className="flex-row items-center gap-1">
+          <Text className="shrink text-sm font-semibold text-light-text dark:text-dark-text" numberOfLines={1}>
+            {user.displayName}
+          </Text>
+          <ProfileEmoji emoji={user.profileEmoji} size={14} />
+        </View>
         <Text className="text-xs text-light-text-muted dark:text-dark-text-muted" numberOfLines={1}>
           @{user.screenName}
         </Text>

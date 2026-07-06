@@ -5,6 +5,7 @@ import { ActionBar } from "@/components/status/action-bar";
 import { StatusText } from "@/components/status/text";
 import { StatusVisibilityBadge } from "@/components/status/visibility-badge";
 import { MediaCarousel } from "@/components/ui/media-carousel";
+import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { abs, rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
@@ -331,9 +332,12 @@ export default function StatusDetailsPage() {
 
             <View className="flex-1 ml-3">
               <TouchableOpacity onPress={() => user && router.push(`/user/${user.screenName}`)} activeOpacity={0.7}>
-                <Text className="text-light-text dark:text-dark-text font-semibold text-base" numberOfLines={1}>
-                  {user?.displayName ?? ""}
-                </Text>
+                <View className="flex-row items-center gap-1">
+                  <Text className="shrink text-light-text dark:text-dark-text font-semibold text-base" numberOfLines={1}>
+                    {user?.displayName ?? ""}
+                  </Text>
+                  <ProfileEmoji emoji={user?.profileEmoji} size={16} />
+                </View>
                 <Text className="text-neutral-500" numberOfLines={1}>
                   @{user?.screenName ?? ""}
                 </Text>

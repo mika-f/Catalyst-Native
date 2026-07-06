@@ -31,11 +31,13 @@ export type EmojiPickerSheetRef = {
 };
 
 type Props = {
-  onReact: (symbol: string, url?: string) => void;
+  onReact?: (symbol: string, url?: string) => void;
+  onEmojiSelected?: (emoji: EmojiItem) => void;
+  includeCatalystReactions?: boolean;
 };
 
 export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
-  function EmojiPickerSheet({ onReact }, ref) {
+  function EmojiPickerSheet({ onReact, onEmojiSelected, includeCatalystReactions = true }, ref) {
     const theme = useColorScheme() ?? "light";
     const account = useAtomValue(accountAtom);
     const [categories, setCategories] = useState<EmojiCategory[]>([]);
@@ -89,13 +91,13 @@ export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
               icon: "star-plus",
               emojis: activeUserReactions.map((r) => ({
                 id: `:${r.shortcode}:`,
-                type: { kind: "url" as const, url: r.imageUrl },
+                type: { kind: "url" as const, url: r.imageUrl, customReactionId: r.id },
                 keywords: [r.displayName, r.shortcode],
               })),
             });
           }
 
-          if (customReactions.length > 0) {
+          if (includeCatalystReactions && customReactions.length > 0) {
             builtCategories.push({
               id: "catalyst",
               title: "Catalyst",
@@ -136,7 +138,7 @@ export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
       return () => {
         cancelled = true;
       };
-    }, [isPresented, account, isEmojiDataLoading, defaultCategories]);
+    }, [isPresented, account, isEmojiDataLoading, defaultCategories, includeCatalystReactions]);
 
     const handleDismiss = useCallback(() => {
       setIsPresented(false);
@@ -144,17 +146,19 @@ export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
 
     const handleEmojiSelected = useCallback(
       async (emoji: EmojiItem) => {
+        onEmojiSelected?.(emoji);
+
         if (emoji.type.kind === "unicode") {
           const codepoints = emojiToCodepoints(emoji.type.emoji);
-          onReact(codepoints);
+          onReact?.(codepoints);
           recordUnicodeUsage(emoji.type.emoji).catch(() => {});
         } else if (emoji.type.kind === "url") {
-          onReact(emoji.id, emoji.type.url);
+          onReact?.(emoji.id, emoji.type.url);
           recordUrlUsage(emoji.id, emoji.type.url).catch(() => {});
         }
         bottomSheetRef.current?.dismiss();
       },
-      [onReact],
+      [onReact, onEmojiSelected],
     );
 
     const renderBackdrop = useCallback(

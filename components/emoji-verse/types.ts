@@ -1,6 +1,6 @@
 export type EmojiItemType =
   | { kind: "unicode"; emoji: string }
-  | { kind: "url"; url: string };
+  | { kind: "url"; url: string; customReactionId?: string };
 
 export type EmojiItem = {
   id: string;

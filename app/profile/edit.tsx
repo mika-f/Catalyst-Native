@@ -1,9 +1,19 @@
+import { EmojiPickerSheet, type EmojiPickerSheetRef } from "@/components/emoji-verse";
+import type { EmojiItem } from "@/components/emoji-verse/types";
+import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
-import type { EgeriaUser, EgeriaUserProfile, ProfileTag, ProfileTagSuggestion } from "@natsuneko-laboratory/catalyst-sdk";
+import type {
+  EgeriaUser,
+  EgeriaUserProfile,
+  ProfileEmoji as ProfileEmojiType,
+  ProfileEmojiRequest,
+  ProfileTag,
+  ProfileTagSuggestion,
+} from "@natsuneko-laboratory/catalyst-sdk";
 import * as FileSystem from "expo-file-system";
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useRouter } from "expo-router";
@@ -12,7 +22,6 @@ import { Camera, Plus, Trash2, X } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -61,6 +70,8 @@ export default function ProfileEditScreen() {
   const user = account?.user as EgeriaUser | undefined;
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+  const [profileEmoji, setProfileEmoji] = useState<ProfileEmojiType | null>(user?.profileEmoji ?? null);
+  const [profileEmojiRequest, setProfileEmojiRequest] = useState<ProfileEmojiRequest | null | undefined>(undefined);
   const [bio, setBio] = useState(user?.profile?.bio ?? "");
   const [website, setWebsite] = useState(user?.profile?.website ?? "");
   const [additionalWebsites, setAdditionalWebsites] = useState<string[]>(
@@ -76,6 +87,7 @@ export default function ProfileEditScreen() {
   const [isSavingTags, setIsSavingTags] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestQueryRef = useRef<string>("");
+  const profileEmojiPickerRef = useRef<EmojiPickerSheetRef>(null);
 
   useAsyncEffect(async () => {
     if (!user) return;
@@ -242,6 +254,36 @@ export default function ProfileEditScreen() {
     setTags((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const handleProfileEmojiSelected = useCallback((emoji: EmojiItem) => {
+    if (emoji.type.kind === "unicode") {
+      setProfileEmoji({
+        type: "standard",
+        value: emoji.type.emoji,
+        imageUrl: "",
+      });
+      setProfileEmojiRequest({ type: "standard", value: emoji.type.emoji });
+      return;
+    }
+
+    if (!emoji.type.customReactionId) return;
+
+    setProfileEmoji({
+      type: "custom",
+      id: emoji.type.customReactionId,
+      shortcode: emoji.id.replace(/^:/, "").replace(/:$/, ""),
+      displayName: emoji.keywords[0] ?? emoji.id,
+      imageUrl: emoji.type.url,
+      width: 1,
+      height: 1,
+    });
+    setProfileEmojiRequest({ type: "custom", customReactionId: emoji.type.customReactionId });
+  }, []);
+
+  const handleClearProfileEmoji = useCallback(() => {
+    setProfileEmoji(null);
+    setProfileEmojiRequest(null);
+  }, []);
+
   const handleSaveTags = useCallback(async () => {
     setIsSavingTags(true);
     try {
@@ -269,6 +311,7 @@ export default function ProfileEditScreen() {
           website: website.trim(),
           additionalWebsites: filteredWebsites,
         } as EgeriaUserProfile,
+        ...(profileEmojiRequest !== undefined ? { profileEmoji: profileEmojiRequest } : {}),
       });
 
       const me = await client.egeria.me();
@@ -287,7 +330,7 @@ export default function ProfileEditScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [canSave, account, displayName, bio, website, additionalWebsites, client, setAccount, router]);
+  }, [canSave, account, displayName, bio, website, additionalWebsites, profileEmojiRequest, client, setAccount, router]);
 
   const currentBannerUri = user?.profile?.bannerUrl
     ? getCdnUrl({ src: user.profile.bannerUrl, variant: "header", width: screenWidth })
@@ -407,6 +450,41 @@ export default function ProfileEditScreen() {
                 {!displayName.trim() && (
                   <Text className="text-xs text-light-error dark:text-dark-error">表示名は必須です</Text>
                 )}
+              </View>
+
+              <View className="h-px bg-light-divider dark:bg-dark-divider" />
+
+              {/* プロフィール絵文字 */}
+              <View className="gap-2">
+                <Text className="text-sm font-medium text-light-text dark:text-dark-text">プロフィール絵文字</Text>
+                <View className="flex-row items-center justify-between gap-3">
+                  <View className="flex-row items-center gap-2">
+                    <View className="h-10 w-10 items-center justify-center rounded-full bg-light-surface-muted dark:bg-dark-surface-muted">
+                      <ProfileEmoji emoji={profileEmoji} size={24} />
+                    </View>
+                    <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
+                      {profileEmoji ? "表示名の横に表示されます" : "未設定"}
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-2">
+                    {profileEmoji && (
+                      <Pressable
+                        onPress={handleClearProfileEmoji}
+                        className="rounded-lg border border-light-border dark:border-dark-border px-3 py-2"
+                      >
+                        <Text className="text-sm font-semibold text-light-text dark:text-dark-text">削除</Text>
+                      </Pressable>
+                    )}
+                    <Pressable
+                      onPress={() => profileEmojiPickerRef.current?.open()}
+                      className="rounded-lg bg-light-tint dark:bg-dark-tint px-3 py-2"
+                    >
+                      <Text className="text-sm font-semibold text-light-tint-foreground dark:text-dark-tint-foreground">
+                        選択
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
               </View>
 
               <View className="h-px bg-light-divider dark:bg-dark-divider" />
@@ -581,6 +659,11 @@ export default function ProfileEditScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+      <EmojiPickerSheet
+        ref={profileEmojiPickerRef}
+        onEmojiSelected={handleProfileEmojiSelected}
+        includeCatalystReactions={false}
+      />
     </>
   );
 }

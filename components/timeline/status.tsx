@@ -3,6 +3,7 @@ import { ReactionBar } from "@/components/reaction-bar";
 import { StatusText } from "@/components/status/text";
 import { StatusVisibilityBadge } from "@/components/status/visibility-badge";
 import { MediaCarousel } from "@/components/ui/media-carousel";
+import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { accountAtom } from "@/models/atoms/account";
@@ -131,10 +132,11 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
           </Pressable>
 
           <View className="flex-row items-center flex-1 ml-2 overflow-hidden">
-            <Pressable className="flex flex-row items-center shrink overflow-hidden" onPress={navigateToUser}>
-              <Text className="font-bold text-sm text-black dark:text-white shrink-0" numberOfLines={1}>
+            <Pressable className="flex flex-row items-center gap-1 shrink overflow-hidden" onPress={navigateToUser}>
+              <Text className="font-bold text-sm text-black dark:text-white shrink" numberOfLines={1}>
                 {user.displayName}
               </Text>
+              <ProfileEmoji emoji={user.profileEmoji} size={14} />
             </Pressable>
             <StatusVisibilityBadge privacy={privacy} />
             <Text className="text-neutral-500 text-sm shrink-0">・{rel(status.createdAt)}</Text>

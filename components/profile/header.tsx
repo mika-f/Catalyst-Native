@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
+import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { CatalystRelationships, EgeriaUser, ProfileTag } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -168,7 +169,10 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
       </View>
 
       <View className="px-4 pb-4 mt-2 gap-1.5">
-        <Text className="font-bold text-xl text-light-text dark:text-dark-text">{user?.displayName}</Text>
+        <View className="flex-row items-center gap-1">
+          <Text className="font-bold text-xl text-light-text dark:text-dark-text">{user?.displayName}</Text>
+          <ProfileEmoji emoji={user?.profileEmoji} size={20} />
+        </View>
         <SecondaryText className="text-sm">@{user?.screenName}</SecondaryText>
 
         <StatusText status={user?.profile?.bio ?? ""} />
