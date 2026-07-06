@@ -108,7 +108,7 @@
     "@callstack/licenses": "^0.3.1",
     "@oxfmt/binding-darwin-arm64": "^0.57.0",
     "@oxfmt/binding-win32-x64-msvc": "^0.57.0",
-    "@types/node": "25.9.2",
+    "@types/node": "26.1.0",
     "@types/react": "latest",
     "@types/twitter-text": "^3.1.10",
     "babel-preset-expo": "^56.0.14",
@@ -118,9 +118,9 @@
     "eas-cli-local-build-plugin": "^20.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~56.0.4",
-    "npm-run-all2": "^9.0.1",
+    "npm-run-all2": "^9.0.2",
     "oxfmt": "^0.57.0",
-    "tsx": "^4.22.4",
+    "tsx": "^4.22.5",
     "typescript": "~6.0.3"
   },
   "private": true
