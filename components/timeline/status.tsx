@@ -9,11 +9,17 @@ import { getCdnUrl } from "@/lib/media";
 import { getCustomReactionId, getReactionKey } from "@/lib/reactions";
 import { accountAtom } from "@/models/atoms/account";
 import { reactionCacheAtomFamily } from "@/models/atoms/reactions";
+import {
+  applyReactionStreamingEvent,
+  registerLocalReactionMutation,
+  type ReactionStreamingEvent,
+  useStreamingReactions,
+} from "@/models/streaming";
 import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy, CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
-import React, { memo, useCallback, useMemo, useRef } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import { withUniwind } from "uniwind";
 
@@ -38,6 +44,7 @@ const UniImage = withUniwind(Image);
 export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) => {
   const router = useRouter();
   const account = useAtomValue(accountAtom);
+  const { subscribe, unsubscribe } = useStreamingReactions();
   const emojiPickerRef = useRef<EmojiPickerSheetRef>(null);
 
   const user = status.user!;
@@ -66,6 +73,20 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
 
   const hasReactions = Object.values(reactions).some((r) => r.count >= 1);
 
+  const handleStreamingReaction = useCallback(
+    (event: ReactionStreamingEvent) => {
+      setCachedReactions((prev) => applyReactionStreamingEvent(prev ?? baseReactions, event, `timeline:${status.id}`));
+    },
+    [baseReactions, setCachedReactions, status.id],
+  );
+
+  useEffect(() => {
+    subscribe(status.id, handleStreamingReaction);
+    return () => {
+      unsubscribe(status.id, handleStreamingReaction);
+    };
+  }, [handleStreamingReaction, status.id, subscribe, unsubscribe]);
+
   const navigateToStatus = () => router.push(`/status/${status.id}`);
   const navigateToUser = () => user && router.push(`/user/${user.screenName}`);
 
@@ -86,6 +107,12 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
         },
       };
       setCachedReactions(updated);
+      const rollbackLocalMutation = registerLocalReactionMutation(
+        status.id,
+        "reaction:increment",
+        symbol,
+        customReactionId,
+      );
       try {
         if (customReactionId) {
           await account.credential.client.catalyst.reactWithCustomReaction(status.id, customReactionId);
@@ -93,6 +120,7 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
           await account.credential.client.catalyst.react(status.id, symbol);
         }
       } catch {
+        rollbackLocalMutation();
         setCachedReactions(snapshot);
         Alert.alert("エラー", "リアクションに失敗しました");
       }
@@ -110,6 +138,12 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
         [key]: { ...snapshot[key], count: Math.max(0, (snapshot[key]?.count ?? 0) - 1), hasSelfReaction: false },
       };
       setCachedReactions(updated);
+      const rollbackLocalMutation = registerLocalReactionMutation(
+        status.id,
+        "reaction:decrement",
+        symbol,
+        customReactionId,
+      );
       try {
         if (customReactionId) {
           await account.credential.client.catalyst.unreactWithCustomReaction(status.id, customReactionId);
@@ -117,6 +151,7 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
           await account.credential.client.catalyst.unreact(status.id, symbol);
         }
       } catch {
+        rollbackLocalMutation();
         setCachedReactions(snapshot);
         Alert.alert("エラー", "リアクションの取り消しに失敗しました");
       }

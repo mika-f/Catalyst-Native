@@ -13,6 +13,12 @@ import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
+import {
+  applyReactionStreamingEvent,
+  registerLocalReactionMutation,
+  type ReactionStreamingEvent,
+  useStreamingReactions,
+} from "@/models/streaming";
 import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy } from "@natsuneko-laboratory/catalyst-sdk";
 import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
@@ -113,6 +119,7 @@ export default function StatusDetailsPage() {
   const router = useRouter();
   const account = useAtomValue(accountAtom);
   const client = useAtomValue(clientAtom);
+  const { subscribe, unsubscribe } = useStreamingReactions();
 
   const [status, setStatus] = useState<CatalystStatus | null>(null);
   const [metadata, setMetadata] = useState<EpicleseMetadata>({});
@@ -161,6 +168,22 @@ export default function StatusDetailsPage() {
     fetchData();
   }, [id, account, client]);
 
+  const handleStreamingReaction = useCallback(
+    (event: ReactionStreamingEvent) => {
+      setReactions((prev) => applyReactionStreamingEvent(prev, event, `status-detail:${id}`));
+    },
+    [id],
+  );
+
+  useEffect(() => {
+    if (!id) return;
+
+    subscribe(id, handleStreamingReaction);
+    return () => {
+      unsubscribe(id, handleStreamingReaction);
+    };
+  }, [handleStreamingReaction, id, subscribe, unsubscribe]);
+
   const handleReact = useCallback(
     async (symbol: string, url?: string, customReactionId?: string) => {
       if (!account?.credential.client || !id) return;
@@ -177,6 +200,7 @@ export default function StatusDetailsPage() {
           hasSelfReaction: true,
         },
       }));
+      const rollbackLocalMutation = registerLocalReactionMutation(id, "reaction:increment", symbol, customReactionId);
       try {
         if (customReactionId) {
           await account.credential.client.catalyst.reactWithCustomReaction(id, customReactionId);
@@ -184,6 +208,7 @@ export default function StatusDetailsPage() {
           await account.credential.client.catalyst.react(id, symbol);
         }
       } catch {
+        rollbackLocalMutation();
         setReactions(snapshot);
         Alert.alert("エラー", "リアクションに失敗しました");
       }
@@ -200,6 +225,7 @@ export default function StatusDetailsPage() {
         ...prev,
         [key]: { ...prev[key], count: Math.max(0, (prev[key]?.count ?? 0) - 1), hasSelfReaction: false },
       }));
+      const rollbackLocalMutation = registerLocalReactionMutation(id, "reaction:decrement", symbol, customReactionId);
       try {
         if (customReactionId) {
           await account.credential.client.catalyst.unreactWithCustomReaction(id, customReactionId);
@@ -207,6 +233,7 @@ export default function StatusDetailsPage() {
           await account.credential.client.catalyst.unreact(id, symbol);
         }
       } catch {
+        rollbackLocalMutation();
         setReactions(snapshot);
         Alert.alert("エラー", "リアクションの取り消しに失敗しました");
       }

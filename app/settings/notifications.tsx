@@ -1,6 +1,7 @@
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
+import { streamingEnabledAtom } from "@/models/atoms/streaming";
 import {
   PUSH_NOTIFICATION_TYPES,
   getAuthorizationStatus,
@@ -18,9 +19,10 @@ import {
   showPermissionDeniedAlert,
   unregisterTokenFromBackend,
 } from "@/models/notification-settings";
-import { useAtomValue } from "jotai";
+import { saveStreamingEnabled } from "@/models/streaming-settings";
+import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 
 export default function NotificationSettingsPage() {
   const account = useAtomValue(accountAtom);
@@ -31,6 +33,7 @@ export default function NotificationSettingsPage() {
   const [enabledTypes, setEnabledTypes] = useState<Set<string>>(new Set());
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isStreamingEnabled, setIsStreamingEnabled] = useAtom(streamingEnabledAtom);
 
   // 初期化
   useAsyncOneTimeEffect(async () => {
@@ -137,6 +140,16 @@ export default function NotificationSettingsPage() {
     [enabledTypes],
   );
 
+  const handleStreamingToggle = useCallback(
+    async (newValue: boolean) => {
+      if (!isLoggedIn) return;
+
+      setIsStreamingEnabled(newValue);
+      await saveStreamingEnabled(newValue);
+    },
+    [isLoggedIn, setIsStreamingEnabled],
+  );
+
   const footerText = (() => {
     if (!isLoggedIn) return "ログインするとPush通知を受け取ることができます。";
     if (authStatus === "denied") return null; // 「設定を開く」ボタンを表示
@@ -150,7 +163,7 @@ export default function NotificationSettingsPage() {
   }
 
   return (
-    <View className="flex-1">
+    <ScrollView className="flex-1" contentContainerClassName="pb-8">
       {/* セクション1: 全体設定 */}
       <View className="mt-4 mx-4">
         <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">通知設定</Text>
@@ -177,6 +190,24 @@ export default function NotificationSettingsPage() {
         ) : footerText ? (
           <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">{footerText}</Text>
         ) : null}
+      </View>
+
+      <View className="mt-6 mx-4">
+        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">リアルタイム更新</Text>
+        <View className="rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
+          <View className="px-4 py-3 flex-row items-center justify-between">
+            <View className="flex-1 mr-3">
+              <Text className="text-base text-light-text dark:text-dark-text">ストリーミング接続</Text>
+              <Text className="text-xs text-light-gray dark:text-dark-gray mt-1">
+                投稿のリアクションを開いている間に自動更新します
+              </Text>
+            </View>
+            <Switch value={isStreamingEnabled} onValueChange={handleStreamingToggle} disabled={!isLoggedIn} />
+          </View>
+        </View>
+        <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+          streaming.natsuneko.com への WebSocket 接続を使用します。
+        </Text>
       </View>
 
       {/* セクション2: 通知タイプ別設定 */}
@@ -242,6 +273,6 @@ export default function NotificationSettingsPage() {
           </View>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
