@@ -1313,7 +1313,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ` },
-  "@types/node@25.3.3": { id: "@types/node@25.3.3", name: "@types/node", content: `    MIT License
+  "@types/node@26.1.0": { id: "@types/node@26.1.0", name: "@types/node", content: `    MIT License
 
     Copyright (c) Microsoft Corporation.
 
@@ -1335,7 +1335,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE
 ` },
-  "undici-types@7.18.2": { id: "undici-types@7.18.2", name: "undici-types", content: `MIT License
+  "undici-types@8.3.0": { id: "undici-types@8.3.0", name: "undici-types", content: `MIT License
 
 Copyright (c) Matteo Collina and Undici contributors
 
@@ -15219,7 +15219,7 @@ IN THE SOFTWARE.
 
 ` },
   "react-devtools-core@6.1.5": { id: "react-devtools-core@6.1.5", name: "react-devtools-core", content: `undefined` },
-  "shell-quote@1.8.4": { id: "shell-quote@1.8.4", name: "shell-quote", content: `The MIT License
+  "shell-quote@1.9.0": { id: "shell-quote@1.9.0", name: "shell-quote", content: `The MIT License
 
 Copyright (c) 2013 James Halliday (mail@substack.net)
 
