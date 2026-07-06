@@ -31,7 +31,7 @@ export type EmojiPickerSheetRef = {
 };
 
 type Props = {
-  onReact?: (symbol: string, url?: string) => void;
+  onReact?: (symbol: string, url?: string, customReactionId?: string) => void;
   onEmojiSelected?: (emoji: EmojiItem) => void;
   includeCatalystReactions?: boolean;
 };
@@ -153,7 +153,7 @@ export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
           onReact?.(codepoints);
           recordUnicodeUsage(emoji.type.emoji).catch(() => {});
         } else if (emoji.type.kind === "url") {
-          onReact?.(emoji.id, emoji.type.url);
+          onReact?.(emoji.id, emoji.type.url, emoji.type.customReactionId);
           recordUrlUsage(emoji.id, emoji.type.url).catch(() => {});
         }
         bottomSheetRef.current?.dismiss();

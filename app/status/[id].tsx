@@ -8,6 +8,7 @@ import { MediaCarousel } from "@/components/ui/media-carousel";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { abs, rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
+import { getReactionKey } from "@/lib/reactions";
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
@@ -161,41 +162,56 @@ export default function StatusDetailsPage() {
   }, [id, account, client]);
 
   const handleReact = useCallback(
-    async (symbol: string, url?: string) => {
+    async (symbol: string, url?: string, customReactionId?: string) => {
       if (!account?.credential.client || !id) return;
+      const snapshot = reactions;
+      const key = getReactionKey(symbol, customReactionId);
+      setReactions((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          symbol,
+          url: url ?? prev[key]?.url,
+          customReactionId: customReactionId ?? prev[key]?.customReactionId,
+          count: (prev[key]?.count ?? 0) + 1,
+          hasSelfReaction: true,
+        },
+      }));
       try {
-        await account.credential.client.catalyst.react(id, symbol);
-        setReactions((prev) => ({
-          ...prev,
-          [symbol]: {
-            ...prev[symbol],
-            symbol,
-            url: url ?? prev[symbol]?.url,
-            count: (prev[symbol]?.count ?? 0) + 1,
-            hasSelfReaction: true,
-          },
-        }));
+        if (customReactionId) {
+          await account.credential.client.catalyst.reactWithCustomReaction(id, customReactionId);
+        } else {
+          await account.credential.client.catalyst.react(id, symbol);
+        }
       } catch {
+        setReactions(snapshot);
         Alert.alert("エラー", "リアクションに失敗しました");
       }
     },
-    [account, id],
+    [account, id, reactions],
   );
 
   const handleUnreact = useCallback(
-    async (symbol: string) => {
+    async (symbol: string, customReactionId?: string) => {
       if (!account?.credential.client || !id) return;
+      const snapshot = reactions;
+      const key = getReactionKey(symbol, customReactionId);
+      setReactions((prev) => ({
+        ...prev,
+        [key]: { ...prev[key], count: Math.max(0, (prev[key]?.count ?? 0) - 1), hasSelfReaction: false },
+      }));
       try {
-        await account.credential.client.catalyst.unreact(id, symbol);
-        setReactions((prev) => ({
-          ...prev,
-          [symbol]: { ...prev[symbol], count: (prev[symbol]?.count ?? 0) - 1, hasSelfReaction: false },
-        }));
+        if (customReactionId) {
+          await account.credential.client.catalyst.unreactWithCustomReaction(id, customReactionId);
+        } else {
+          await account.credential.client.catalyst.unreact(id, symbol);
+        }
       } catch {
+        setReactions(snapshot);
         Alert.alert("エラー", "リアクションの取り消しに失敗しました");
       }
     },
-    [account, id],
+    [account, id, reactions],
   );
 
   const handleDeleteStatus = useCallback(async () => {

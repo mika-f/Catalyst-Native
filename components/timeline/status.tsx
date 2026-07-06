@@ -6,6 +6,7 @@ import { MediaCarousel } from "@/components/ui/media-carousel";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
+import { getCustomReactionId, getReactionKey } from "@/lib/reactions";
 import { accountAtom } from "@/models/atoms/account";
 import { reactionCacheAtomFamily } from "@/models/atoms/reactions";
 import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy, CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
@@ -52,7 +53,11 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
     return Object.fromEntries(
       Object.entries(s.reactions ?? {}).map(([key, reaction]) => [
         key,
-        { ...reaction, hasSelfReaction: vr.includes(key) },
+        {
+          ...reaction,
+          customReactionId: getCustomReactionId(key, reaction),
+          hasSelfReaction: vr.includes(key),
+        },
       ]),
     );
   }, [status]);
@@ -65,22 +70,28 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
   const navigateToUser = () => user && router.push(`/user/${user.screenName}`);
 
   const handleReact = useCallback(
-    async (symbol: string, url?: string) => {
+    async (symbol: string, url?: string, customReactionId?: string) => {
       if (!account?.credential.client) return;
       const snapshot = cachedReactions ?? baseReactions;
+      const key = getReactionKey(symbol, customReactionId);
       const updated = {
         ...snapshot,
-        [symbol]: {
-          ...snapshot[symbol],
+        [key]: {
+          ...snapshot[key],
           symbol,
-          url: url ?? snapshot[symbol]?.url,
-          count: (snapshot[symbol]?.count ?? 0) + 1,
+          url: url ?? snapshot[key]?.url,
+          customReactionId: customReactionId ?? snapshot[key]?.customReactionId,
+          count: (snapshot[key]?.count ?? 0) + 1,
           hasSelfReaction: true,
         },
       };
       setCachedReactions(updated);
       try {
-        await account.credential.client.catalyst.react(status.id, symbol);
+        if (customReactionId) {
+          await account.credential.client.catalyst.reactWithCustomReaction(status.id, customReactionId);
+        } else {
+          await account.credential.client.catalyst.react(status.id, symbol);
+        }
       } catch {
         setCachedReactions(snapshot);
         Alert.alert("エラー", "リアクションに失敗しました");
@@ -90,16 +101,21 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
   );
 
   const handleUnreact = useCallback(
-    async (symbol: string) => {
+    async (symbol: string, customReactionId?: string) => {
       if (!account?.credential.client) return;
       const snapshot = cachedReactions ?? baseReactions;
+      const key = getReactionKey(symbol, customReactionId);
       const updated = {
         ...snapshot,
-        [symbol]: { ...snapshot[symbol], count: (snapshot[symbol]?.count ?? 0) - 1, hasSelfReaction: false },
+        [key]: { ...snapshot[key], count: Math.max(0, (snapshot[key]?.count ?? 0) - 1), hasSelfReaction: false },
       };
       setCachedReactions(updated);
       try {
-        await account.credential.client.catalyst.unreact(status.id, symbol);
+        if (customReactionId) {
+          await account.credential.client.catalyst.unreactWithCustomReaction(status.id, customReactionId);
+        } else {
+          await account.credential.client.catalyst.unreact(status.id, symbol);
+        }
       } catch {
         setCachedReactions(snapshot);
         Alert.alert("エラー", "リアクションの取り消しに失敗しました");
