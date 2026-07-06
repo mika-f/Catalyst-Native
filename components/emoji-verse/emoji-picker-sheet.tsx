@@ -71,7 +71,7 @@ export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
               : Promise.resolve([] as CatalystCustomReaction[]),
             account?.credential.client
               ? account.credential.client.catalyst
-                  .customUserReactions()
+                  .getCustomUserReactions()
                   .catch(() => null as CatalystCustomReactionList | null)
               : Promise.resolve(null as CatalystCustomReactionList | null),
           ]);

@@ -1,6 +1,6 @@
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
-import type { CatalystSmartAlbum } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbum, CatalystAlbumOrSmartAlbum } from "@natsuneko-laboratory/catalyst-sdk";
 import { useAtomValue } from "jotai";
 import { ArrowLeft, Check, Folder, Globe, Lock } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -37,7 +37,7 @@ export function AlbumSelectionModal({ visible, statusId, mode, onClose }: AlbumS
   const account = useAtomValue(accountAtom);
   const client = useAtomValue(clientAtom);
 
-  const [albums, setAlbums] = useState<CatalystSmartAlbum[]>([]);
+  const [albums, setAlbums] = useState<(CatalystAlbum | CatalystAlbumOrSmartAlbum)[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,12 +56,12 @@ export function AlbumSelectionModal({ visible, statusId, mode, onClose }: AlbumS
           mode === "add"
             ? await client.catalyst.listAlbums(account?.user!.screenName, false)
             : await client.catalyst.albumsInStatus(statusId);
-        setAlbums(res.albums);
+        setAlbums(res);
 
         const selected = new Set<string>();
 
         if (mode === "remove") {
-          for (const album of res.albums) {
+          for (const album of res) {
             selected.add(album.id);
           }
         }
@@ -86,14 +86,14 @@ export function AlbumSelectionModal({ visible, statusId, mode, onClose }: AlbumS
   const emptyMessage = mode === "add" ? "アルバムがありません" : "この投稿が含まれるアルバムはありません";
 
   const handleToggle = useCallback(
-    async (album: CatalystSmartAlbum) => {
+    async (album: CatalystAlbum | CatalystAlbumOrSmartAlbum) => {
       if (!account?.credential.client) return;
 
       const isSelected = selectedIds.has(album.id);
 
       try {
         if (isSelected) {
-          await account.credential.client.catalyst.removeFromAlbum(album.id, { remove: statusId });
+          await account.credential.client.catalyst.removeFromAlbum(album.id, statusId);
           setSelectedIds((prev) => {
             const next = new Set(prev);
             next.delete(album.id);
@@ -101,7 +101,7 @@ export function AlbumSelectionModal({ visible, statusId, mode, onClose }: AlbumS
           });
           Toast.show({ type: "success", text1: `「${album.name}」から削除しました` });
         } else {
-          await account.credential.client.catalyst.insertToAlbum(album.id, { insert: statusId });
+          await account.credential.client.catalyst.insertToAlbum(album.id, statusId);
           setSelectedIds((prev) => new Set(prev).add(album.id));
           Toast.show({ type: "success", text1: `「${album.name}」に追加しました` });
         }

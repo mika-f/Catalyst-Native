@@ -66,7 +66,7 @@ export default function GalleryScreen() {
     isLoadingRef.current = true;
     try {
       const result = await client.catalyst.galleryTimeline({});
-      setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+      setItems((prev) => merge(prev, result, sets, (item) => item.id));
     } finally {
       setIsLoading(false);
       isLoadingRef.current = false;
@@ -85,8 +85,8 @@ export default function GalleryScreen() {
         since: since || undefined,
       });
 
-      if (newItems.statuses.length > 0) {
-        setItems((prev) => merge(prev, newItems.statuses, sets, (item) => item.id));
+      if (newItems.length > 0) {
+        setItems((prev) => merge(prev, newItems, sets, (item) => item.id));
       }
     } finally {
       setIsRefreshing(false);
@@ -106,8 +106,8 @@ export default function GalleryScreen() {
       const result = await client.catalyst.galleryTimeline({
         until: lastItem.id,
       });
-      if (result.statuses.length > 0) {
-        setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+      if (result.length > 0) {
+        setItems((prev) => merge(prev, result, sets, (item) => item.id));
       }
     } finally {
       setIsLoading(false);

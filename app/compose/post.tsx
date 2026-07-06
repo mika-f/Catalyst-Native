@@ -80,7 +80,7 @@ export default function PostComposerScreen() {
 
       const result = await account.credential.client.catalyst.getContestBySlug(contestSlug);
       if (!ignore) {
-        setSelectedContest(result.contest);
+        setSelectedContest(result);
       }
     };
 

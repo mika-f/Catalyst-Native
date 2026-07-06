@@ -14,13 +14,12 @@ export default function SearchPage() {
         return [];
       }
 
-      const statuses = await client.catalyst.searchTimeline({
+      return await client.catalyst.searchTimeline({
         q: hashtag,
         exact: true,
         since: since ?? undefined,
         until: until ?? undefined,
       });
-      return statuses.statuses;
     },
     [client, hashtag],
   );

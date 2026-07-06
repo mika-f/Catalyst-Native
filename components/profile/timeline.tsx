@@ -89,7 +89,7 @@ export const UserTimeline = memo(
       isLoadingRef.current = true;
       try {
         const result = await client.catalyst.userTimeline(user.screenName, {});
-        setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+        setItems((prev) => merge(prev, result, sets, (item) => item.id));
       } finally {
         setIsLoading(false);
         isLoadingRef.current = false;
@@ -111,7 +111,7 @@ export const UserTimeline = memo(
           until: lastItem.id,
         });
 
-        setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+        setItems((prev) => merge(prev, result, sets, (item) => item.id));
       } finally {
         setIsLoading(false);
         isLoadingRef.current = false;

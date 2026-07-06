@@ -43,13 +43,11 @@ export default function HomeScreen() {
   const timeline = useCallback(
     async (since: string | null, until: string | null) => {
       return (
-        (
-          await client?.catalyst.searchTimeline({
-            q: query,
-            since: since ?? undefined,
-            until: until ?? undefined,
-          })
-        )?.statuses ?? []
+        (await client?.catalyst.searchTimeline({
+          q: query,
+          since: since ?? undefined,
+          until: until ?? undefined,
+        })) ?? []
       );
     },
     [client, query],

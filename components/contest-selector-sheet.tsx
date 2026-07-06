@@ -44,8 +44,8 @@ export const ContestSelectorSheet = ({ onSelect, ref }: Props) => {
 
   useAsyncEffect(async () => {
     if (client) {
-      const result = await client.catalyst.searchContest("opening", query || undefined);
-      setContests(result.contests);
+      const result = await client.catalyst.searchContests(query || undefined, "opening");
+      setContests(result);
     }
   }, [client, query]);
 

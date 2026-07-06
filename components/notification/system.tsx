@@ -48,7 +48,7 @@ export const SystemNotificationList = ({ ref }: Props) => {
         ...(since ? { since } : {}),
         ...(until ? { until } : {}),
       });
-      return result.notifications.filter((n) => n.title === REACTION_TITLE || n.title === FOLLOW_TITLE);
+      return result.filter((n) => n.title === REACTION_TITLE || n.title === FOLLOW_TITLE);
     },
     [client],
   );

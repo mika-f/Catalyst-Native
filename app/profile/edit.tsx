@@ -79,8 +79,8 @@ export default function ProfileEditScreen() {
 
   useAsyncEffect(async () => {
     if (!user) return;
-    const result = await client.catalyst.getProfileTagsByUser(user.id).catch(() => ({ tags: [] }));
-    setTags(result.tags);
+    const result = await client.catalyst.getProfileTagsByUser(user.id).catch(() => []);
+    setTags(result);
   }, [user?.id]);
 
   const validationErrors = useMemo(() => {
@@ -212,9 +212,9 @@ export default function ProfileEditScreen() {
     latestQueryRef.current = q;
     debounceRef.current = setTimeout(async () => {
       if (q !== latestQueryRef.current) return;
-      const result = await client.catalyst.profileTagSuggestions(q).catch(() => ({ tags: [] }));
+      const result = await client.catalyst.profileTagSuggestions(q).catch(() => []);
       if (q !== latestQueryRef.current) return;
-      setSuggestions(result.tags);
+      setSuggestions(result);
     }, 300);
   }, [client]);
 

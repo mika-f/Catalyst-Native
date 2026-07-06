@@ -84,7 +84,7 @@ export const UserMessageList = ({ ref }: Props) => {
         ...(since ? { since } : {}),
         ...(until ? { until } : {}),
       });
-      return result.notifications.filter((n) => n.title === MESSAGE_TITLE);
+      return result.filter((n) => n.title === MESSAGE_TITLE);
     },
     [client],
   );

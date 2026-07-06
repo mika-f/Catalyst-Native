@@ -29,9 +29,9 @@ export const ContestList = ({ states, query, ref }: Props) => {
   useAsyncEffect(async () => {
     if (client) {
       const results = await Promise.all(
-        states.map((state) => client.catalyst.searchContest(state, query || undefined)),
+        states.map((state) => client.catalyst.searchContests(query || undefined, state)),
       );
-      setContests(results.flatMap((r) => r.contests));
+      setContests(results.flat());
     }
   }, [client, states, query]);
 

@@ -56,11 +56,11 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
       setIsLoading(true);
 
       if (relationships?.isFollowing) {
-        await client.catalyst.remove({ userId: user.id });
+        await client.catalyst.remove(user.id);
       } else if (relationships?.isBlocking) {
-        await client.catalyst.unblock({ userId: user.id });
+        await client.catalyst.unblock(user.id);
       } else {
-        await client.catalyst.follow({ userId: user.id });
+        await client.catalyst.follow(user.id);
       }
 
       const rel = await client.catalyst.relationships(user.screenName);

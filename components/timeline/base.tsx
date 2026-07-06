@@ -1,6 +1,6 @@
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { merge } from "@/lib/merge";
-import { CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystStatus, CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import React, { useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, RefreshControl, StyleProp, View, ViewStyle } from "react-native";
@@ -19,14 +19,16 @@ const LoadingIndicator = () => {
 };
 
 type Props = {
-  fetcher: (since: string | null, until: string | null) => Promise<CatalystStatus[]>;
-  renderItem?: ListRenderItem<CatalystStatus>;
+  fetcher: (since: string | null, until: string | null) => Promise<TimelineStatusItem[]>;
+  renderItem?: ListRenderItem<TimelineStatusItem>;
   ListHeaderComponent?: React.ComponentType;
   ListEmptyComponent?: React.ComponentType;
   ListEmptyComponentStyle?: StyleProp<ViewStyle>;
   onRefresh?: () => void;
   ref?: React.Ref<TimelineHandle>;
 };
+
+export type TimelineStatusItem = CatalystStatus | CatalystStatusV1_1;
 
 export type TimelineHandle = {
   scrollToTop: () => void;
@@ -41,15 +43,15 @@ export const TimelineBase = ({
   onRefresh: onRefreshCallback,
   ref,
 }: Props) => {
-  const [items, setItems] = useState<CatalystStatus[]>([]);
+  const [items, setItems] = useState<TimelineStatusItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const listRef = useRef<FlashListRef<CatalystStatus>>(null);
+  const listRef = useRef<FlashListRef<TimelineStatusItem>>(null);
   const sets = useRef<Set<string>>(new Set());
   const hasMore = useRef(true);
   const isLoadingRef = useRef(false);
 
-  const defaultRender = useCallback<ListRenderItem<CatalystStatus>>(({ item }) => {
+  const defaultRender = useCallback<ListRenderItem<TimelineStatusItem>>(({ item }) => {
     return <TimelineStatus status={item} />;
   }, []);
 

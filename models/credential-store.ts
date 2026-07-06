@@ -15,8 +15,8 @@ export const EMPTY_CREDENTIAL = {
   accessToken: "",
   refreshToken: "",
   client: new CatalystTS({
-    clientId: API_KEY.clientId,
-    clientSecret: API_KEY.clientSecret,
+    clientId: API_KEY.clientId ?? "",
+    clientSecret: API_KEY.clientSecret ?? "",
     accessToken: "",
     refreshToken: "",
   }),
@@ -71,8 +71,8 @@ export const getCredential = async (): Promise<Credential> => {
     client = new CatalystTS({
       accessToken,
       refreshToken,
-      clientId: API_KEY.clientId,
-      clientSecret: API_KEY.clientSecret,
+      clientId: API_KEY.clientId ?? "",
+      clientSecret: API_KEY.clientSecret ?? "",
       interceptors: [refreshInterceptor],
     });
 

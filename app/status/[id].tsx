@@ -141,11 +141,11 @@ export default function StatusDetailsPage() {
           fetch(`https://api.natsuneko.com/epiclese/v1/tag/by/status/${id}`)
             .then((r) => r.json() as Promise<EpicleseMetadata>)
             .catch(() => ({})),
-          client.catalyst.reactions(id).catch(() => ({ reactions: {} })),
+          client.catalyst.reactions(id).catch(() => ({})),
         ]);
-        setStatus(statusRes.status);
+        setStatus(statusRes);
         setMetadata(metadataRes ?? {});
-        setReactions(reactionsRes.reactions ?? {});
+        setReactions(reactionsRes);
 
         if (account?.credential.client) {
           const [favRes] = await Promise.all([account.credential.client.catalyst.isFavorited(id).catch(() => false)]);
@@ -211,7 +211,7 @@ export default function StatusDetailsPage() {
     if (!account?.credential.client || !id || !editingCaption) return;
     setIsEditingSaving(true);
     try {
-      await account.credential.client.catalyst.editStatus(id, { description: editingCaption });
+      await account.credential.client.catalyst.editStatus(id, editingCaption);
       setStatus((prev) => (prev ? { ...prev, body: editingCaption } : prev));
       setIsEditSheetVisible(false);
     } catch {
@@ -621,4 +621,3 @@ export default function StatusDetailsPage() {
     </>
   );
 }
-

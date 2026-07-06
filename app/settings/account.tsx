@@ -34,7 +34,7 @@ export default function AccountSettingsPage() {
       await account.credential.client.egeria.update({
         screenName: trimmed,
         displayName: user.displayName,
-        profile: user.profile,
+        profile: user.profile ?? undefined,
       });
 
       const me = await account.credential.client.egeria.me();

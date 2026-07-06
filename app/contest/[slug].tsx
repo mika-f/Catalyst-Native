@@ -1,4 +1,4 @@
-import { TimelineBase } from "@/components/timeline/base";
+import { TimelineBase, type TimelineStatusItem } from "@/components/timeline/base";
 import { TimelineStatus } from "@/components/timeline/status";
 import { Markdown } from "@/components/ui/markdown";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
@@ -6,11 +6,7 @@ import { abs } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { clientAtom } from "@/models/atoms/credential";
-import type {
-  CatalystContest,
-  CatalystContestAward,
-  CatalystStatus,
-} from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest, CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -76,6 +72,12 @@ const InfoText = ({ value }: { value: string }) => (
 type WinnerStatus = CatalystStatus & {
   message?: string | null;
   commentary?: string | null;
+};
+
+type CatalystContestAward = {
+  id: string;
+  name: string;
+  winners: WinnerStatus[];
 };
 
 const AwardWinnerCard = ({ status }: { status: WinnerStatus }) => {
@@ -478,6 +480,7 @@ export default function ContestDetailPage() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [contest, setContest] = useState<CatalystContest | null>(null);
+  // TODO: SDK に getContestAwards と CatalystContestAward が再追加されたら、終了済みコンテストの受賞作品取得を復帰する。
   const [awards, setAwards] = useState<CatalystContestAward[]>([]);
   const [isNotFound, setIsNotFound] = useState(false);
   const [voteRights, setVoteRights] = useState<VoteRights | null>(null);
@@ -486,14 +489,9 @@ export default function ContestDetailPage() {
     if (!client || !slug) return;
     try {
       const res = await client.catalyst.getContestBySlug(slug);
-      setContest(res.contest);
+      setContest(res);
 
-      if (res.contest.state === "closed") {
-        const awardsRes = await client.catalyst.getContestAwards(slug);
-        setAwards(awardsRes.awards);
-      }
-
-      if (res.contest.state === "voting" && res.contest.voting?.isEnable) {
+      if (res.state === "voting" && res.voting?.isEnable) {
         try {
           const rights = await client.catalyst.getContestVotes(slug);
           setVoteRights(rights);
@@ -510,7 +508,7 @@ export default function ContestDetailPage() {
     async (statusId: string) => {
       if (!client || !slug) return;
       try {
-        await client.catalyst.addContestVoteToStatus(slug, statusId);
+        await client.catalyst.addContestVote(slug, statusId);
         setVoteRights((prev) =>
           prev
             ? {
@@ -530,7 +528,7 @@ export default function ContestDetailPage() {
     async (statusId: string) => {
       if (!client || !slug) return;
       try {
-        await client.catalyst.removeContestVoteFromStatus(slug, statusId);
+        await client.catalyst.removeContestVote(slug, statusId);
         setVoteRights((prev) =>
           prev
             ? {
@@ -550,18 +548,18 @@ export default function ContestDetailPage() {
     async (since: string | null, until: string | null) => {
       return (
         (
-          await client?.catalyst.contestTimeline(slug, {
+          await client?.catalyst.timelineByContestSlug(slug, {
             since: since ?? undefined,
             until: until ?? undefined,
           })
-        )?.statuses ?? []
+        ) ?? []
       );
     },
     [client, slug],
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: CatalystStatus }) => (
+    ({ item }: { item: TimelineStatusItem }) => (
       <View>
         <TimelineStatus status={item} />
         {voteRights && (

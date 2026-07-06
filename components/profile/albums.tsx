@@ -1,7 +1,7 @@
 import { AlbumCard } from "@/components/album/card";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystSmartAlbum, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystAlbumOrSmartAlbum, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
 import { FlashList, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { Images } from "lucide-react-native";
@@ -30,7 +30,7 @@ type Props = {
 
 export const UserAlbums = ({ user }: Props) => {
   const client = useAtomValue(clientAtom);
-  const [albums, setAlbums] = useState<CatalystSmartAlbum[]>([]);
+  const [albums, setAlbums] = useState<CatalystAlbumOrSmartAlbum[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchAlbums = useCallback(async () => {
@@ -39,7 +39,7 @@ export const UserAlbums = ({ user }: Props) => {
     setIsLoading(true);
     try {
       const res = await client.catalyst.listAlbums(user.screenName, true);
-      setAlbums(res.albums);
+      setAlbums(res);
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +47,7 @@ export const UserAlbums = ({ user }: Props) => {
 
   useAsyncOneTimeEffect(fetchAlbums);
 
-  const onRender = useCallback<ListRenderItem<CatalystSmartAlbum>>(({ item }) => {
+  const onRender = useCallback<ListRenderItem<CatalystAlbumOrSmartAlbum>>(({ item }) => {
     return <AlbumCard album={item} />;
   }, []);
 

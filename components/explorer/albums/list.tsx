@@ -1,7 +1,7 @@
 import { AlbumCard } from "@/components/album/card";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystSmartAlbum } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystAlbumOrSmartAlbum } from "@natsuneko-laboratory/catalyst-sdk";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
@@ -18,17 +18,17 @@ type Props = {
 
 export const AlbumList = ({ query, ref }: Props) => {
   const client = useAtomValue(clientAtom);
-  const [albums, setAlbums] = useState<CatalystSmartAlbum[]>([]);
-  const list = useRef<FlashListRef<CatalystSmartAlbum>>(null);
+  const [albums, setAlbums] = useState<CatalystAlbumOrSmartAlbum[]>([]);
+  const list = useRef<FlashListRef<CatalystAlbumOrSmartAlbum>>(null);
 
-  const onRender = useCallback<ListRenderItem<CatalystSmartAlbum>>(({ item }) => {
+  const onRender = useCallback<ListRenderItem<CatalystAlbumOrSmartAlbum>>(({ item }) => {
     return <AlbumCard album={item} />;
   }, []);
 
   useAsyncEffect(async () => {
     if (client) {
       const res = await client.catalyst.searchAlbums(query, true);
-      setAlbums(res.albums);
+      setAlbums(res);
     }
   }, [query]);
 

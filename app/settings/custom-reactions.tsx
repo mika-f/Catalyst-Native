@@ -1,7 +1,7 @@
 import { accountAtom } from "@/models/atoms/account";
 import type {
-  CatalystCustomReaction,
   CatalystCustomReactionList,
+  CatalystUserCustomReaction,
 } from "@natsuneko-laboratory/catalyst-sdk";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
@@ -61,7 +61,7 @@ export default function CustomReactionsSettingsPage() {
       return;
     }
     account.credential.client.catalyst
-      .customUserReactions()
+      .getCustomUserReactions()
       .then(setReactionList)
       .catch(() => {})
       .finally(() => setIsLoading(false));
@@ -108,7 +108,6 @@ export default function CustomReactionsSettingsPage() {
 
     setIsSubmitting(true);
     try {
-      const token = account.credential.client.accessToken;
       const form = new FormData();
       form.append("image", {
         uri: selectedImage.uri,
@@ -117,27 +116,9 @@ export default function CustomReactionsSettingsPage() {
       } as unknown as Blob);
       form.append("shortcode", shortcode.trim());
       form.append("displayName", displayName.trim());
+      form.append("visibility", "public");
 
-      const res = await fetch(
-        "https://api.natsuneko.com/catalyst/v1/custom-reactions",
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        },
-      );
-
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}));
-        Alert.alert(
-          "エラー",
-          (json as { message?: string }).message ??
-            "リアクションの追加に失敗しました",
-        );
-        return;
-      }
-
-      const created: CatalystCustomReaction = await res.json();
+      const created = await account.credential.client.catalyst.createCustomReaction(form);
       setReactionList((prev) =>
         prev
           ? { ...prev, used: prev.used + 1, items: [...prev.items, created] }
@@ -153,7 +134,7 @@ export default function CustomReactionsSettingsPage() {
   }, [account, selectedImage, shortcode, displayName, resetForm]);
 
   const handleDelete = useCallback(
-    (item: CatalystCustomReaction) => {
+    (item: CatalystUserCustomReaction) => {
       Alert.alert(
         "リアクションを削除しますか？",
         `「${item.displayName}」を削除します。この操作は取り消せません。`,

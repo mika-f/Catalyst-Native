@@ -58,9 +58,9 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
 
     const isBlocking = relationships.isBlocking;
     if (isBlocking) {
-      await client.catalyst.unblock({ userId: user.id });
+      await client.catalyst.unblock(user.id);
     } else {
-      await client.catalyst.block({ userId: user.id });
+      await client.catalyst.block(user.id);
     }
   }, [user, relationships, client]);
 

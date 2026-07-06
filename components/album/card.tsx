@@ -1,5 +1,5 @@
 import { getCdnUrl } from "@/lib/media";
-import type { CatalystSmartAlbum, Media } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumOrSmartAlbum, Media } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Globe, Images, Lock } from "lucide-react-native";
@@ -12,7 +12,7 @@ const UniImages = withUniwind(Images);
 const UniLock = withUniwind(Lock);
 
 type Props = {
-  album: CatalystSmartAlbum;
+  album: CatalystAlbumOrSmartAlbum;
 };
 
 export const AlbumCard = ({ album }: Props) => {

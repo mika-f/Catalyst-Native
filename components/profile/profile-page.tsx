@@ -110,9 +110,9 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
       account?.user.screenName === screenName ? account.user : null;
 
     if (accountUser) {
-      const { tags } = await client.catalyst
+      const tags = await client.catalyst
         .getProfileTagsByUser(accountUser.id)
-        .catch(() => ({ tags: [] }));
+        .catch(() => []);
 
       setInitialTags(tags);
       setUser(accountUser);
@@ -129,9 +129,9 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
       ]);
 
       if (userResult) {
-        const { tags } = await client.catalyst
+        const tags = await client.catalyst
           .getProfileTagsByUser(userResult.user.id)
-          .catch(() => ({ tags: [] }));
+          .catch(() => []);
 
         setUser(userResult.user);
         setInitialTags(tags);

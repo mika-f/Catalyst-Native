@@ -94,7 +94,7 @@ export const UserGallery = memo(
       isLoadingRef.current = true;
       try {
         const result = await client.catalyst.userGalleryTimeline(user.screenName, {});
-        setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+        setItems((prev) => merge(prev, result, sets, (item) => item.id));
       } finally {
         setIsLoading(false);
         isLoadingRef.current = false;
@@ -113,8 +113,8 @@ export const UserGallery = memo(
         const result = await client.catalyst.userGalleryTimeline(user.screenName, {
           until: lastItem.id,
         });
-        if (result.statuses.length > 0) {
-          setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+        if (result.length > 0) {
+          setItems((prev) => merge(prev, result, sets, (item) => item.id));
         }
       } finally {
         setIsLoading(false);

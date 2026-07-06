@@ -258,9 +258,9 @@ export const CurrentContestSpotlight = memo(() => {
         return;
       }
 
-      const results = await Promise.all(TARGET_STATES.map((state) => client.catalyst.searchContest(state)));
+      const results = await Promise.all(TARGET_STATES.map((state) => client.catalyst.searchContests(undefined, state)));
       if (!ignore) {
-        setContests(sortContests(results.flatMap((result) => result.contests)));
+        setContests(sortContests(results.flat()));
       }
     };
 

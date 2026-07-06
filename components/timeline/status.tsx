@@ -7,7 +7,7 @@ import { rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { accountAtom } from "@/models/atoms/account";
 import { reactionCacheAtomFamily } from "@/models/atoms/reactions";
-import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy, CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
@@ -17,7 +17,7 @@ import { withUniwind } from "uniwind";
 
 export type StatusRenderingMode = "twtr" | "plain";
 
-type StatusWithReactions = CatalystStatus & {
+type StatusWithReactions = Omit<CatalystStatus, "reactions"> & {
   reactions?: Record<string, CatalystReaction>;
   visitor?: {
     favorite?: boolean;
@@ -27,7 +27,7 @@ type StatusWithReactions = CatalystStatus & {
 };
 
 type Props = {
-  status: CatalystStatus;
+  status: CatalystStatus | CatalystStatusV1_1;
   renderingMode?: StatusRenderingMode;
 };
 

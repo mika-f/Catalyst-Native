@@ -83,7 +83,6 @@ export const FollowList = ({ screenName, type }: Props) => {
       ListEmptyComponent={renderEmpty}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.3}
-      estimatedItemSize={80}
     />
   );
 };

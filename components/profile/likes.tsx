@@ -2,7 +2,7 @@ import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { merge } from "@/lib/merge";
 import { cn } from "@/lib/utils";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
 import { useAtomValue } from "jotai";
 import { HeartOff, Lock } from "lucide-react-native";
 import React, { memo, useCallback, useImperativeHandle, useRef, useState } from "react";
@@ -41,7 +41,7 @@ const EmptyState = () => {
 export const UserLikes = memo(
   React.forwardRef<UserTimelineHandle>((_props, ref) => {
     const client = useAtomValue(clientAtom);
-    const [items, setItems] = useState<CatalystStatus[]>([]);
+    const [items, setItems] = useState<CatalystStatusV1_1[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasFetched, setHasFetched] = useState(false);
     const isLoadingRef = useRef(false);
@@ -52,7 +52,7 @@ export const UserLikes = memo(
       isLoadingRef.current = true;
       try {
         const result = await client.catalyst.favoriteTimeline({});
-        setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+        setItems((prev) => merge(prev, result, sets, (item) => item.id));
       } finally {
         setIsLoading(false);
         isLoadingRef.current = false;
@@ -73,8 +73,8 @@ export const UserLikes = memo(
           until: lastItem.id,
         });
 
-        if (result.statuses.length > 0) {
-          setItems((prev) => merge(prev, result.statuses, sets, (item) => item.id));
+        if (result.length > 0) {
+          setItems((prev) => merge(prev, result, sets, (item) => item.id));
         }
       } finally {
         setIsLoading(false);

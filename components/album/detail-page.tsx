@@ -448,9 +448,9 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
           setAlbumInfo({
             title: album.name,
             description: album.description,
-            user: album.user,
-            since: album.since,
-            until: album.until,
+            user: album.user ?? undefined,
+            since: album.since ?? undefined,
+            until: album.until ?? undefined,
             mode: album.mode,
           });
         }
