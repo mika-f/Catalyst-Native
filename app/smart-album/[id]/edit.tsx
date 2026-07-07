@@ -5,7 +5,7 @@ import {
   type SmartAlbumCondition,
 } from "@/components/smart-album/form";
 import { accountAtom } from "@/models/atoms/account";
-import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -36,7 +36,10 @@ export default function SmartAlbumEditScreen() {
 
     const fetchAlbum = async () => {
       try {
-        const album = await account.credential.client.catalyst.getSmartAlbum(id);
+        const { data: album } = await account.credential.client.catalyst.v1.smartAlbum.by.id.id.get({
+          path: { id },
+          throwOnError: true,
+        });
         setTitle(album.name);
         setDescription(album.description);
         setConditions(hashtagsToConditions(album.hashtags));
@@ -67,16 +70,20 @@ export default function SmartAlbumEditScreen() {
     setIsSubmitting(true);
 
     try {
-      await account.credential.client.catalyst.editSmartAlbum(id, {
-        title: title.trim(),
-        description: description.trim(),
-        hashtags: conditions.map(conditionToHashtag),
-        since: since ?? undefined,
-        until: until ?? undefined,
-        isAllowNsfw,
-        isAllowOthers,
-        isPublic,
-        mode: displayMode,
+      await account.credential.client.catalyst.v1.smartAlbum.by.id.id.patch({
+        path: { id },
+        body: {
+          title: title.trim(),
+          description: description.trim(),
+          hashtags: conditions.map(conditionToHashtag),
+          since: since ?? undefined,
+          until: until ?? undefined,
+          isAllowNsfw,
+          isAllowOthers,
+          isPublic,
+          mode: displayMode,
+        },
+        throwOnError: true,
       });
 
       Toast.show({ type: "success", text1: "スマートアルバムを更新しました" });
@@ -115,7 +122,10 @@ export default function SmartAlbumEditScreen() {
           setIsSubmitting(true);
 
           try {
-            await account.credential.client.catalyst.deleteSmartAlbum(id);
+            await account.credential.client.catalyst.v1.smartAlbum.by.id.id.delete({
+              path: { id },
+              throwOnError: true,
+            });
             Toast.show({ type: "success", text1: "スマートアルバムを削除しました" });
             router.dismiss(2);
           } catch (error) {

@@ -5,7 +5,7 @@ import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
-import { CatalystRelationships, EgeriaUser, ProfileTag } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystRelationships, EgeriaUser, ProfileTag } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -57,14 +57,17 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
       setIsLoading(true);
 
       if (relationships?.isFollowing) {
-        await client.catalyst.remove(user.id);
+        await client.catalyst.v1.relationships.delete({ body: { userId: user.id }, throwOnError: true });
       } else if (relationships?.isBlocking) {
-        await client.catalyst.unblock(user.id);
+        await client.catalyst.v1.blocks.delete({ body: { userId: user.id }, throwOnError: true });
       } else {
-        await client.catalyst.follow(user.id);
+        await client.catalyst.v1.relationships.create({ body: { userId: user.id }, throwOnError: true });
       }
 
-      const rel = await client.catalyst.relationships(user.screenName);
+      const { data: rel } = await client.catalyst.v1.relationships.id.get({
+        path: { id: user.screenName },
+        throwOnError: true,
+      });
       onUpdateRelationships?.(rel);
     } finally {
       setIsLoading(false);
@@ -81,7 +84,10 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
 
   useAsyncEffect(async () => {
     if (user) {
-      const c = await client.catalyst.relationshipCounts(user.screenName);
+      const { data: c } = await client.catalyst.v1.relationships.by.username.username.counts.get({
+        path: { username: user.screenName },
+        throwOnError: true,
+      });
       setCounts(c);
     }
   }, [user]);

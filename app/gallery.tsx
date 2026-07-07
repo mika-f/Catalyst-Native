@@ -2,7 +2,7 @@ import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { getCdnUrl } from "@/lib/media";
 import { merge } from "@/lib/merge";
 import { clientAtom } from "@/models/atoms/credential";
-import type { CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystStatus } from "@/models/sdk-types";
 import { FlashList } from "@shopify/flash-list";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -65,8 +65,11 @@ export default function GalleryScreen() {
     setIsLoading(true);
     isLoadingRef.current = true;
     try {
-      const result = await client.catalyst.galleryTimeline({});
-      setItems((prev) => merge(prev, result, sets, (item) => item.id));
+      const { data } = await client.catalyst.v1.timeline.gallery.get({
+        query: {},
+        throwOnError: true,
+      });
+      setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
     } finally {
       setIsLoading(false);
       isLoadingRef.current = false;
@@ -81,9 +84,11 @@ export default function GalleryScreen() {
 
     try {
       const since = items.length > 0 ? items[0].id : null;
-      const newItems = await client.catalyst.galleryTimeline({
-        since: since || undefined,
+      const { data } = await client.catalyst.v1.timeline.gallery.get({
+        query: { since: since || undefined },
+        throwOnError: true,
       });
+      const newItems = data.statuses;
 
       if (newItems.length > 0) {
         setItems((prev) => merge(prev, newItems, sets, (item) => item.id));
@@ -103,9 +108,11 @@ export default function GalleryScreen() {
     setIsLoading(true);
     isLoadingRef.current = true;
     try {
-      const result = await client.catalyst.galleryTimeline({
-        until: lastItem.id,
+      const { data } = await client.catalyst.v1.timeline.gallery.get({
+        query: { until: lastItem.id },
+        throwOnError: true,
       });
+      const result = data.statuses;
       if (result.length > 0) {
         setItems((prev) => merge(prev, result, sets, (item) => item.id));
       }

@@ -20,10 +20,12 @@ export const FollowingTimeline = ({ ref }: Props) => {
   const fetcher = useCallback(
     async (since: string | null, until: string | null) => {
       return (
-        (await client?.catalyst.homeTimeline({
-          since: since ?? undefined,
-          until: until ?? undefined,
-        })) ?? []
+        (
+          await client?.catalyst.v11.timeline.home.get({
+            query: { since: since ?? undefined, until: until ?? undefined },
+            throwOnError: true,
+          })
+        )?.data ?? []
       );
     },
     [client],

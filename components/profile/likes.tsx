@@ -2,7 +2,7 @@ import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { merge } from "@/lib/merge";
 import { cn } from "@/lib/utils";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystStatusV1_1 } from "@/models/sdk-types";
 import { useAtomValue } from "jotai";
 import { HeartOff, Lock } from "lucide-react-native";
 import React, { memo, useCallback, useImperativeHandle, useRef, useState } from "react";
@@ -51,8 +51,8 @@ export const UserLikes = memo(
       setIsLoading(true);
       isLoadingRef.current = true;
       try {
-        const result = await client.catalyst.favoriteTimeline({});
-        setItems((prev) => merge(prev, result, sets, (item) => item.id));
+        const { data } = await client.catalyst.v1.timeline.favorite.get({ query: {}, throwOnError: true });
+        setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
       } finally {
         setIsLoading(false);
         isLoadingRef.current = false;
@@ -69,12 +69,13 @@ export const UserLikes = memo(
       setIsLoading(true);
       isLoadingRef.current = true;
       try {
-        const result = await client.catalyst.favoriteTimeline({
-          until: lastItem.id,
+        const { data } = await client.catalyst.v1.timeline.favorite.get({
+          query: { until: lastItem.id },
+          throwOnError: true,
         });
 
-        if (result.length > 0) {
-          setItems((prev) => merge(prev, result, sets, (item) => item.id));
+        if (data.statuses.length > 0) {
+          setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
         }
       } finally {
         setIsLoading(false);

@@ -1,5 +1,5 @@
 import { getCdnUrl, getIdenticonUrl } from "@/lib/media";
-import { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import type { EgeriaUser } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { Plus } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";

@@ -1,7 +1,7 @@
 import { ContestCard } from "@/components/contest/card";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { clientAtom } from "@/models/atoms/credential";
-import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest } from "@/models/sdk-types";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
@@ -29,9 +29,17 @@ export const ContestList = ({ states, query, ref }: Props) => {
   useAsyncEffect(async () => {
     if (client) {
       const results = await Promise.all(
-        states.map((state) => client.catalyst.searchContests(query || undefined, state)),
+        states.map((state) =>
+          client.catalyst.v1.contest.search.get({
+            query: {
+              q: query || undefined,
+              state: state as "draft" | "published" | "opening" | "closing" | "voting" | "electing" | "closed",
+            },
+            throwOnError: true,
+          }),
+        ),
       );
-      setContests(results.flat());
+      setContests(results.flatMap((result) => result.data.contests));
     }
   }, [client, states, query]);
 

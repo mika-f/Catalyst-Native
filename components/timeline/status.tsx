@@ -15,7 +15,7 @@ import {
   type ReactionStreamingEvent,
   useStreamingReactions,
 } from "@/models/streaming";
-import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy, CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy, CatalystStatusV1_1 } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
@@ -115,9 +115,15 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
       );
       try {
         if (customReactionId) {
-          await account.credential.client.catalyst.reactWithCustomReaction(status.id, customReactionId);
+          await account.credential.client.catalyst.v1.status.id.reactions.custom.customReactionId.create({
+            path: { id: status.id, customReactionId },
+            throwOnError: true,
+          });
         } else {
-          await account.credential.client.catalyst.react(status.id, symbol);
+          await account.credential.client.catalyst.v1.status.id.reactions.symbol.create({
+            path: { id: status.id, symbol },
+            throwOnError: true,
+          });
         }
       } catch {
         rollbackLocalMutation();
@@ -146,9 +152,15 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
       );
       try {
         if (customReactionId) {
-          await account.credential.client.catalyst.unreactWithCustomReaction(status.id, customReactionId);
+          await account.credential.client.catalyst.v1.status.id.reactions.custom.customReactionId.delete({
+            path: { id: status.id, customReactionId },
+            throwOnError: true,
+          });
         } else {
-          await account.credential.client.catalyst.unreact(status.id, symbol);
+          await account.credential.client.catalyst.v1.status.id.reactions.symbol.delete({
+            path: { id: status.id, symbol },
+            throwOnError: true,
+          });
         }
       } catch {
         rollbackLocalMutation();

@@ -1,4 +1,4 @@
-import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import React from "react";
 import { Platform, Pressable, ScrollView, Switch, Text, TextInput, View, useColorScheme } from "react-native";
 

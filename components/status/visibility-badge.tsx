@@ -1,4 +1,4 @@
-import type { CatalystStatusPrivacy } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystStatusPrivacy } from "@/models/sdk-types";
 import { Lock, Users, VolumeX } from "lucide-react-native";
 import { Text, View } from "react-native";
 import { withUniwind } from "uniwind";

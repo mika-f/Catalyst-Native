@@ -1,6 +1,6 @@
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { clientAtom } from "@/models/atoms/credential";
-import { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import type { EgeriaUser } from "@/models/sdk-types";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
@@ -27,8 +27,8 @@ export const UserList = ({ query, ref }: Props) => {
 
   useAsyncEffect(async () => {
     if (client) {
-      const res = await client.egeria.search(query);
-      setUsers(res.users);
+      const { data } = await client.egeria.v1.search.get({ query: { q: query }, throwOnError: true });
+      setUsers(data.users as EgeriaUser[]);
     }
   }, [query]);
 

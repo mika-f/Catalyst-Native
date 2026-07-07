@@ -1,6 +1,6 @@
 import { conditionToHashtag, SmartAlbumForm, type SmartAlbumCondition } from "@/components/smart-album/form";
 import { accountAtom } from "@/models/atoms/account";
-import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import { Stack, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { useCallback, useMemo, useState } from "react";
@@ -35,16 +35,19 @@ export default function SmartAlbumComposerScreen() {
 
     try {
       const client = account.credential.client;
-      const result = await client.catalyst.createSmartAlbum({
-        title: title.trim(),
-        description: description.trim(),
-        hashtags: conditions.map(conditionToHashtag),
-        since: since ?? undefined,
-        until: until ?? undefined,
-        isAllowNsfw,
-        isAllowOthers,
-        isPublic,
-        mode: displayMode,
+      const { data: result } = await client.catalyst.v1.smartAlbum.create({
+        body: {
+          title: title.trim(),
+          description: description.trim(),
+          hashtags: conditions.map(conditionToHashtag),
+          since: since ?? undefined,
+          until: until ?? undefined,
+          isAllowNsfw,
+          isAllowOthers,
+          isPublic,
+          mode: displayMode,
+        },
+        throwOnError: true,
       });
 
       Toast.show({ type: "success", text1: "スマートアルバムを作成しました" });

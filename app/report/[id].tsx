@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
-import type { ReportRequest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { ReportRequest } from "@/models/sdk-types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { Check } from "lucide-react-native";
@@ -38,9 +38,13 @@ export default function ReportStatusPage() {
     if (!account?.credential.client || !id || !reportType) return;
     setIsSubmitting(true);
     try {
-      await account.credential.client.catalyst.reportStatus(id, {
-        reason: reportType,
-        description: reportDescription.trim() || undefined,
+      await account.credential.client.catalyst.v1.status.id.report.create({
+        path: { id },
+        body: {
+          reason: reportType,
+          description: reportDescription.trim() || undefined,
+        },
+        throwOnError: true,
       });
       router.back();
       Alert.alert("報告を送信しました", "ご報告ありがとうございます。内容は24時間以内に確認されます。");

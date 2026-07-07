@@ -34,7 +34,7 @@
     "@gorhom/bottom-sheet": "^5.2.14",
     "@likashefqet/react-native-image-zoom": "^4.3.0",
     "@luccasr73/with-rn-image-crop-picker": "^0.1.5",
-    "@natsuneko-laboratory/catalyst-sdk": "^1.0.0-alpha.3",
+    "@natsuneko-laboratory/catalyst-sdk": "^1.0.0-alpha.6",
     "@natsuneko-laboratory/react-native-twitter-text": "^0.1.0",
     "@react-native-async-storage/async-storage": "3.0.1",
     "@react-native-async-storage/expo-with-async-storage": "^1.0.0",

@@ -4,7 +4,7 @@ import {
   BottomSheetScrollView,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { Plus, X } from "lucide-react-native";

@@ -13,7 +13,7 @@ import type {
   ProfileEmojiRequest,
   ProfileTag,
   ProfileTagSuggestion,
-} from "@natsuneko-laboratory/catalyst-sdk";
+} from "@/models/sdk-types";
 import * as FileSystem from "expo-file-system";
 import { Image as ExpoImage } from "expo-image";
 import { Stack, useRouter } from "expo-router";
@@ -91,7 +91,10 @@ export default function ProfileEditScreen() {
 
   useAsyncEffect(async () => {
     if (!user) return;
-    const result = await client.catalyst.getProfileTagsByUser(user.id).catch(() => []);
+    const result = await client.catalyst.v1.profileTags.by.user.id
+      .get({ path: { id: user.id }, throwOnError: true })
+      .then((r) => r.data.tags)
+      .catch(() => []);
     setTags(result);
   }, [user?.id]);
 
@@ -114,7 +117,7 @@ export default function ProfileEditScreen() {
     async (img: Image): Promise<string | null> => {
       const file = new FileSystem.File(img.path);
       const ab = await file.arrayBuffer();
-      const uploadUrls = await client.media.upload();
+      const { data: uploadUrls } = await client.media.v2.upload.create({ throwOnError: true });
       const uploadResponse = await fetch(uploadUrls.signedUrl, {
         method: "PUT",
         body: ab,
@@ -139,12 +142,15 @@ export default function ProfileEditScreen() {
         const uploaded = await uploadImage(img);
         if (!uploaded) return;
 
-        await client.egeria.update({
-          displayName: account.user.displayName,
-          profile: { [field]: uploaded } as unknown as EgeriaUserProfile,
+        await client.egeria.v1.me.patch({
+          body: {
+            displayName: account.user.displayName,
+            profile: { [field]: uploaded } as unknown as EgeriaUserProfile,
+          },
+          throwOnError: true,
         });
 
-        const me = await client.egeria.me();
+        const { data: me } = await client.egeria.v1.me.get({ throwOnError: true });
         if (me?.user) {
           setAccount((w) => ({ ...w!, user: me.user }));
         }
@@ -224,7 +230,10 @@ export default function ProfileEditScreen() {
     latestQueryRef.current = q;
     debounceRef.current = setTimeout(async () => {
       if (q !== latestQueryRef.current) return;
-      const result = await client.catalyst.profileTagSuggestions(q).catch(() => []);
+      const result = await client.catalyst.v1.profileTags.suggestions
+        .get({ query: { q }, throwOnError: true })
+        .then((r) => r.data.tags)
+        .catch(() => []);
       if (q !== latestQueryRef.current) return;
       setSuggestions(result);
     }, 300);
@@ -287,7 +296,10 @@ export default function ProfileEditScreen() {
   const handleSaveTags = useCallback(async () => {
     setIsSavingTags(true);
     try {
-      await client.catalyst.updateProfileTags({ tags: tags.map((t) => t.name) });
+      await client.catalyst.v1.profileTags.update({
+        body: { tags: tags.map((t) => t.name) },
+        throwOnError: true,
+      });
       Toast.show({ type: "success", text1: "保存しました", text2: "ハッシュタグを保存しました" });
     } catch {
       Toast.show({ type: "error", text1: "エラー", text2: "ハッシュタグの保存に失敗しました" });
@@ -304,17 +316,20 @@ export default function ProfileEditScreen() {
     try {
       const filteredWebsites = additionalWebsites.filter((w) => !!w.trim());
 
-      await client.egeria.update({
-        displayName: displayName.trim(),
-        profile: {
-          bio,
-          website: website.trim(),
-          additionalWebsites: filteredWebsites,
-        } as EgeriaUserProfile,
-        ...(profileEmojiRequest !== undefined ? { profileEmoji: profileEmojiRequest } : {}),
+      await client.egeria.v1.me.patch({
+        body: {
+          displayName: displayName.trim(),
+          profile: {
+            bio,
+            website: website.trim(),
+            additionalWebsites: filteredWebsites,
+          } as EgeriaUserProfile,
+          ...(profileEmojiRequest !== undefined ? { profileEmoji: profileEmojiRequest } : {}),
+        },
+        throwOnError: true,
       });
 
-      const me = await client.egeria.me();
+      const { data: me } = await client.egeria.v1.me.get({ throwOnError: true });
       if (me?.user) {
         setAccount({ user: me.user, credential: account.credential });
       }

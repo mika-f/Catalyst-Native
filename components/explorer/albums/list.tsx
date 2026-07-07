@@ -1,7 +1,7 @@
 import { AlbumCard } from "@/components/album/card";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystAlbumOrSmartAlbum } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumOrSmartAlbum } from "@/models/sdk-types";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
@@ -27,8 +27,11 @@ export const AlbumList = ({ query, ref }: Props) => {
 
   useAsyncEffect(async () => {
     if (client) {
-      const res = await client.catalyst.searchAlbums(query, true);
-      setAlbums(res);
+      const { data } = await client.catalyst.v1.album.search.get({
+        query: { q: query, include_smart_album: true },
+        throwOnError: true,
+      });
+      setAlbums(data.albums);
     }
   }, [query]);
 

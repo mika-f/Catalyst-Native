@@ -1,4 +1,4 @@
-import { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { EgeriaUser } from "@/models/sdk-types";
 import React from "react";
 import { UserAlbums } from "./albums";
 import { UserGallery } from "./gallery";

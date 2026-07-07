@@ -2,7 +2,7 @@ import { accountAtom } from "@/models/atoms/account";
 import type {
   CatalystCustomReactionList,
   CatalystUserCustomReaction,
-} from "@natsuneko-laboratory/catalyst-sdk";
+} from "@/models/sdk-types";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { useAtomValue } from "jotai";
@@ -60,9 +60,9 @@ export default function CustomReactionsSettingsPage() {
       setIsLoading(false);
       return;
     }
-    account.credential.client.catalyst
-      .getCustomUserReactions()
-      .then(setReactionList)
+    account.credential.client.catalyst.v1.customReactions
+      .get({ throwOnError: true })
+      .then(({ data }) => setReactionList(data))
       .catch(() => {})
       .finally(() => setIsLoading(false));
   }, [account]);
@@ -108,17 +108,19 @@ export default function CustomReactionsSettingsPage() {
 
     setIsSubmitting(true);
     try {
-      const form = new FormData();
-      form.append("image", {
-        uri: selectedImage.uri,
-        name: selectedImage.fileName,
-        type: selectedImage.mimeType,
-      } as unknown as Blob);
-      form.append("shortcode", shortcode.trim());
-      form.append("displayName", displayName.trim());
-      form.append("visibility", "public");
-
-      const created = await account.credential.client.catalyst.createCustomReaction(form);
+      const { data: created } = await account.credential.client.catalyst.v1.customReactions.create({
+        body: {
+          image: {
+            uri: selectedImage.uri,
+            name: selectedImage.fileName,
+            type: selectedImage.mimeType,
+          } as unknown as Blob,
+          shortcode: shortcode.trim(),
+          displayName: displayName.trim(),
+          visibility: "public",
+        },
+        throwOnError: true,
+      });
       setReactionList((prev) =>
         prev
           ? { ...prev, used: prev.used + 1, items: [...prev.items, created] }
@@ -145,9 +147,10 @@ export default function CustomReactionsSettingsPage() {
             style: "destructive",
             onPress: async () => {
               try {
-                await account?.credential.client.catalyst.deleteCustomReaction(
-                  item.id,
-                );
+                await account?.credential.client.catalyst.v1.customReactions.id.delete({
+                  path: { id: item.id },
+                  throwOnError: true,
+                });
                 setReactionList((prev) =>
                   prev
                     ? {

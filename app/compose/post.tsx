@@ -1,6 +1,6 @@
 import { accountAtom } from "@/models/atoms/account";
 import { ContestSelectorSheet, type ContestSelectorSheetRef } from "@/components/contest-selector-sheet";
-import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest } from "@/models/sdk-types";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -78,9 +78,12 @@ export default function PostComposerScreen() {
     const restoreContest = async () => {
       if (!account || !contestSlug || selectedContest?.slug === contestSlug) return;
 
-      const result = await account.credential.client.catalyst.getContestBySlug(contestSlug);
+      const { data } = await account.credential.client.catalyst.v1.contest.by.slug.slug.get({
+        path: { slug: contestSlug },
+        throwOnError: true,
+      });
       if (!ignore) {
-        setSelectedContest(result);
+        setSelectedContest(data.contest);
       }
     };
 
@@ -126,7 +129,7 @@ export default function PostComposerScreen() {
       const mediaList: { url: string; alt: string; width: number; height: number; bytes: number }[] = [];
 
       for (const image of images) {
-        const uploadUrls = await client.media.upload();
+        const { data: uploadUrls } = await client.media.v2.upload.create({ throwOnError: true });
         const file = new FileSystem.File(image.uri);
         const ab = await file.arrayBuffer();
 
@@ -145,17 +148,20 @@ export default function PostComposerScreen() {
         });
       }
 
-      const result = await client.catalyst.createStatus({
-        description: text.trim(),
-        isNsfw,
-        isSpoiler,
-        isSubmitToContest: selectedContest !== null,
-        isHidingLikeAndViewCount: false,
-        isPrivateMetadata,
-        isAllowComments: true,
-        privacy,
-        contestId: selectedContest?.slug,
-        media: mediaList,
+      const { data: result } = await client.catalyst.v1.status.create({
+        body: {
+          description: text.trim(),
+          isNsfw,
+          isSpoiler,
+          isSubmitToContest: selectedContest !== null,
+          isHidingLikeAndViewCount: false,
+          isPrivateMetadata,
+          isAllowComments: true,
+          privacy,
+          contestId: selectedContest?.slug,
+          media: mediaList,
+        },
+        throwOnError: true,
       });
 
       router.dismiss();

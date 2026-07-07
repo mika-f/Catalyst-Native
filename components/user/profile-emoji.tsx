@@ -1,4 +1,4 @@
-import type { ProfileEmoji as ProfileEmojiType } from "@natsuneko-laboratory/catalyst-sdk";
+import type { ProfileEmoji as ProfileEmojiType } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { Text } from "react-native";
 import { withUniwind } from "uniwind";

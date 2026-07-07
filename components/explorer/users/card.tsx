@@ -1,6 +1,6 @@
 import { getCdnUrl } from "@/lib/media";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
-import { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import type { EgeriaUser } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";

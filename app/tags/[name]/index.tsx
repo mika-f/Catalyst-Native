@@ -1,7 +1,7 @@
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { getCdnUrl } from "@/lib/media";
 import { clientAtom } from "@/models/atoms/credential";
-import type { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import type { EgeriaUser } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -96,10 +96,11 @@ export default function ProfileTagPage() {
   const fetchPage = useCallback(
     async (nextCursor: string | null) => {
       try {
-        const raw = await client.catalyst.getUsersByProfileTag(
-          encodeURIComponent(tagName),
-          nextCursor ?? undefined,
-        );
+        const { data: raw } = await client.catalyst.v1.profileTags.by.name.name.users.get({
+          path: { name: encodeURIComponent(tagName) },
+          query: { cursor: nextCursor ?? "" },
+          throwOnError: true,
+        });
         const data = raw as unknown as TagUserResponse;
 
         setMeta(data.tag);

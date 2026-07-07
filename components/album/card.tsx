@@ -1,5 +1,5 @@
 import { getCdnUrl } from "@/lib/media";
-import type { CatalystAlbumOrSmartAlbum, Media } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumOrSmartAlbum, Media } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Globe, Images, Lock } from "lucide-react-native";

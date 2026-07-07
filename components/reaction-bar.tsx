@@ -1,7 +1,7 @@
 import { emojis } from "@/lib/emojis";
 import { getCustomReactionId } from "@/lib/reactions";
 import { cn } from "@/lib/utils";
-import type { CatalystReaction } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { Plus } from "lucide-react-native";
 import React from "react";

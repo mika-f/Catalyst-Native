@@ -1,6 +1,6 @@
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
-import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest } from "@/models/sdk-types";
 import dayjs from "dayjs";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";

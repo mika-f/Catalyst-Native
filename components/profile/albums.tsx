@@ -1,7 +1,7 @@
 import { AlbumCard } from "@/components/album/card";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystAlbumOrSmartAlbum, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystAlbumOrSmartAlbum, EgeriaUser } from "@/models/sdk-types";
 import { FlashList, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { Images } from "lucide-react-native";
@@ -38,8 +38,12 @@ export const UserAlbums = ({ user }: Props) => {
 
     setIsLoading(true);
     try {
-      const res = await client.catalyst.listAlbums(user.screenName, true);
-      setAlbums(res);
+      const { data } = await client.catalyst.v1.album.by.user.username.get({
+        path: { username: user.screenName },
+        query: { include_smart_albums: true },
+        throwOnError: true,
+      });
+      setAlbums(data.albums);
     } finally {
       setIsLoading(false);
     }

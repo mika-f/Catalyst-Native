@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystStatus, CatalystStatusV1_1 } from "@/models/sdk-types";
 import { useAtomValue } from "jotai";
 import { Heart } from "lucide-react-native";
 import { useCallback, useState } from "react";
@@ -13,7 +13,7 @@ const UniHeart = withUniwind(Heart);
 
 type Props = {
   isDefaultFavorited: boolean;
-  status: CatalystStatus;
+  status: CatalystStatus | CatalystStatusV1_1;
 };
 
 export const ActionBar = ({ isDefaultFavorited, status }: Props) => {
@@ -29,10 +29,10 @@ export const ActionBar = ({ isDefaultFavorited, status }: Props) => {
 
     try {
       if (isFavorited) {
-        await client.catalyst.unfavorite(status.id);
+        await client.catalyst.v1.status.id.favorite.delete({ path: { id: status.id }, throwOnError: true });
         setIsFavorited(false);
       } else {
-        await client.catalyst.favorite(status.id);
+        await client.catalyst.v1.status.id.favorite.create({ path: { id: status.id }, throwOnError: true });
         setIsFavorited(true);
       }
     } catch (e) {
