@@ -1,3 +1,12 @@
+import {
+  CatalystButton,
+  CatalystButtonText,
+  CatalystDivider,
+  CatalystEmptyState,
+  CatalystListItem,
+  CatalystListItemContent,
+  CatalystText,
+} from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import type {
   CatalystCustomReactionList,
@@ -11,10 +20,8 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
-  Text,
   TextInput,
   View,
 } from "react-native";
@@ -44,7 +51,7 @@ export default function CustomReactionsSettingsPage() {
   const account = useAtomValue(accountAtom);
   const [reactionList, setReactionList] =
     useState<CatalystCustomReactionList | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !!account);
   const [showAddModal, setShowAddModal] = useState(false);
 
   // フォーム状態
@@ -57,14 +64,27 @@ export default function CustomReactionsSettingsPage() {
 
   useEffect(() => {
     if (!account) {
-      setIsLoading(false);
       return;
     }
+    let isActive = true;
+
     account.credential.client.catalyst
       .getCustomUserReactions()
-      .then(setReactionList)
+      .then((list) => {
+        if (isActive) {
+          setReactionList(list);
+        }
+      })
       .catch(() => {})
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, [account]);
 
   const resetForm = useCallback(() => {
@@ -181,17 +201,15 @@ export default function CustomReactionsSettingsPage() {
 
   if (!account) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="text-light-text-muted dark:text-dark-text-muted">
-          ログインが必要です
-        </Text>
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+        <CatalystEmptyState title="ログインが必要です" description="ログインするとカスタムリアクションを管理できます。" />
       </View>
     );
   }
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center bg-light-surface-muted dark:bg-dark-background">
         <ActivityIndicator />
       </View>
     );
@@ -199,100 +217,86 @@ export default function CustomReactionsSettingsPage() {
 
   return (
     <>
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1 bg-light-surface-muted dark:bg-dark-background" contentContainerClassName="pb-8">
         {/* プラン情報 */}
-        <View className="mt-4 mx-4">
-          <View className="rounded-xl bg-light-surface dark:bg-dark-surface px-4 py-3 gap-1">
+        <View className="pt-2">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            プラン
+          </CatalystText>
+          <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
             <View className="flex-row justify-between">
-              <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
+              <CatalystText tone="muted">
                 プラン
-              </Text>
-              <Text className="text-sm text-light-text dark:text-dark-text font-medium">
+              </CatalystText>
+              <CatalystText variant="label">
                 {PLAN_LABELS[reactionList?.plan ?? "none"]}
-              </Text>
+              </CatalystText>
             </View>
-            <View className="flex-row justify-between">
-              <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
+            <View className="mt-2 flex-row justify-between">
+              <CatalystText tone="muted">
                 使用数
-              </Text>
-              <Text className="text-sm text-light-text dark:text-dark-text font-medium">
+              </CatalystText>
+              <CatalystText variant="label">
                 {reactionList?.used ?? 0} / {reactionList?.limit ?? 0}
-              </Text>
+              </CatalystText>
             </View>
           </View>
         </View>
 
         {/* プランなしメッセージ */}
         {(reactionList?.limit ?? 0) === 0 && (
-          <View className="mx-4 mt-3">
-            <Text className="text-sm text-light-text-muted dark:text-dark-text-muted bg-light-surface dark:bg-dark-surface px-4 py-3 rounded-xl">
+          <View className="mt-3 bg-light-background px-5 py-3 dark:bg-dark-surface">
+            <CatalystText tone="muted">
               サポーター登録をするとカスタムリアクションを利用できます。
-            </Text>
+            </CatalystText>
           </View>
         )}
 
         {/* 追加ボタン */}
         {(reactionList?.limit ?? 0) > 0 && (
-          <View className="mx-4 mt-3">
-            <Pressable
-              className={`rounded-xl px-4 py-3 items-center ${
-                canAdd
-                  ? "bg-light-tint dark:bg-dark-tint"
-                  : "bg-light-surface-muted dark:bg-dark-surface-muted"
-              }`}
+          <View className="mx-5 mt-4">
+            <CatalystButton
+              tone={canAdd ? "primary" : "secondary"}
               onPress={() => setShowAddModal(true)}
               disabled={!canAdd}
             >
-              <Text
-                className={`text-base font-medium ${
-                  canAdd
-                    ? "text-light-tint-foreground dark:text-dark-tint-foreground"
-                    : "text-light-gray dark:text-dark-gray"
-                }`}
-              >
+              <CatalystButtonText>
                 リアクションを追加
-              </Text>
-            </Pressable>
+              </CatalystButtonText>
+            </CatalystButton>
           </View>
         )}
 
         {/* リアクション一覧 */}
         {(reactionList?.items.length ?? 0) > 0 && (
-          <View className="mt-4 mx-4">
-            <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+          <View className="mt-6">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
               登録済みリアクション
-            </Text>
-            <View className="rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
+            </CatalystText>
+            <View className="bg-light-background dark:bg-dark-surface">
               {reactionList?.items.map((item, index) => (
-                <View
-                  key={item.id}
-                  className={`px-4 py-3 flex-row items-center ${
-                    index < (reactionList.items.length - 1)
-                      ? "border-b border-light-border dark:border-dark-border"
-                      : ""
-                  }`}
-                >
-                  <UniImage
-                    source={{ uri: item.imageUrl }}
-                    className="w-8 h-8 mr-3"
-                    contentFit="contain"
-                  />
-                  <View className="flex-1">
-                    <Text className="text-base text-light-text dark:text-dark-text">
-                      {item.displayName}
-                    </Text>
-                    <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                      :{item.shortcode}:
-                    </Text>
+                <View key={item.id}>
+                  <View className="min-h-16 flex-row items-center px-5 py-3">
+                    <UniImage
+                      source={{ uri: item.imageUrl }}
+                      className="mr-3 h-9 w-9"
+                      contentFit="contain"
+                    />
+                    <CatalystListItemContent>
+                      <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                        {item.displayName}
+                      </CatalystText>
+                      <CatalystText variant="caption" tone="muted">
+                        :{item.shortcode}:
+                      </CatalystText>
+                    </CatalystListItemContent>
+                    <Pressable onPress={() => handleDelete(item)} hitSlop={8}>
+                      <CatalystText variant="label" tone="danger">
+                        削除
+                      </CatalystText>
+                    </Pressable>
                   </View>
-                  <Pressable
-                    onPress={() => handleDelete(item)}
-                    hitSlop={8}
-                  >
-                    <Text className="text-light-error dark:text-dark-error text-sm">
-                      削除
-                    </Text>
-                  </Pressable>
+                  {index < reactionList.items.length - 1 && <CatalystDivider className="ml-5 w-auto" />}
                 </View>
               ))}
             </View>
@@ -302,11 +306,7 @@ export default function CustomReactionsSettingsPage() {
         {/* 空の状態 */}
         {(reactionList?.items.length ?? 0) === 0 &&
           (reactionList?.limit ?? 0) > 0 && (
-            <View className="mx-4 mt-4">
-              <Text className="text-sm text-light-text-muted dark:text-dark-text-muted text-center py-8">
-                カスタムリアクションがまだありません
-              </Text>
-            </View>
+            <CatalystEmptyState title="カスタムリアクションがまだありません" />
           )}
       </ScrollView>
 
@@ -320,74 +320,65 @@ export default function CustomReactionsSettingsPage() {
           resetForm();
         }}
       >
-        <View className="flex-1 bg-light-background dark:bg-dark-background">
+        <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
           {/* ナビゲーションバー */}
-          <View className="flex-row items-center justify-between px-4 py-3 border-b border-light-border dark:border-dark-border">
+          <View className="flex-row items-center justify-between border-b border-light-divider bg-light-background px-5 py-3 dark:border-dark-divider dark:bg-dark-surface">
             <Pressable
               onPress={() => {
                 setShowAddModal(false);
                 resetForm();
               }}
             >
-              <Text className="text-base text-light-tint dark:text-dark-tint">
+              <CatalystText variant="label" tone="tint">
                 キャンセル
-              </Text>
+              </CatalystText>
             </Pressable>
-            <Text className="text-base font-semibold text-light-text dark:text-dark-text">
+            <CatalystText variant="subtitle">
               リアクションを追加
-            </Text>
+            </CatalystText>
             <Pressable onPress={handleAdd} disabled={isAddDisabled}>
               {isSubmitting ? (
                 <ActivityIndicator size="small" />
               ) : (
-                <Text
-                  className={`text-base font-medium ${
-                    isAddDisabled
-                      ? "text-light-gray dark:text-dark-gray"
-                      : "text-light-tint dark:text-dark-tint"
-                  }`}
-                >
+                <CatalystText variant="label" tone={isAddDisabled ? "subtle" : "tint"}>
                   追加
-                </Text>
+                </CatalystText>
               )}
             </Pressable>
           </View>
 
-          <ScrollView className="flex-1 mt-4">
+          <ScrollView className="flex-1" contentContainerClassName="py-4">
             {/* 画像選択 */}
-            <View className="mx-4">
-              <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+            <View>
+              <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
                 画像
-              </Text>
-              <Pressable
-                onPress={handlePickImage}
-                className="rounded-xl bg-light-surface dark:bg-dark-surface px-4 py-3 flex-row items-center gap-3"
-              >
+              </CatalystText>
+              <CatalystListItem divided={false} className="min-h-16 bg-light-background px-5 py-3 dark:bg-dark-surface" onPress={handlePickImage}>
                 {selectedImage ? (
                   <>
                     <UniImage
                       source={{ uri: selectedImage.uri }}
-                      className="w-10 h-10"
+                      className="h-10 w-10"
                       contentFit="contain"
                     />
-                    <Text className="text-base text-light-tint dark:text-dark-tint">
+                    <CatalystText variant="subtitle" tone="tint" className="text-[15px] font-semibold">
                       画像を変更
-                    </Text>
+                    </CatalystText>
                   </>
                 ) : (
-                  <Text className="text-base text-light-tint dark:text-dark-tint">
+                  <CatalystText variant="subtitle" tone="tint" className="text-[15px] font-semibold">
                     画像を選択（PNG / JPEG、最大 1MB）
-                  </Text>
+                  </CatalystText>
                 )}
-              </Pressable>
+              </CatalystListItem>
             </View>
 
             {/* ショートコード */}
-            <View className="mx-4 mt-4">
-              <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+            <View className="mt-6">
+              <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
                 ショートコード
-              </Text>
-              <View className="rounded-xl bg-light-surface dark:bg-dark-surface px-4 py-3">
+              </CatalystText>
+              <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
                 <TextInput
                   className="text-base text-light-text dark:text-dark-text"
                   value={shortcode}
@@ -395,35 +386,37 @@ export default function CustomReactionsSettingsPage() {
                     setShortcode(text.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
                   }
                   placeholder="kawaii"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColorClassName="accent-light-text-subtle dark:accent-dark-text-subtle"
+                  cursorColorClassName="accent-light-tint dark:accent-dark-tint"
+                  selectionColorClassName="accent-light-tint dark:accent-dark-tint"
+                  selectionHandleColorClassName="accent-light-tint dark:accent-dark-tint"
+                  underlineColorAndroidClassName="accent-transparent"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  style={
-                    Platform.OS === "ios" ? { lineHeight: undefined } : undefined
-                  }
                 />
               </View>
-              <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+              <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
                 英小文字、数字、アンダースコア、ハイフンのみ使用できます
-              </Text>
+              </CatalystText>
             </View>
 
             {/* 表示名 */}
-            <View className="mx-4 mt-4">
-              <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+            <View className="mt-6">
+              <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
                 表示名
-              </Text>
-              <View className="rounded-xl bg-light-surface dark:bg-dark-surface px-4 py-3">
+              </CatalystText>
+              <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
                 <TextInput
                   className="text-base text-light-text dark:text-dark-text"
                   value={displayName}
                   onChangeText={setDisplayName}
                   placeholder="かわいい"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColorClassName="accent-light-text-subtle dark:accent-dark-text-subtle"
+                  cursorColorClassName="accent-light-tint dark:accent-dark-tint"
+                  selectionColorClassName="accent-light-tint dark:accent-dark-tint"
+                  selectionHandleColorClassName="accent-light-tint dark:accent-dark-tint"
+                  underlineColorAndroidClassName="accent-transparent"
                   maxLength={32}
-                  style={
-                    Platform.OS === "ios" ? { lineHeight: undefined } : undefined
-                  }
                 />
               </View>
             </View>

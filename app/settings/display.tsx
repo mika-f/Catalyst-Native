@@ -1,4 +1,10 @@
-import { cn } from "@/lib/utils";
+import {
+  CatalystDivider,
+  CatalystListItem,
+  CatalystListItemContent,
+  CatalystSwitch,
+  CatalystText,
+} from "@/components/design-system";
 import {
   type BrowserDefinition,
   type BrowserKey,
@@ -17,7 +23,7 @@ import {
 import { Check } from "lucide-react-native";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Switch, Text, View, useColorScheme } from "react-native";
+import { View } from "react-native";
 import { withUniwind } from "uniwind";
 
 const CheckIcon = withUniwind(Check);
@@ -47,7 +53,6 @@ export default function DisplaySettingsPage() {
   const [quality, setQuality] = useAtom(timelineImageQualityAtom);
   const [wifiUpgrade, setWifiUpgrade] = useAtom(timelineWifiUpgradeAtom);
   const [isLoading, setIsLoading] = useState(true);
-  const colorScheme = useColorScheme() ?? "light";
 
   useEffect(() => {
     Promise.all([
@@ -62,7 +67,7 @@ export default function DisplaySettingsPage() {
       setWifiUpgrade(w);
       setIsLoading(false);
     });
-  }, []);
+  }, [setQuality, setWifiUpgrade]);
 
   const handleBrowserSelect = useCallback(async (key: BrowserKey) => {
     setSelectedBrowser(key);
@@ -72,104 +77,105 @@ export default function DisplaySettingsPage() {
   const handleQualitySelect = useCallback(async (key: TimelineImageQuality) => {
     setQuality(key);
     await saveTimelineImageQuality(key);
-  }, []);
+  }, [setQuality]);
 
   const handleWifiUpgradeChange = useCallback(async (enabled: boolean) => {
     setWifiUpgrade(enabled);
     await saveWifiUpgrade(enabled);
-  }, []);
+  }, [setWifiUpgrade]);
 
   if (isLoading) {
-    return <View className="flex-1" />;
+    return <View className="flex-1 bg-light-surface-muted dark:bg-dark-background" />;
   }
 
   return (
-    <View className="flex-1">
-      <View className="mt-4 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+      <View className="pt-2">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
           デフォルトブラウザー
-        </Text>
-        <View className="rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
+        </CatalystText>
+        <View className="bg-light-background dark:bg-dark-surface">
           {browsers.map((browser, index) => (
-            <Pressable
-              key={browser.key}
-              onPress={() => handleBrowserSelect(browser.key)}
-              className={cn(
-                "px-4 py-3 flex-row items-center justify-between",
-                index < browsers.length - 1 && "border-b border-light-border dark:border-dark-border",
-              )}
-            >
-              <Text className="text-base text-light-text dark:text-dark-text">{browser.displayName}</Text>
-              {selectedBrowser === browser.key && (
-                <CheckIcon className="text-light-tint dark:text-dark-tint" size={18} />
-              )}
-            </Pressable>
+            <View key={browser.key}>
+              <CatalystListItem
+                divided={false}
+                className="min-h-13 px-5 py-3"
+                onPress={() => handleBrowserSelect(browser.key)}
+              >
+                <CatalystListItemContent className="gap-0">
+                  <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                    {browser.displayName}
+                  </CatalystText>
+                </CatalystListItemContent>
+                {selectedBrowser === browser.key && (
+                  <CheckIcon className="text-light-tint dark:text-dark-tint" size={18} />
+                )}
+              </CatalystListItem>
+              {index < browsers.length - 1 && <CatalystDivider className="ml-5 w-auto" />}
+            </View>
           ))}
         </View>
-        <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
           リンクを開く際に使用するブラウザーを選択してください。インストールされているブラウザーのみが表示されます。
-        </Text>
+        </CatalystText>
       </View>
 
-      <View className="mt-6 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+      <View className="mt-6">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
           タイムラインの画像画質
-        </Text>
-        <View className="rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
+        </CatalystText>
+        <View className="bg-light-background dark:bg-dark-surface">
           {QUALITY_OPTIONS.map((option, index) => (
-            <Pressable
-              key={option.key}
-              onPress={() => handleQualitySelect(option.key)}
-              className={cn(
-                "px-4 py-3 flex-row items-center justify-between",
-                index < QUALITY_OPTIONS.length - 1 && "border-b border-light-border dark:border-dark-border",
-              )}
-            >
-              <View className="flex-1">
-                <Text className="text-base text-light-text dark:text-dark-text">{option.displayName}</Text>
-                <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">
-                  {option.description}
-                </Text>
-              </View>
-              {quality === option.key && (
-                <CheckIcon className="text-light-tint dark:text-dark-tint" size={18} />
-              )}
-            </Pressable>
+            <View key={option.key}>
+              <CatalystListItem
+                divided={false}
+                className="min-h-16 px-5 py-3"
+                onPress={() => handleQualitySelect(option.key)}
+              >
+                <CatalystListItemContent>
+                  <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                    {option.displayName}
+                  </CatalystText>
+                  <CatalystText variant="caption" tone="muted">
+                    {option.description}
+                  </CatalystText>
+                </CatalystListItemContent>
+                {quality === option.key && (
+                  <CheckIcon className="text-light-tint dark:text-dark-tint" size={18} />
+                )}
+              </CatalystListItem>
+              {index < QUALITY_OPTIONS.length - 1 && <CatalystDivider className="ml-5 w-auto" />}
+            </View>
           ))}
         </View>
-        <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
           タイムラインに表示される画像の画質を選択してください。
-        </Text>
+        </CatalystText>
       </View>
 
-      <View className="mt-6 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+      <View className="mt-6">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
           Wi-Fi接続
-        </Text>
-        <View className="rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
-          <View className="px-4 py-3 flex-row items-center justify-between">
-            <View className="flex-1 mr-4">
-              <Text className="text-base text-light-text dark:text-dark-text">Wi-Fi接続時にさらに高画質を使用</Text>
-              <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">
+        </CatalystText>
+        <View className="min-h-16 flex-row items-center bg-light-background px-5 py-3 dark:bg-dark-surface">
+          <CatalystListItemContent className="mr-4">
+            <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+              Wi-Fi接続時にさらに高画質を使用
+            </CatalystText>
+            <CatalystText variant="caption" tone="muted">
                 {quality === "low"
                   ? "Wi-Fi 接続時は高画質、それ以外は低画質を使用します"
                   : "Wi-Fi 接続時はさらに高画質、それ以外は高画質を使用します"}
-              </Text>
-            </View>
-            <Switch
-              value={wifiUpgrade}
-              onValueChange={handleWifiUpgradeChange}
-              trackColor={{
-                false: colorScheme === "dark" ? "#3a3a3a" : "#d1d1d6",
-                true: colorScheme === "dark" ? "#0a84ff" : "#007aff",
-              }}
-              thumbColor="white"
-            />
-          </View>
+            </CatalystText>
+          </CatalystListItemContent>
+          <CatalystSwitch
+            value={wifiUpgrade}
+            onValueChange={handleWifiUpgradeChange}
+          />
         </View>
-        <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
           Wi-Fi 接続時は自動的により高い画質で画像を読み込みます。
-        </Text>
+        </CatalystText>
       </View>
     </View>
   );

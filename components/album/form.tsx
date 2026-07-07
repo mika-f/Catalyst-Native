@@ -1,6 +1,7 @@
+import { CatalystSwitch } from "@/components/design-system";
 import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
 import React from "react";
-import { Platform, Pressable, ScrollView, Switch, Text, TextInput, View, useColorScheme } from "react-native";
+import { Platform, Pressable, ScrollView, Text, TextInput, View, useColorScheme } from "react-native";
 
 const DISPLAY_MODE_OPTIONS: { value: CatalystAlbumDisplayMode; label: string }[] = [
   { value: "timeline", label: "タイムライン" },
@@ -97,7 +98,7 @@ export const AlbumForm = ({
         <Text className="text-base font-semibold text-light-text dark:text-dark-text">プライバシー</Text>
         <View className="flex-row items-center justify-between">
           <Text className="flex-1 text-sm text-light-text dark:text-dark-text">公開アルバム</Text>
-          <Switch value={isPublic} onValueChange={onChangeIsPublic} />
+          <CatalystSwitch value={isPublic} onValueChange={onChangeIsPublic} />
         </View>
         <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
           {isPublic

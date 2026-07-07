@@ -1,3 +1,4 @@
+import { CatalystSwitch } from "@/components/design-system";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -9,7 +10,7 @@ import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/d
 import dayjs from "dayjs";
 import { Plus, X } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
-import { Platform, Pressable, ScrollView, Switch, Text, TextInput, View, useColorScheme } from "react-native";
+import { Platform, Pressable, ScrollView, Text, TextInput, View, useColorScheme } from "react-native";
 import { withUniwind } from "uniwind";
 
 import "@/global.css";
@@ -320,7 +321,7 @@ export const SmartAlbumForm = ({
           <Text className="text-base font-semibold text-light-text dark:text-dark-text">期間設定</Text>
           <View className="flex-row items-center justify-between">
             <Text className="text-sm text-light-text dark:text-dark-text">開始日時を設定</Text>
-            <Switch value={since !== null} onValueChange={(enabled) => onChangeSince(enabled ? now : null)} />
+            <CatalystSwitch value={since !== null} onValueChange={(enabled) => onChangeSince(enabled ? now : null)} />
           </View>
           {since !== null &&
             (Platform.OS === "ios" ? (
@@ -342,7 +343,7 @@ export const SmartAlbumForm = ({
             ))}
           <View className="flex-row items-center justify-between">
             <Text className="text-sm text-light-text dark:text-dark-text">終了日時を設定</Text>
-            <Switch value={until !== null} onValueChange={(enabled) => onChangeUntil(enabled ? now : null)} />
+            <CatalystSwitch value={until !== null} onValueChange={(enabled) => onChangeUntil(enabled ? now : null)} />
           </View>
           {until !== null &&
             (Platform.OS === "ios" ? (
@@ -404,11 +405,11 @@ export const SmartAlbumForm = ({
           <Text className="text-base font-semibold text-light-text dark:text-dark-text">投稿設定</Text>
           <View className="flex-row items-center justify-between">
             <Text className="flex-1 text-sm text-light-text dark:text-dark-text">NSFWコンテンツを許可</Text>
-            <Switch value={isAllowNsfw} onValueChange={onChangeIsAllowNsfw} />
+            <CatalystSwitch value={isAllowNsfw} onValueChange={onChangeIsAllowNsfw} />
           </View>
           <View className="flex-row items-center justify-between">
             <Text className="flex-1 text-sm text-light-text dark:text-dark-text">他人の投稿を許可</Text>
-            <Switch value={isAllowOthers} onValueChange={onChangeIsAllowOthers} />
+            <CatalystSwitch value={isAllowOthers} onValueChange={onChangeIsAllowOthers} />
           </View>
         </View>
 
@@ -419,7 +420,7 @@ export const SmartAlbumForm = ({
           <Text className="text-base font-semibold text-light-text dark:text-dark-text">公開設定</Text>
           <View className="flex-row items-center justify-between">
             <Text className="flex-1 text-sm text-light-text dark:text-dark-text">公開アルバム</Text>
-            <Switch value={isPublic} onValueChange={onChangeIsPublic} />
+            <CatalystSwitch value={isPublic} onValueChange={onChangeIsPublic} />
           </View>
           <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
             {isPublic ? "すべてのユーザーがこのアルバムを閲覧できます" : "自分のみがこのアルバムを閲覧できます"}
@@ -493,7 +494,7 @@ export const SmartAlbumForm = ({
                 この条件に一致する投稿を結果から除外します
               </Text>
             </View>
-            <Switch value={conditionIsExclude} onValueChange={setConditionIsExclude} />
+            <CatalystSwitch value={conditionIsExclude} onValueChange={setConditionIsExclude} />
           </View>
 
           {/* 追加ボタン */}

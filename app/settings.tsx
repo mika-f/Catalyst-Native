@@ -1,7 +1,7 @@
-import { cn } from "@/lib/utils";
+import { CatalystDivider, CatalystListItem, CatalystListItemContent, CatalystText } from "@/components/design-system";
 import { router } from "expo-router";
 import { Accessibility, Bell, Bug, ChevronRight, FileText, Lock, Palette, Smile, UserCircle } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import { withUniwind } from "uniwind";
 
 
@@ -11,41 +11,53 @@ type SettingsSection = {
   icon: React.ComponentType<{ className?: string; size?: number }>;
 };
 
-const sections: SettingsSection[] = [
-  { route: "/settings/account", title: "アカウント", icon: UserCircle },
-  { route: "/settings/notifications", title: "通知", icon: Bell },
-  { route: "/settings/privacy", title: "プライバシー", icon: Lock },
-  { route: "/settings/display", title: "表示", icon: Palette },
-  { route: "/settings/accessibility", title: "アクセシビリティ", icon: Accessibility },
-  { route: "/settings/custom-reactions", title: "カスタムリアクション", icon: Smile },
-  ...(__DEV__ ? [{ route: "/settings/debug", title: "デバッグ", icon: Bug }] : []),
-  { route: "/settings/legal", title: "法的情報", icon: FileText },
-];
-
+const UniAccessibility = withUniwind(Accessibility);
+const UniBell = withUniwind(Bell);
+const UniBug = withUniwind(Bug);
 const UniChevronRight = withUniwind(ChevronRight);
+const UniFileText = withUniwind(FileText);
+const UniLock = withUniwind(Lock);
+const UniPalette = withUniwind(Palette);
+const UniSmile = withUniwind(Smile);
+const UniUserCircle = withUniwind(UserCircle);
+
+const sections: SettingsSection[] = [
+  { route: "/settings/account", title: "アカウント", icon: UniUserCircle },
+  { route: "/settings/notifications", title: "通知", icon: UniBell },
+  { route: "/settings/privacy", title: "プライバシー", icon: UniLock },
+  { route: "/settings/display", title: "表示", icon: UniPalette },
+  { route: "/settings/accessibility", title: "アクセシビリティ", icon: UniAccessibility },
+  { route: "/settings/custom-reactions", title: "カスタムリアクション", icon: UniSmile },
+  ...(__DEV__ ? [{ route: "/settings/debug", title: "デバッグ", icon: UniBug }] : []),
+  { route: "/settings/legal", title: "法的情報", icon: UniFileText },
+];
 
 export default function SettingsPage() {
   return (
-    <View className="flex-1">
-      <View className="mt-4 mx-4 rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
+    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+      <View className="bg-light-background dark:bg-dark-surface">
         {sections.map((section, index) => {
-          const Icon = withUniwind(section.icon);
+          const Icon = section.icon;
 
           return (
-            <Pressable
-              key={section.route}
-              className={cn(
-                "px-4 py-3.5 flex-row items-center",
-                index < sections.length - 1 && "border-b border-light-border dark:border-dark-border",
-              )}
-              onPress={() => {
-                router.push(section.route as never);
-              }}
-            >
-              <Icon className="text-light-icon dark:text-dark-icon mr-3" size={24} />
-              <Text className="flex-1 text-base text-light-text dark:text-dark-text">{section.title}</Text>
-              <UniChevronRight className="text-light-icon dark:text-dark-icon" size={20} />
-            </Pressable>
+            <View key={section.route}>
+              <CatalystListItem
+                divided={false}
+                className="min-h-14 px-5 py-3.5"
+                onPress={() => {
+                  router.push(section.route as never);
+                }}
+              >
+                <Icon className="text-light-icon dark:text-dark-icon" size={22} />
+                <CatalystListItemContent className="gap-0">
+                  <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                    {section.title}
+                  </CatalystText>
+                </CatalystListItemContent>
+                <UniChevronRight className="text-light-text-subtle dark:text-dark-text-subtle" size={19} />
+              </CatalystListItem>
+              {index < sections.length - 1 && <CatalystDivider className="ml-14 w-auto" />}
+            </View>
           );
         })}
       </View>

@@ -1,6 +1,7 @@
+import { CatalystText } from "@/components/design-system";
 import { licenses } from "@/lib/licenses";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { Text, View } from "react-native";
+import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LicenseKey } from "./licenses";
 
@@ -10,9 +11,15 @@ export default function LegalLicensesPage() {
   const license = licenses[key as unknown as LicenseKey];
 
   return (
-    <View style={{ paddingBottom: insets.bottom }}>
+    <ScrollView
+      className="flex-1 bg-light-surface-muted dark:bg-dark-background"
+      contentContainerClassName="bg-light-background px-5 py-4 dark:bg-dark-surface"
+      style={{ paddingBottom: insets.bottom }}
+    >
       <Stack.Screen options={{ title: license.name }} />
-      <Text className="text-sm text-light-text dark:text-dark-text">{license.content}</Text>
-    </View>
+      <CatalystText variant="mono" className="leading-5">
+        {license.content}
+      </CatalystText>
+    </ScrollView>
   );
 }

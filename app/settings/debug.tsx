@@ -1,10 +1,11 @@
+import { CatalystDivider, CatalystListItem, CatalystListItemContent, CatalystText } from "@/components/design-system";
 import {
   getDismissedContestSpotlightIds,
   resetDismissedContestSpotlightIds,
 } from "@/models/contest-spotlight";
 import { RotateCcw } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 import { withUniwind } from "uniwind";
 
 const ResetIcon = withUniwind(RotateCcw);
@@ -40,28 +41,32 @@ export default function DebugSettingsPage() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-light-background dark:bg-dark-background">
+      <View className="flex-1 items-center justify-center bg-light-surface-muted dark:bg-dark-background">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-light-background dark:bg-dark-background">
-      <View className="mt-4 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">
+    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+      <View className="pt-2">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
           タイムライン
-        </Text>
-        <View className="overflow-hidden rounded-xl bg-light-surface dark:bg-dark-surface">
-          <View className="border-b border-light-border px-4 py-3 dark:border-dark-border">
-            <Text className="text-base text-light-text dark:text-dark-text">非表示にしたコンテスト情報</Text>
-            <Text className="mt-0.5 text-xs text-light-text-muted dark:text-dark-text-muted">
+        </CatalystText>
+        <View className="bg-light-background dark:bg-dark-surface">
+          <View className="px-5 py-3">
+            <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+              非表示にしたコンテスト情報
+            </CatalystText>
+            <CatalystText variant="caption" tone="muted" className="mt-1">
               {dismissedContestCount}件のコンテストがタイムラインのスポットライトから非表示になっています。
-            </Text>
+            </CatalystText>
           </View>
 
-          <Pressable
-            className="flex-row items-center gap-3 px-4 py-3 active:bg-light-surface-muted dark:active:bg-dark-surface-muted disabled:opacity-50"
+          <CatalystDivider className="ml-5 w-auto" />
+          <CatalystListItem
+            divided={false}
+            className="min-h-14 px-5 py-3 disabled:opacity-50"
             disabled={isResetting}
             onPress={handleResetContestSpotlight}
           >
@@ -70,14 +75,16 @@ export default function DebugSettingsPage() {
             ) : (
               <ResetIcon size={20} className="text-light-tint dark:text-dark-tint" />
             )}
-            <Text className="text-base font-semibold text-light-tint dark:text-dark-tint">
-              コンテスト情報の非表示をリセット
-            </Text>
-          </Pressable>
+            <CatalystListItemContent className="gap-0">
+              <CatalystText variant="subtitle" tone="tint" className="text-[15px] font-semibold">
+                コンテスト情報の非表示をリセット
+              </CatalystText>
+            </CatalystListItemContent>
+          </CatalystListItem>
         </View>
-        <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
           リセット後、条件に合うコンテスト情報がタイムライン上部に再表示されます。
-        </Text>
+        </CatalystText>
       </View>
     </View>
   );

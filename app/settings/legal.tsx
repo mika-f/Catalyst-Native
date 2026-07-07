@@ -1,8 +1,8 @@
-import { cn } from "@/lib/utils";
+import { CatalystDivider, CatalystListItem, CatalystListItemContent, CatalystText } from "@/components/design-system";
 import { openUrlWithBrowser } from "@/models/browser-settings";
 import { router } from "expo-router";
 import { ChevronRight, ExternalLink } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import { withUniwind } from "uniwind";
 
 type LinkItem = {
@@ -34,30 +34,34 @@ export default function LegalSettingsPage() {
   ];
 
   return (
-    <View className="flex-1 bg-light-surface dark:bg-dark-background">
-      <View className="mt-4 mx-4 rounded-xl bg-light-background dark:bg-dark-surface overflow-hidden">
+    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+      <View className="bg-light-background dark:bg-dark-surface">
         {allItems.map((item, index) => (
-          <Pressable
-            key={item.title}
-            className={cn(
-              "px-4 py-3.5 flex-row items-center",
-              index < allItems.length - 1 && "border-b border-light-border dark:border-dark-border",
-            )}
-            onPress={async () => {
-              if (item.type === "link") {
-                await openUrlWithBrowser(item.url);
-              } else {
-                router.push(item.route as never);
-              }
-            }}
-          >
-            <Text className="flex-1 text-base text-light-text dark:text-dark-text">{item.title}</Text>
-            {item.type === "link" ? (
-              <UniExternalLink className="text-light-icon dark:text-dark-icon" size={18} />
-            ) : (
-              <UniChevronRight className="text-light-icon dark:text-dark-icon" size={20} />
-            )}
-          </Pressable>
+          <View key={item.title}>
+            <CatalystListItem
+              divided={false}
+              className="min-h-14 px-5 py-3.5"
+              onPress={async () => {
+                if (item.type === "link") {
+                  await openUrlWithBrowser(item.url);
+                } else {
+                  router.push(item.route as never);
+                }
+              }}
+            >
+              <CatalystListItemContent className="gap-0">
+                <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                  {item.title}
+                </CatalystText>
+              </CatalystListItemContent>
+              {item.type === "link" ? (
+                <UniExternalLink className="text-light-text-subtle dark:text-dark-text-subtle" size={18} />
+              ) : (
+                <UniChevronRight className="text-light-text-subtle dark:text-dark-text-subtle" size={19} />
+              )}
+            </CatalystListItem>
+            {index < allItems.length - 1 && <CatalystDivider className="ml-5 w-auto" />}
+          </View>
         ))}
       </View>
     </View>

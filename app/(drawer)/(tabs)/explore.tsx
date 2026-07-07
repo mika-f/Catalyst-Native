@@ -1,3 +1,4 @@
+import { CatalystSearchField } from "@/components/design-system";
 import { AlbumList } from "@/components/explorer/albums/list";
 import { AlbumsPlaceholder } from "@/components/explorer/albums/placeholder";
 import { ContestList } from "@/components/explorer/contests/list";
@@ -10,14 +11,9 @@ import { TimelineBase, TimelineHandle } from "@/components/timeline/base";
 import { clientAtom } from "@/models/atoms/credential";
 import { useScrollToTop } from "expo-router/react-navigation";
 import { useAtomValue } from "jotai";
-import { Search, X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TextInput, View } from "react-native";
-import { withUniwind } from "uniwind";
+import { View } from "react-native";
 import { v4 } from "uuid";
-
-const UniSearchIcon = withUniwind(Search);
-const UniTimesIcon = withUniwind(X);
 
 const TABS: Tab[] = [
   { key: "statuses", label: "投稿" },
@@ -32,7 +28,6 @@ export default function HomeScreen() {
   const [state, setState] = useState<string>("");
   const [query, setQuery] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>(TABS[0].key);
-  const [focused, setFocused] = useState(false);
   const client = useAtomValue(clientAtom);
   const [stateKey, setStateKey] = useState(v4());
   const timelineRef = useRef<TimelineHandle>(null);
@@ -83,28 +78,15 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-col flex-1 bg-light-background dark:bg-dark-background">
-      <View className="px-4">
-        <View className="flex flex-row items-center px-2 mt-1 gap-x-2 rounded-lg bg-neutral-200 dark:bg-neutral-800">
-          <UniSearchIcon size={24} className="text-light-icon dark:text-dark-icon" />
-          <TextInput
-            className="w-full h-8 shrink-0 android:h-10 text-black dark:text-white placeholder-light-icon dark:placeholder-dark-icon"
-            value={state}
-            onChangeText={setState}
-            onFocus={() => setFocused(true)}
-            onSubmitEditing={runQuery}
-            placeholder="検索..."
-          />
-          {focused && (
-            <UniTimesIcon
-              size={24}
-              className="text-light-icon dark:text-dark-icon"
-              onPress={() => {
-                setState("");
-                setFocused(false);
-              }}
-            />
-          )}
-        </View>
+      <View className="px-4 pt-1">
+        <CatalystSearchField
+          value={state}
+          onChangeText={setState}
+          onClear={() => setState("")}
+          onSubmitEditing={runQuery}
+          placeholder="投稿、ユーザー、アルバム、コンテストを検索"
+          returnKeyType="search"
+        />
       </View>
       <View className="flex-1">
         <Tabs

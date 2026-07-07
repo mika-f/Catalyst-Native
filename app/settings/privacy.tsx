@@ -1,8 +1,15 @@
+import {
+  CatalystDivider,
+  CatalystEmptyState,
+  CatalystListItemContent,
+  CatalystSwitch,
+  CatalystText,
+} from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Switch, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 const STORAGE_KEY = "catalyst:privacy_settings";
 
@@ -79,60 +86,69 @@ export default function PrivacySettingsPage() {
   );
 
   if (isLoading) {
-    return <View className="flex-1 bg-light-surface dark:bg-dark-background" />;
+    return (
+      <View className="flex-1 items-center justify-center bg-light-surface-muted dark:bg-dark-background">
+        <ActivityIndicator />
+      </View>
+    );
   }
 
   if (!account) {
     return (
-      <View className="flex-1 bg-light-surface dark:bg-dark-background">
-        <Text className="mt-8 mx-4 text-sm text-light-gray dark:text-dark-gray text-center">
-          ログインするとプライバシー設定を変更できます。
-        </Text>
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+        <CatalystEmptyState title="ログインが必要です" description="ログインするとプライバシー設定を変更できます。" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-light-surface dark:bg-dark-background">
-      <View className="mt-4 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">フォロー・フォロワー</Text>
-        <View className="rounded-xl bg-light-background dark:bg-dark-surface overflow-hidden">
-          <View className="px-4 py-3 flex-row items-center justify-between border-b border-light-border dark:border-dark-border">
-            <View className="flex-1 mr-3">
-              <Text className="text-base text-light-text dark:text-dark-text">フォロー中の一覧を公開</Text>
-              <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">
+    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+      <View className="pt-2">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+          フォロー・フォロワー
+        </CatalystText>
+        <View className="bg-light-background dark:bg-dark-surface">
+          <View className="min-h-16 flex-row items-center px-5 py-3">
+            <CatalystListItemContent className="mr-3">
+              <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                フォロー中の一覧を公開
+              </CatalystText>
+              <CatalystText variant="caption" tone="muted">
                 オフにすると自分以外はフォロー中の一覧を見られません
-              </Text>
-            </View>
+              </CatalystText>
+            </CatalystListItemContent>
             {savingKey === "followingListVisibility" ? (
               <ActivityIndicator size="small" />
             ) : (
-              <Switch
+              <CatalystSwitch
                 value={settings.followingListVisibility === "public"}
                 onValueChange={(v) => handleToggle("followingListVisibility", v)}
               />
             )}
           </View>
-          <View className="px-4 py-3 flex-row items-center justify-between">
-            <View className="flex-1 mr-3">
-              <Text className="text-base text-light-text dark:text-dark-text">フォロワーの一覧を公開</Text>
-              <Text className="text-xs text-light-text-muted dark:text-dark-text-muted mt-0.5">
+          <CatalystDivider className="ml-5 w-auto" />
+          <View className="min-h-16 flex-row items-center px-5 py-3">
+            <CatalystListItemContent className="mr-3">
+              <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                フォロワーの一覧を公開
+              </CatalystText>
+              <CatalystText variant="caption" tone="muted">
                 オフにすると自分以外はフォロワーの一覧を見られません
-              </Text>
-            </View>
+              </CatalystText>
+            </CatalystListItemContent>
             {savingKey === "followerListVisibility" ? (
               <ActivityIndicator size="small" />
             ) : (
-              <Switch
+              <CatalystSwitch
                 value={settings.followerListVisibility === "public"}
                 onValueChange={(v) => handleToggle("followerListVisibility", v)}
               />
             )}
           </View>
         </View>
-        <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
           設定はサーバーに保存されます。
-        </Text>
+        </CatalystText>
       </View>
     </View>
   );

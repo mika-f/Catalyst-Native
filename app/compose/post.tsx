@@ -1,3 +1,4 @@
+import { CatalystSwitch } from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import { ContestSelectorSheet, type ContestSelectorSheetRef } from "@/components/contest-selector-sheet";
 import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
@@ -12,7 +13,6 @@ import {
   Image,
   Pressable,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   View,
@@ -266,7 +266,7 @@ export default function PostComposerScreen() {
                 <Text className="flex-1 text-sm text-light-text dark:text-dark-text">
                   NSFW コンテンツとしてマークする
                 </Text>
-                <Switch value={isNsfw} onValueChange={setIsNsfw} />
+                <CatalystSwitch value={isNsfw} onValueChange={setIsNsfw} />
               </View>
               <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
                 センシティブなコンテンツや NSFW（職場で閲覧不可）コンテンツを NSFW
@@ -276,7 +276,7 @@ export default function PostComposerScreen() {
             <View className="gap-2">
               <View className="flex-row items-center justify-between">
                 <Text className="flex-1 text-sm text-light-text dark:text-dark-text">スポイラーを有効にする</Text>
-                <Switch value={isSpoiler} onValueChange={setIsSpoiler} />
+                <CatalystSwitch value={isSpoiler} onValueChange={setIsSpoiler} />
               </View>
               <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
                 NSFW としてではなく、例えばネタバレ注意などと言った NSFW 以外の理由でスポイラー表示を有効にしたい場合に
@@ -361,7 +361,7 @@ export default function PostComposerScreen() {
               <Text className="flex-1 text-sm text-light-text dark:text-dark-text">
                 画像に埋め込まれたメタデータを表示しない
               </Text>
-              <Switch value={isPrivateMetadata} onValueChange={setIsPrivateMetadata} />
+              <CatalystSwitch value={isPrivateMetadata} onValueChange={setIsPrivateMetadata} />
             </View>
           </View>
         </ScrollView>
