@@ -3,13 +3,14 @@ import {
   CatalystListItem,
   CatalystListItemContent,
   CatalystText,
+  CatalystTextField,
 } from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import * as Credential from "@/models/credential";
 import { router } from "expo-router";
 import { useAtom } from "jotai";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 
 export default function AccountSettingsPage() {
   const [account, setAccount] = useAtom(accountAtom);
@@ -22,7 +23,12 @@ export default function AccountSettingsPage() {
   const canEditScreenName = user ? user.screenName === user.id : false;
   const currentScreenName = screenName ?? user?.screenName ?? "";
   const trimmed = currentScreenName.trim();
-  const isSaveDisabled = !user || !canEditScreenName || trimmed === "" || trimmed === user.screenName || isSaving;
+  const isSaveDisabled =
+    !user ||
+    !canEditScreenName ||
+    trimmed === "" ||
+    trimmed === user.screenName ||
+    isSaving;
 
   const save = useCallback(async () => {
     if (!account || !user || isSaveDisabled) return;
@@ -74,12 +80,15 @@ export default function AccountSettingsPage() {
           try {
             if (account) {
               const token = account.credential.client.accessToken;
-              const res = await fetch(`https://api.natsuneko.com/egeria/v1/me`, {
-                method: "DELETE",
-                headers: {
-                  Authorization: `Bearer ${token}`,
+              const res = await fetch(
+                `https://api.natsuneko.com/egeria/v1/me`,
+                {
+                  method: "DELETE",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
                 },
-              });
+              );
 
               if (res.ok) {
                 Alert.alert(
@@ -98,7 +107,9 @@ export default function AccountSettingsPage() {
     ]);
   }, [account, setAccount]);
 
-  const footerText = !canEditScreenName ? "すでに1度ユーザー名を変更しているため、変更できません。" : errorMessage;
+  const footerText = !canEditScreenName
+    ? "すでに1度ユーザー名を変更しているため、変更できません。"
+    : errorMessage;
 
   const handleLogin = useCallback(async () => {
     const { credential, isLoggedIn: loggedIn, user } = await Credential.login();
@@ -112,9 +123,17 @@ export default function AccountSettingsPage() {
     return (
       <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
         <View className="bg-light-background dark:bg-dark-surface">
-          <CatalystListItem divided={false} className="min-h-14 px-5 py-3.5" onPress={handleLogin}>
+          <CatalystListItem
+            divided={false}
+            className="min-h-14 px-5 py-3.5"
+            onPress={handleLogin}
+          >
             <CatalystListItemContent className="gap-0">
-              <CatalystText variant="subtitle" tone="tint" className="text-[15px] font-semibold">
+              <CatalystText
+                variant="subtitle"
+                tone="tint"
+                className="text-[15px] font-semibold"
+              >
                 ログイン
               </CatalystText>
             </CatalystListItemContent>
@@ -132,22 +151,22 @@ export default function AccountSettingsPage() {
         </CatalystText>
         <View className="bg-light-background dark:bg-dark-surface">
           <View className="min-h-14 flex-row items-center px-5 py-3">
-            <CatalystText tone="subtle" className="mr-2 text-base">
+            <CatalystText tone="subtle" className="mr-2 text-base leading-6">
               @
             </CatalystText>
-            <TextInput
-              className="flex-1 text-base text-light-text dark:text-dark-text"
+            <CatalystTextField
+              className="flex-1 rounded-none bg-transparent p-0 leading-5"
+              style={{
+                paddingVertical: 1,
+                includeFontPadding: false,
+                textAlignVertical: "center",
+              }}
               value={currentScreenName}
               onChangeText={setScreenName}
               autoCapitalize="none"
               autoCorrect={false}
               editable={canEditScreenName}
               placeholder="ユーザー名"
-              cursorColorClassName="accent-light-tint dark:accent-dark-tint"
-              placeholderTextColorClassName="accent-light-text-subtle dark:accent-dark-text-subtle"
-              selectionColorClassName="accent-light-tint dark:accent-dark-tint"
-              selectionHandleColorClassName="accent-light-tint dark:accent-dark-tint"
-              underlineColorAndroidClassName="accent-transparent"
             />
           </View>
           <CatalystDivider className="ml-5 w-auto" />
@@ -160,7 +179,11 @@ export default function AccountSettingsPage() {
             {isSaving ? (
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" />
-                <CatalystText variant="subtitle" tone="tint" className="text-[15px] font-semibold">
+                <CatalystText
+                  variant="subtitle"
+                  tone="tint"
+                  className="text-[15px] font-semibold"
+                >
                   保存中...
                 </CatalystText>
               </View>
@@ -187,9 +210,17 @@ export default function AccountSettingsPage() {
       </View>
 
       <View className="mt-6 bg-light-background dark:bg-dark-surface">
-        <CatalystListItem divided={false} className="min-h-14 px-5 py-3.5" onPress={handleLogout}>
+        <CatalystListItem
+          divided={false}
+          className="min-h-14 px-5 py-3.5"
+          onPress={handleLogout}
+        >
           <CatalystListItemContent className="gap-0">
-            <CatalystText variant="subtitle" tone="danger" className="text-[15px] font-semibold">
+            <CatalystText
+              variant="subtitle"
+              tone="danger"
+              className="text-[15px] font-semibold"
+            >
               ログアウト
             </CatalystText>
           </CatalystListItemContent>
@@ -197,9 +228,17 @@ export default function AccountSettingsPage() {
       </View>
 
       <View className="mt-6 bg-light-background dark:bg-dark-surface">
-        <CatalystListItem divided={false} className="min-h-14 px-5 py-3.5" onPress={handleDeleteAccount}>
+        <CatalystListItem
+          divided={false}
+          className="min-h-14 px-5 py-3.5"
+          onPress={handleDeleteAccount}
+        >
           <CatalystListItemContent className="gap-0">
-            <CatalystText variant="subtitle" tone="danger" className="text-[15px] font-semibold">
+            <CatalystText
+              variant="subtitle"
+              tone="danger"
+              className="text-[15px] font-semibold"
+            >
               アカウント削除
             </CatalystText>
           </CatalystListItemContent>

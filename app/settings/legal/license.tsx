@@ -17,7 +17,7 @@ export default function LegalLicensesPage() {
       style={{ paddingBottom: insets.bottom }}
     >
       <Stack.Screen options={{ title: license.name }} />
-      <CatalystText variant="mono" className="leading-5">
+      <CatalystText variant="mono" className="leading-5 font-mono">
         {license.content}
       </CatalystText>
     </ScrollView>

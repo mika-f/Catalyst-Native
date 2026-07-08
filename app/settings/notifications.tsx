@@ -38,7 +38,8 @@ export default function NotificationSettingsPage() {
   const [enabledTypes, setEnabledTypes] = useState<Set<string>>(new Set());
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isStreamingEnabled, setIsStreamingEnabled] = useAtom(streamingEnabledAtom);
+  const [isStreamingEnabled, setIsStreamingEnabled] =
+    useAtom(streamingEnabledAtom);
 
   // 初期化
   useAsyncOneTimeEffect(async () => {
@@ -78,7 +79,9 @@ export default function NotificationSettingsPage() {
     };
   }, [isPushEnabled, account]);
 
-  const isEffectivelyEnabled = isPushEnabled && (authStatus === "authorized" || authStatus === "provisional");
+  const isEffectivelyEnabled =
+    isPushEnabled &&
+    (authStatus === "authorized" || authStatus === "provisional");
 
   // Push通知トグル
   const handlePushToggle = useCallback(
@@ -113,7 +116,10 @@ export default function NotificationSettingsPage() {
             if (token && account) {
               setFcmToken(token);
               await saveFcmToken(token);
-              await registerTokenToBackend(token, account.credential.accessToken);
+              await registerTokenToBackend(
+                token,
+                account.credential.accessToken,
+              );
             }
           }
         }
@@ -123,7 +129,10 @@ export default function NotificationSettingsPage() {
         await savePushEnabled(false);
         const savedToken = await loadSavedFcmToken();
         if (savedToken && account) {
-          await unregisterTokenFromBackend(savedToken, account.credential.accessToken);
+          await unregisterTokenFromBackend(
+            savedToken,
+            account.credential.accessToken,
+          );
         }
       }
     },
@@ -164,11 +173,16 @@ export default function NotificationSettingsPage() {
   })();
 
   if (isLoading) {
-    return <View className="flex-1 bg-light-surface-muted dark:bg-dark-background" />;
+    return (
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background" />
+    );
   }
 
   return (
-    <ScrollView className="flex-1 bg-light-surface-muted dark:bg-dark-background" contentContainerClassName="pb-8">
+    <ScrollView
+      className="flex-1 bg-light-surface-muted dark:bg-dark-background"
+      contentContainerClassName="pb-8"
+    >
       {/* セクション1: 全体設定 */}
       <View className="pt-2">
         <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
@@ -177,14 +191,19 @@ export default function NotificationSettingsPage() {
         <View className="bg-light-background dark:bg-dark-surface">
           <View className="min-h-16 flex-row items-center px-5 py-3">
             <CatalystListItemContent className="mr-3">
-              <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+              <CatalystText
+                variant="subtitle"
+                className="text-[15px] font-semibold"
+              >
                 Push通知
               </CatalystText>
-              {isPushEnabled && (
+              {
                 <CatalystText variant="caption" tone="muted">
-                  有効
+                  {isPushEnabled
+                    ? "通知を受け取ります"
+                    : "通知を受け取りません"}
                 </CatalystText>
-              )}
+              }
             </CatalystListItemContent>
             <CatalystSwitch
               value={isPushEnabled}
@@ -202,16 +221,67 @@ export default function NotificationSettingsPage() {
                 設定を開く
               </CatalystText>
             </Pressable>
-            <CatalystText variant="caption" tone="danger" className="mt-1 leading-4">
+            <CatalystText
+              variant="caption"
+              tone="danger"
+              className="mt-1 leading-4"
+            >
               通知がオフになっています。端末の設定から通知を有効にしてください。
             </CatalystText>
           </View>
         ) : footerText ? (
-          <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
+          <CatalystText
+            variant="caption"
+            tone="subtle"
+            className="px-5 pt-2 leading-4"
+          >
             {footerText}
           </CatalystText>
         ) : null}
       </View>
+
+      {/* セクション2: 通知タイプ別設定 */}
+      {
+        <View className="mt-6">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            通知の種類
+          </CatalystText>
+          <View className="bg-light-background dark:bg-dark-surface">
+            {PUSH_NOTIFICATION_TYPES.map((type, index) => (
+              <View key={type.key}>
+                <View className="min-h-16 flex-row items-center px-5 py-3">
+                  <CatalystListItemContent className="mr-3">
+                    <CatalystText
+                      variant="subtitle"
+                      className="text-[15px] font-semibold"
+                    >
+                      {type.displayName}
+                    </CatalystText>
+                    <CatalystText variant="caption" tone="muted">
+                      {type.description}
+                    </CatalystText>
+                  </CatalystListItemContent>
+                  <CatalystSwitch
+                    value={enabledTypes.has(type.key)}
+                    onValueChange={(v) => handleTypeToggle(type.key, v)}
+                    disabled={!isEffectivelyEnabled}
+                  />
+                </View>
+                {index < PUSH_NOTIFICATION_TYPES.length - 1 && (
+                  <CatalystDivider className="ml-5 w-auto" />
+                )}
+              </View>
+            ))}
+          </View>
+          <CatalystText
+            variant="caption"
+            tone="subtle"
+            className="px-5 pt-2 leading-4"
+          >
+            受け取りたい通知の種類を選択してください。
+          </CatalystText>
+        </View>
+      }
 
       <View className="mt-6">
         <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
@@ -220,7 +290,10 @@ export default function NotificationSettingsPage() {
         <View className="bg-light-background dark:bg-dark-surface">
           <View className="min-h-16 flex-row items-center px-5 py-3">
             <CatalystListItemContent className="mr-3">
-              <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+              <CatalystText
+                variant="subtitle"
+                className="text-[15px] font-semibold"
+              >
                 ストリーミング接続
               </CatalystText>
               <CatalystText variant="caption" tone="muted">
@@ -234,44 +307,14 @@ export default function NotificationSettingsPage() {
             />
           </View>
         </View>
-        <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
+        <CatalystText
+          variant="caption"
+          tone="subtle"
+          className="px-5 pt-2 leading-4"
+        >
           streaming.natsuneko.com への WebSocket 接続を使用します。
         </CatalystText>
       </View>
-
-      {/* セクション2: 通知タイプ別設定 */}
-      {isPushEnabled && (
-        <View className="mt-6">
-          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
-            通知の種類
-          </CatalystText>
-          <View className="bg-light-background dark:bg-dark-surface">
-            {PUSH_NOTIFICATION_TYPES.map((type, index) => (
-              <View key={type.key}>
-                <View className="min-h-16 flex-row items-center px-5 py-3">
-                  <CatalystListItemContent className="mr-3">
-                    <CatalystText variant="subtitle" className="text-[15px] font-semibold">
-                      {type.displayName}
-                    </CatalystText>
-                    <CatalystText variant="caption" tone="muted">
-                      {type.description}
-                    </CatalystText>
-                  </CatalystListItemContent>
-                  <CatalystSwitch
-                    value={enabledTypes.has(type.key)}
-                    onValueChange={(v) => handleTypeToggle(type.key, v)}
-                    disabled={!isEffectivelyEnabled}
-                  />
-                </View>
-                {index < PUSH_NOTIFICATION_TYPES.length - 1 && <CatalystDivider className="ml-5 w-auto" />}
-              </View>
-            ))}
-          </View>
-          <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
-            受け取りたい通知の種類を選択してください。
-          </CatalystText>
-        </View>
-      )}
 
       {/* デバッグ情報 */}
       {__DEV__ && (

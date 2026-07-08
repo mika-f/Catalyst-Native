@@ -6,6 +6,7 @@ import {
   CatalystListItem,
   CatalystListItemContent,
   CatalystText,
+  CatalystTextField,
 } from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import type {
@@ -22,7 +23,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  TextInput,
   View,
 } from "react-native";
 import { withUniwind } from "uniwind";
@@ -379,18 +379,13 @@ export default function CustomReactionsSettingsPage() {
                 ショートコード
               </CatalystText>
               <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
-                <TextInput
-                  className="text-base text-light-text dark:text-dark-text"
+                <CatalystTextField
+                  className="rounded-none bg-transparent p-0"
                   value={shortcode}
                   onChangeText={(text) =>
                     setShortcode(text.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
                   }
                   placeholder="kawaii"
-                  placeholderTextColorClassName="accent-light-text-subtle dark:accent-dark-text-subtle"
-                  cursorColorClassName="accent-light-tint dark:accent-dark-tint"
-                  selectionColorClassName="accent-light-tint dark:accent-dark-tint"
-                  selectionHandleColorClassName="accent-light-tint dark:accent-dark-tint"
-                  underlineColorAndroidClassName="accent-transparent"
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
@@ -406,16 +401,11 @@ export default function CustomReactionsSettingsPage() {
                 表示名
               </CatalystText>
               <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
-                <TextInput
-                  className="text-base text-light-text dark:text-dark-text"
+                <CatalystTextField
+                  className="rounded-none bg-transparent p-0"
                   value={displayName}
                   onChangeText={setDisplayName}
                   placeholder="かわいい"
-                  placeholderTextColorClassName="accent-light-text-subtle dark:accent-dark-text-subtle"
-                  cursorColorClassName="accent-light-tint dark:accent-dark-tint"
-                  selectionColorClassName="accent-light-tint dark:accent-dark-tint"
-                  selectionHandleColorClassName="accent-light-tint dark:accent-dark-tint"
-                  underlineColorAndroidClassName="accent-transparent"
                   maxLength={32}
                 />
               </View>
