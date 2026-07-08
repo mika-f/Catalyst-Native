@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useTheme } from "expo-router";
 import { Pressable, View } from "react-native";
 
 export type CatalystListItemProps = React.ComponentProps<typeof Pressable> & {
@@ -10,11 +11,16 @@ export const CatalystListItem = ({
   divided = true,
   ...props
 }: CatalystListItemProps) => {
+  const theme = useTheme();
+  const isDarkMode = theme.dark;
+
+  // workaround for dark:active not working on Pressable
   return (
     <Pressable
       className={cn(
-        "flex-row items-center gap-3 px-4 py-3 active:bg-light-surface-muted dark:active:bg-dark-surface-muted",
+        "flex-row items-center gap-3 px-4 py-3 active:bg-light-surface-muted",
         divided && "border-b border-light-divider dark:border-dark-divider",
+        isDarkMode && "active:bg-dark-surface-muted",
         className,
       )}
       {...props}
