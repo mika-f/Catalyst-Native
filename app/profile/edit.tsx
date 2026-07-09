@@ -1,9 +1,17 @@
 import { EmojiPickerSheet, type EmojiPickerSheetRef } from "@/components/emoji-verse";
 import type { EmojiItem } from "@/components/emoji-verse/types";
+import {
+  CatalystButton,
+  CatalystButtonIcon,
+  CatalystButtonText,
+  CatalystDivider,
+  CatalystIconButton,
+  CatalystText,
+  CatalystTextField,
+} from "@/components/design-system";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { getCdnUrl } from "@/lib/media";
-import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import type {
@@ -19,17 +27,14 @@ import { Image as ExpoImage } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
 import { Camera, Plus, Trash2, X } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { type PropsWithChildren, useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
-  Text,
-  TextInput,
   View,
-  useColorScheme,
   useWindowDimensions,
 } from "react-native";
 import ImageCropPicker, { Image } from "react-native-image-crop-picker";
@@ -50,6 +55,48 @@ const BANNER_CROP_HEIGHT = 500;
 const ICON_SIZE = 512;
 const MAX_ADDITIONAL_WEBSITES = 4;
 
+type ProfileEditSectionProps = PropsWithChildren<{
+  title?: string;
+  caption?: string;
+}>;
+
+const ProfileEditSection = ({ caption, children, title }: ProfileEditSectionProps) => (
+  <View className="bg-light-background dark:bg-dark-surface">
+    {title ? (
+      <View className="px-5 pb-2 pt-5">
+        <CatalystText variant="caption" tone="muted" className="font-semibold uppercase">
+          {title}
+        </CatalystText>
+        {caption ? (
+          <CatalystText variant="caption" tone="subtle" className="mt-1 leading-4">
+            {caption}
+          </CatalystText>
+        ) : null}
+      </View>
+    ) : null}
+    {children}
+  </View>
+);
+
+type ProfileEditFieldProps = PropsWithChildren<{
+  error?: string | null;
+  label: string;
+}>;
+
+const ProfileEditField = ({ children, error, label }: ProfileEditFieldProps) => (
+  <View className="px-5 py-4">
+    <CatalystText variant="label" className="mb-2">
+      {label}
+    </CatalystText>
+    {children}
+    {error ? (
+      <CatalystText variant="caption" tone="danger" className="mt-2">
+        {error}
+      </CatalystText>
+    ) : null}
+  </View>
+);
+
 function isValidUrl(text: string): boolean {
   if (!text.trim()) return true;
   try {
@@ -63,7 +110,6 @@ function isValidUrl(text: string): boolean {
 export default function ProfileEditScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const bannerHeight = screenWidth / 3;
-  const theme = useColorScheme() ?? "light";
   const router = useRouter();
   const [account, setAccount] = useAtom(accountAtom);
   const client = useAtomValue(clientAtom);
@@ -350,7 +396,7 @@ export default function ProfileEditScreen() {
           }}
         />
         <View className="flex-1 bg-light-background dark:bg-dark-background items-center justify-center">
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
         </View>
       </>
     );
@@ -363,25 +409,22 @@ export default function ProfileEditScreen() {
           title: "プロフィールを編集",
           headerBackTitle: "キャンセル",
           headerRight: () => (
-            <Pressable onPress={handleSave} disabled={!canSave}>
-              <Text
-                className={cn(
-                  "text-base font-semibold",
-                  canSave
-                    ? "text-light-accent dark:text-dark-accent"
-                    : "text-light-text-subtle dark:text-dark-text-subtle",
-                )}
+            <Pressable onPress={handleSave} disabled={!canSave} hitSlop={8} className="px-1 py-2">
+              <CatalystText
+                variant="subtitle"
+                tone={canSave ? "tint" : "subtle"}
+                className={!canSave ? "opacity-60" : undefined}
               >
                 保存
-              </Text>
+              </CatalystText>
             </Pressable>
           ),
         }}
       />
-      <View className="flex-1 bg-light-background dark:bg-dark-background">
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
         {(isSubmitting || isUploadingImage) && (
           <View className="absolute inset-0 z-50 items-center justify-center bg-light-overlay dark:bg-dark-overlay">
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
         <KeyboardAvoidingView
@@ -390,253 +433,261 @@ export default function ProfileEditScreen() {
           keyboardVerticalOffset={100}
         >
           <ScrollView className="flex-1" contentContainerClassName="pb-12">
-            {/* ヘッダー画像 */}
-            <Pressable onPress={handlePickBanner} disabled={isUploadingImage}>
-              <View style={{ width: screenWidth, height: bannerHeight }}>
-                {currentBannerUri ? (
-                  <UniImage
-                    source={{ uri: currentBannerUri }}
-                    contentFit="cover"
-                    style={{ width: screenWidth, height: bannerHeight }}
-                  />
-                ) : (
-                  <View
-                    className="bg-neutral-400 dark:bg-neutral-700"
-                    style={{ width: screenWidth, height: bannerHeight }}
-                  />
-                )}
-                <View className="absolute inset-0 items-center justify-center bg-black/30">
-                  <UniCamera size={28} className="text-white" />
-                </View>
-              </View>
-            </Pressable>
-
-            {/* アイコン画像 */}
-            <View className="px-4 -mt-10">
-              <Pressable onPress={handlePickIcon} disabled={isUploadingImage}>
-                <View className="border-light-background dark:border-dark-background rounded-full border-4 w-24 h-24">
-                  {currentIconUri ? (
-                    <UniImage
-                      source={{ uri: currentIconUri }}
-                      className="w-full h-full rounded-full"
-                      contentFit="cover"
-                    />
+            <View className="bg-light-background dark:bg-dark-surface">
+              <Pressable onPress={handlePickBanner} disabled={isUploadingImage} className="active:opacity-95">
+                <View
+                  className="bg-light-surface-muted dark:bg-dark-surface-muted"
+                  style={{ width: screenWidth, height: bannerHeight }}
+                >
+                  {currentBannerUri ? (
+                    <UniImage source={{ uri: currentBannerUri }} contentFit="cover" className="h-full w-full" />
                   ) : (
-                    <View className="w-full h-full rounded-full bg-neutral-400 dark:bg-neutral-600" />
+                    <View className="h-full w-full bg-light-surface-elevated dark:bg-dark-surface-elevated" />
                   )}
-                  <View className="absolute inset-0 items-center justify-center rounded-full bg-black/30">
-                    <UniCamera size={20} className="text-white" />
+                  <View className="absolute inset-0 items-center justify-center bg-black/35">
+                    <View className="size-12 items-center justify-center rounded-full bg-black/35">
+                      <UniCamera size={24} className="text-white" />
+                    </View>
                   </View>
                 </View>
               </Pressable>
-              <Text className="mt-1 text-xs text-light-text-muted dark:text-dark-text-muted">
-                正方形にクロップされます
-              </Text>
+
+              <View className="-mt-12 px-5 pb-5">
+                <View className="flex-row items-end justify-between gap-4">
+                  <View>
+                    <Pressable onPress={handlePickIcon} disabled={isUploadingImage} className="active:opacity-90">
+                      <View className="size-24 rounded-full border-4 border-light-background bg-light-surface-muted dark:border-dark-surface dark:bg-dark-surface-muted">
+                        {currentIconUri ? (
+                          <UniImage
+                            source={{ uri: currentIconUri }}
+                            className="h-full w-full rounded-full"
+                            contentFit="cover"
+                          />
+                        ) : (
+                          <View className="h-full w-full rounded-full bg-light-surface-elevated dark:bg-dark-surface-elevated" />
+                        )}
+                        <View className="absolute inset-0 items-center justify-center rounded-full bg-black/35">
+                          <UniCamera size={20} className="text-white" />
+                        </View>
+                      </View>
+                    </Pressable>
+                    <CatalystText variant="caption" tone="subtle" className="mt-1.5">
+                      正方形にクロップされます
+                    </CatalystText>
+                  </View>
+                  <CatalystButton tone="secondary" size="sm" onPress={handlePickBanner} disabled={isUploadingImage}>
+                    <CatalystButtonIcon>
+                      <UniCamera />
+                    </CatalystButtonIcon>
+                    <CatalystButtonText>ヘッダー変更</CatalystButtonText>
+                  </CatalystButton>
+                </View>
+              </View>
             </View>
 
-            {/* フォーム */}
-            <View className="px-4 mt-4 gap-5">
-              {/* 表示名 */}
-              <View className="gap-1.5">
-                <Text className="text-sm font-medium text-light-text dark:text-dark-text">表示名</Text>
-                <TextInput
+            <View className="h-3" />
+
+            <ProfileEditSection title="プロフィール">
+              <ProfileEditField label="表示名" error={!displayName.trim() ? "表示名は必須です" : null}>
+                <CatalystTextField
                   value={displayName}
                   onChangeText={setDisplayName}
                   placeholder="表示名"
-                  placeholderTextColor={theme === "dark" ? "#666" : "#999"}
-                  className="rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-                  style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
+                  className="min-h-11 border-b border-light-divider bg-transparent px-0 py-1 text-[16px] dark:border-dark-divider"
                 />
-                {!displayName.trim() && (
-                  <Text className="text-xs text-light-error dark:text-dark-error">表示名は必須です</Text>
-                )}
-              </View>
+              </ProfileEditField>
 
-              <View className="h-px bg-light-divider dark:bg-dark-divider" />
+              <CatalystDivider className="ml-5 w-auto" />
 
-              {/* プロフィール絵文字 */}
-              <View className="gap-2">
-                <Text className="text-sm font-medium text-light-text dark:text-dark-text">プロフィール絵文字</Text>
+              <View className="px-5 py-4">
+                <CatalystText variant="label" className="mb-3">
+                  プロフィール絵文字
+                </CatalystText>
                 <View className="flex-row items-center justify-between gap-3">
-                  <View className="flex-row items-center gap-2">
-                    <View className="h-10 w-10 items-center justify-center rounded-full bg-light-surface-muted dark:bg-dark-surface-muted">
+                  <View className="min-w-0 flex-1 flex-row items-center gap-3">
+                    <View className="size-11 items-center justify-center rounded-full bg-light-surface-muted dark:bg-dark-surface-muted">
                       <ProfileEmoji emoji={profileEmoji} size={24} />
                     </View>
-                    <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
+                    <CatalystText variant="body" tone={profileEmoji ? "default" : "muted"} numberOfLines={1}>
                       {profileEmoji ? "表示名の横に表示されます" : "未設定"}
-                    </Text>
+                    </CatalystText>
                   </View>
                   <View className="flex-row items-center gap-2">
-                    {profileEmoji && (
-                      <Pressable
+                    {profileEmoji ? (
+                      <CatalystIconButton
+                        label="プロフィール絵文字を削除"
+                        size="sm"
+                        tone="secondary"
                         onPress={handleClearProfileEmoji}
-                        className="rounded-lg border border-light-border dark:border-dark-border px-3 py-2"
                       >
-                        <Text className="text-sm font-semibold text-light-text dark:text-dark-text">削除</Text>
-                      </Pressable>
-                    )}
-                    <Pressable
-                      onPress={() => profileEmojiPickerRef.current?.open()}
-                      className="rounded-lg bg-light-tint dark:bg-dark-tint px-3 py-2"
-                    >
-                      <Text className="text-sm font-semibold text-light-tint-foreground dark:text-dark-tint-foreground">
-                        選択
-                      </Text>
-                    </Pressable>
+                        <UniTrash2 className="text-light-error dark:text-dark-error" />
+                      </CatalystIconButton>
+                    ) : null}
+                    <CatalystButton size="sm" tone="tint" onPress={() => profileEmojiPickerRef.current?.open()}>
+                      <CatalystButtonText>選択</CatalystButtonText>
+                    </CatalystButton>
                   </View>
                 </View>
               </View>
 
-              <View className="h-px bg-light-divider dark:bg-dark-divider" />
+              <CatalystDivider className="ml-5 w-auto" />
 
-              {/* 自己紹介 */}
-              <View className="gap-1.5">
-                <Text className="text-sm font-medium text-light-text dark:text-dark-text">自己紹介</Text>
-                <TextInput
+              <ProfileEditField label="自己紹介">
+                <CatalystTextField
                   value={bio}
                   onChangeText={setBio}
                   placeholder="自己紹介を入力..."
-                  placeholderTextColor={theme === "dark" ? "#666" : "#999"}
                   multiline
-                  className="min-h-20 rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-                  textAlignVertical="top"
+                  className="min-h-24 border-b border-light-divider bg-transparent px-0 py-1 text-[16px] dark:border-dark-divider"
                 />
-              </View>
+              </ProfileEditField>
+            </ProfileEditSection>
 
-              <View className="h-px bg-light-divider dark:bg-dark-divider" />
+            <View className="h-3" />
 
-              {/* ウェブサイト */}
-              <View className="gap-1.5">
-                <Text className="text-sm font-medium text-light-text dark:text-dark-text">ウェブサイト</Text>
-                <TextInput
+            <ProfileEditSection title="リンク">
+              <ProfileEditField
+                label="ウェブサイト"
+                error={website.trim() && !isValidUrl(website) ? "有効なURLを入力してください (http:// または https://)" : null}
+              >
+                <CatalystTextField
                   value={website}
                   onChangeText={setWebsite}
                   placeholder="https://example.com"
-                  placeholderTextColor={theme === "dark" ? "#666" : "#999"}
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="url"
-                  className="rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-                  style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
+                  className="min-h-11 border-b border-light-divider bg-transparent px-0 py-1 text-[16px] dark:border-dark-divider"
                 />
-                {website.trim() && !isValidUrl(website) && (
-                  <Text className="text-xs text-light-error dark:text-dark-error">
-                    有効なURLを入力してください (http:// または https://)
-                  </Text>
-                )}
-              </View>
+              </ProfileEditField>
 
-              {/* 追加ウェブサイト */}
               {additionalWebsites.map((w, index) => (
-                <View key={`additional-website-${index}`} className="gap-1.5">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-sm font-medium text-light-text dark:text-dark-text">
-                      追加ウェブサイト {index + 1}
-                    </Text>
-                    <Pressable onPress={() => handleRemoveWebsite(index)} hitSlop={8}>
-                      <UniTrash2 size={16} className="text-light-error dark:text-dark-error" />
-                    </Pressable>
+                <View key={`additional-website-${index}`}>
+                  <CatalystDivider className="ml-5 w-auto" />
+                  <View className="px-5 py-4">
+                    <View className="mb-2 flex-row items-center justify-between gap-3">
+                      <CatalystText variant="label">追加ウェブサイト {index + 1}</CatalystText>
+                      <CatalystIconButton
+                        label={`追加ウェブサイト ${index + 1} を削除`}
+                        size="sm"
+                        tone="ghost"
+                        onPress={() => handleRemoveWebsite(index)}
+                        className="-mr-2 -my-2"
+                      >
+                        <UniTrash2 className="text-light-error dark:text-dark-error" />
+                      </CatalystIconButton>
+                    </View>
+                    <CatalystTextField
+                      value={w}
+                      onChangeText={(value) => handleUpdateWebsite(index, value)}
+                      placeholder="https://example.com"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="url"
+                      className="min-h-11 border-b border-light-divider bg-transparent px-0 py-1 text-[16px] dark:border-dark-divider"
+                    />
+                    {w.trim() && !isValidUrl(w) ? (
+                      <CatalystText variant="caption" tone="danger" className="mt-2">
+                        有効なURLを入力してください (http:// または https://)
+                      </CatalystText>
+                    ) : null}
                   </View>
-                  <TextInput
-                    value={w}
-                    onChangeText={(value) => handleUpdateWebsite(index, value)}
-                    placeholder="https://example.com"
-                    placeholderTextColor={theme === "dark" ? "#666" : "#999"}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="url"
-                    className="rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-                    style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
-                  />
-                  {w.trim() && !isValidUrl(w) && (
-                    <Text className="text-xs text-light-error dark:text-dark-error">
-                      有効なURLを入力してください (http:// または https://)
-                    </Text>
-                  )}
                 </View>
               ))}
 
-              {additionalWebsites.length < MAX_ADDITIONAL_WEBSITES && (
-                <Pressable onPress={handleAddWebsite} className="flex-row items-center gap-2">
-                  <UniPlus size={16} className="text-light-tint dark:text-dark-tint" />
-                  <Text className="text-sm text-light-tint dark:text-dark-tint">ウェブサイトを追加</Text>
-                </Pressable>
-              )}
-              {additionalWebsites.length > 0 && (
-                <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                  最大{MAX_ADDITIONAL_WEBSITES}件まで追加できます
-                </Text>
-              )}
+              <View className="px-5 pb-5 pt-1">
+                {additionalWebsites.length < MAX_ADDITIONAL_WEBSITES ? (
+                  <CatalystButton tone="ghost" size="sm" onPress={handleAddWebsite} className="self-start px-0">
+                    <CatalystButtonIcon>
+                      <UniPlus className="text-light-tint dark:text-dark-tint" />
+                    </CatalystButtonIcon>
+                    <CatalystButtonText className="text-light-tint dark:text-dark-tint">
+                      ウェブサイトを追加
+                    </CatalystButtonText>
+                  </CatalystButton>
+                ) : null}
+                {additionalWebsites.length > 0 ? (
+                  <CatalystText variant="caption" tone="subtle" className="mt-2">
+                    最大{MAX_ADDITIONAL_WEBSITES}件まで追加できます
+                  </CatalystText>
+                ) : null}
+              </View>
+            </ProfileEditSection>
 
-              <View className="h-px bg-light-divider dark:bg-dark-divider" />
+            <View className="h-3" />
 
-              {/* プロフィールハッシュタグ */}
-              <View className="gap-2">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-sm font-medium text-light-text dark:text-dark-text">プロフィールハッシュタグ</Text>
-                  <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+            <ProfileEditSection
+              title="プロフィールハッシュタグ"
+              caption="あなたの活動や好きなものを表すタグを追加できます。"
+            >
+              <View className="px-5 py-4">
+                <View className="mb-3 flex-row items-center justify-between">
+                  <CatalystText variant="label">タグ</CatalystText>
+                  <CatalystText variant="caption" tone="muted">
                     {tags.length}/{PROFILE_TAG_MAX_COUNT}
-                  </Text>
+                  </CatalystText>
                 </View>
-                <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                  あなたの活動や好きなものを表すタグを追加してください。
-                </Text>
 
-                {/* 追加済みタグ */}
-                {tags.length > 0 && (
-                  <View className="flex-row flex-wrap gap-1.5">
+                {tags.length > 0 ? (
+                  <View className="mb-3 flex-row flex-wrap gap-2">
                     {tags.map((tag) => (
                       <View
                         key={tag.id}
-                        className="flex-row items-center gap-1 rounded-full bg-light-surface-muted dark:bg-dark-surface-muted px-2.5 py-1"
+                        className="flex-row items-center gap-1.5 rounded-full border border-light-toggle-border bg-light-toggle px-3 py-1.5 dark:border-dark-toggle-border dark:bg-dark-toggle"
                       >
-                        <Text className="text-xs text-light-tint dark:text-dark-tint">#{tag.name}</Text>
+                        <CatalystText variant="caption" tone="tint" className="font-semibold">
+                          #{tag.name}
+                        </CatalystText>
                         <Pressable onPress={() => handleRemoveTag(tag.id)} hitSlop={6}>
                           <UniX size={12} className="text-light-text-muted dark:text-dark-text-muted" />
                         </Pressable>
                       </View>
                     ))}
                   </View>
+                ) : (
+                  <CatalystText variant="caption" tone="subtle" className="mb-3">
+                    まだタグはありません。
+                  </CatalystText>
                 )}
 
-                {/* タグ入力 */}
                 {tags.length < PROFILE_TAG_MAX_COUNT && (
-                  <View className="relative">
-                    <View className="flex-row items-center gap-2">
-                      <TextInput
+                  <View>
+                    <View className="flex-row items-end gap-3">
+                      <CatalystTextField
                         value={tagInput}
                         onChangeText={handleTagInputChange}
                         onSubmitEditing={() => handleAddTag(tagInput)}
                         returnKeyType="done"
                         placeholder="タグを入力（# は任意）"
-                        placeholderTextColor={theme === "dark" ? "#666" : "#999"}
                         autoCapitalize="none"
                         autoCorrect={false}
-                        className="flex-1 rounded-lg border border-light-border bg-light-surface px-3 py-2.5 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-                        style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
+                        className="min-h-11 flex-1 border-b border-light-divider bg-transparent px-0 py-1 text-[16px] dark:border-dark-divider"
                       />
-                      <Pressable
+                      <CatalystButton
                         onPress={() => handleAddTag(tagInput)}
                         disabled={!tagInput.trim()}
-                        className="rounded-lg bg-light-tint dark:bg-dark-tint px-3 py-2.5"
+                        size="sm"
+                        tone="tint"
                       >
-                        <Text className="text-sm font-semibold text-light-tint-foreground dark:text-dark-tint-foreground">追加</Text>
-                      </Pressable>
+                        <CatalystButtonText>追加</CatalystButtonText>
+                      </CatalystButton>
                     </View>
 
-                    {/* サジェスト */}
                     {suggestions.length > 0 && (
-                      <View className="mt-1 rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface overflow-hidden">
-                        {suggestions.map((s) => (
+                      <View className="mt-3 overflow-hidden rounded-lg border border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-surface-muted">
+                        {suggestions.map((s, index) => (
                           <Pressable
                             key={s.id}
                             onPress={() => handleAddTag(s.name)}
-                            className="flex-row items-center justify-between px-3 py-2 border-b border-light-divider dark:border-dark-divider last:border-0"
+                            className="flex-row items-center justify-between px-4 py-3 active:bg-light-surface-muted dark:active:bg-dark-background"
                           >
-                            <Text className="text-sm font-medium text-light-text dark:text-dark-text">#{s.name}</Text>
-                            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+                            <CatalystText variant="label">#{s.name}</CatalystText>
+                            <CatalystText variant="caption" tone="muted">
                               {s.usageCount.toLocaleString()} 人
-                            </Text>
+                            </CatalystText>
+                            {index + 1 !== suggestions.length ? (
+                              <CatalystDivider className="absolute bottom-0 left-4 right-0 w-auto" />
+                            ) : null}
                           </Pressable>
                         ))}
                       </View>
@@ -644,18 +695,16 @@ export default function ProfileEditScreen() {
                   </View>
                 )}
 
-                {/* タグ保存ボタン */}
-                <Pressable
+                <CatalystButton
                   onPress={handleSaveTags}
                   disabled={isSavingTags}
-                  className="items-center rounded-lg border border-light-border dark:border-dark-border px-4 py-2.5"
+                  tone="secondary"
+                  className="mt-4"
                 >
-                  <Text className="text-sm font-semibold text-light-text dark:text-dark-text">
-                    {isSavingTags ? "保存中..." : "タグを保存"}
-                  </Text>
-                </Pressable>
+                  <CatalystButtonText>{isSavingTags ? "保存中..." : "タグを保存"}</CatalystButtonText>
+                </CatalystButton>
               </View>
-            </View>
+            </ProfileEditSection>
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
