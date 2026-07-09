@@ -1,4 +1,10 @@
 import { AlbumSelectionModal } from "@/components/album/selection-modal";
+import {
+  CatalystAvatar,
+  CatalystEmptyState,
+  CatalystIconButton,
+  CatalystText,
+} from "@/components/design-system";
 import { EmojiPickerSheet, type EmojiPickerSheetRef } from "@/components/emoji-verse";
 import { ReactionBar } from "@/components/reaction-bar";
 import { ActionBar } from "@/components/status/action-bar";
@@ -21,7 +27,6 @@ import {
 } from "@/models/streaming";
 import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy } from "@natsuneko-laboratory/catalyst-sdk";
 import * as Clipboard from "expo-clipboard";
-import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import {
@@ -49,7 +54,6 @@ import {
   Share,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -107,12 +111,20 @@ const UniClipboardIcon = withUniwind(ClipboardIcon);
 const UniExternalLink = withUniwind(ExternalLink);
 const UniFileQuestion = withUniwind(FileQuestion);
 const UniFlag = withUniwind(Flag);
-const UniImage = withUniwind(Image);
 const UniMoreHorizontal = withUniwind(MoreHorizontal);
 const UniPencil = withUniwind(Pencil);
 const UniSafeAreaView = withUniwind(SafeAreaView);
 const UniSend = withUniwind(Send);
 const UniTrash2 = withUniwind(Trash2);
+
+const METADATA_LABELS: Record<string, string> = {
+  Author: "撮影者",
+  LocationName: "撮影場所",
+  TakenBy: "撮影者",
+  TakenAt: "撮影日時",
+  Platform: "撮影プラットフォーム",
+  World: "撮影ワールド",
+};
 
 export default function StatusDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -336,186 +348,198 @@ export default function StatusDetailsPage() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <TouchableOpacity onPress={showMenu} style={{ padding: 8 }}>
-              <UniMoreHorizontal size={22} className="text-black dark:text-white" />
-            </TouchableOpacity>
+            <CatalystIconButton label="メニュー" size="sm" tone="ghost" onPress={showMenu}>
+              <UniMoreHorizontal className="text-light-tint dark:text-dark-tint" />
+            </CatalystIconButton>
           ),
         }}
       />
 
       {!status && isNotFound ? (
-        <View className="flex-1 bg-light-background dark:bg-dark-background items-center justify-center">
-          <UniFileQuestion size={64} className="text-light-gray dark:text-dark-gray" />
-          <Text className="font-semibold text-light-gray dark:text-dark-gray mt-2 text-center">
-            投稿が見つかりません
-          </Text>
-          <Text className="text-sm text-light-gray dark:text-dark-gray mt-2 text-center">
-            削除されたか、アクセスできないコンテンツです
-          </Text>
+        <View className="flex-1 bg-light-background dark:bg-dark-background">
+          <CatalystEmptyState
+            title="投稿が見つかりません"
+            description="削除されたか、アクセスできないコンテンツです"
+            icon={<UniFileQuestion />}
+          />
         </View>
       ) : !status ? (
         <View className="flex-1 bg-light-background dark:bg-dark-background items-center justify-center">
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
         </View>
       ) : (
-        <ScrollView className="flex-1 bg-light-background dark:bg-dark-background">
-          {/* User header */}
-          <View className="flex-row items-center px-4 pt-4 pb-2">
-            <TouchableOpacity onPress={() => user && router.push(`/user/${user.screenName}`)} activeOpacity={0.7}>
-              {user?.profile?.iconUrl ? (
-                <UniImage
-                  source={{ uri: getCdnUrl({ src: user.profile.iconUrl, variant: "icon", width: 96 }) }}
-                  className="h-12 w-12 rounded-full"
-                  contentFit="cover"
-                />
-              ) : (
-                <View className="h-12 w-12 rounded-full" />
-              )}
-            </TouchableOpacity>
+        <ScrollView
+          className="flex-1 bg-light-surface-muted dark:bg-dark-background"
+          contentContainerClassName="pb-6"
+        >
+          <View className="bg-light-background dark:bg-dark-surface">
+            <View className="px-5 pb-4 pt-4">
+              <View className="flex-row items-center">
+                <Pressable
+                  accessibilityRole="button"
+                  className="active:opacity-75"
+                  onPress={() => user && router.push(`/user/${user.screenName}`)}
+                >
+                  <CatalystAvatar
+                    source={
+                      user?.profile?.iconUrl
+                        ? getCdnUrl({ src: user.profile.iconUrl, variant: "icon", width: 96 })
+                        : null
+                    }
+                    fallback={user?.displayName}
+                    size="lg"
+                  />
+                </Pressable>
 
-            <View className="flex-1 ml-3">
-              <TouchableOpacity onPress={() => user && router.push(`/user/${user.screenName}`)} activeOpacity={0.7}>
-                <View className="flex-row items-center gap-1">
-                  <Text className="shrink text-light-text dark:text-dark-text font-semibold text-base" numberOfLines={1}>
-                    {user?.displayName ?? ""}
-                  </Text>
-                  <ProfileEmoji emoji={user?.profileEmoji} size={16} />
+                <Pressable
+                  accessibilityRole="button"
+                  className="ml-3 min-w-0 flex-1 active:opacity-75"
+                  onPress={() => user && router.push(`/user/${user.screenName}`)}
+                >
+                  <View className="flex-row items-center gap-1">
+                    <CatalystText variant="subtitle" className="min-w-0 shrink" numberOfLines={1}>
+                      {user?.displayName ?? ""}
+                    </CatalystText>
+                    <ProfileEmoji emoji={user?.profileEmoji} size={16} />
+                  </View>
+                  <CatalystText variant="body" tone="muted" numberOfLines={1}>
+                    @{user?.screenName ?? ""}
+                  </CatalystText>
+                </Pressable>
+
+                <StatusVisibilityBadge privacy={privacy} />
+              </View>
+
+              {status.body.length > 0 ? (
+                <View className="mt-4">
+                  <StatusText
+                    status={status.body}
+                    textClassName="text-[17px] leading-6 text-light-text dark:text-dark-text"
+                    linkClassName="text-[17px] leading-6 text-light-tint dark:text-dark-tint"
+                  />
                 </View>
-                <Text className="text-neutral-500" numberOfLines={1}>
-                  @{user?.screenName ?? ""}
-                </Text>
-              </TouchableOpacity>
+              ) : null}
+
+              <View className="mt-4 flex-row items-center">
+                <CatalystText variant="caption" tone="muted">
+                  {abs(status.createdAt)}
+                </CatalystText>
+                <CatalystText variant="caption" tone="muted">
+                  {" · "}
+                  {rel(status.createdAt)}
+                </CatalystText>
+              </View>
             </View>
 
-            <StatusVisibilityBadge privacy={privacy} />
+            {status.medias.length > 0 ? (
+              <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} />
+            ) : null}
+
+            <View className="px-5 py-3">
+              <ActionBar isDefaultFavorited={isFavorited} status={status} />
+
+              <View className="my-3 h-px bg-light-divider dark:bg-dark-divider" />
+
+              <ReactionBar
+                reactions={reactions}
+                onReact={handleReact}
+                onUnreact={handleUnreact}
+                onAddReaction={isLoggedIn ? () => emojiPickerRef.current?.open() : undefined}
+              />
+            </View>
           </View>
 
-          {/* Media */}
-          {status && status.medias.length > 0 && (
-            <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} />
-          )}
+          {(() => {
+            const currentMedia = status.medias[currentMediaIndex];
+            const meta = currentMedia ? metadata[currentMedia.id] : undefined;
+            if (!meta) return null;
+            const hasContent =
+              meta.platform ||
+              meta.world ||
+              meta.users.length > 0 ||
+              Object.keys(meta.additionalData ?? {}).length > 0;
+            if (!hasContent) return null;
 
-          {/* Body and actions */}
-          <View className="p-4">
-            {status && status.body.length > 0 && <StatusText status={status.body} />}
-
-            {status && (
-              <>
-                <Text className="text-sm text-neutral-500 mt-2">
-                  {abs(status.createdAt)} - {rel(status.createdAt)}
-                </Text>
-
-                <View className="border-t border-light-border dark:border-dark-border my-2" />
-
-                <ActionBar isDefaultFavorited={isFavorited} status={status} />
-
-                <View className="border-t border-light-border dark:border-dark-border my-2" />
-
-                <ReactionBar
-                  reactions={reactions}
-                  onReact={handleReact}
-                  onUnreact={handleUnreact}
-                  onAddReaction={isLoggedIn ? () => emojiPickerRef.current?.open() : undefined}
-                />
-
-                {(() => {
-                  const currentMedia = status.medias[currentMediaIndex];
-                  const meta = currentMedia ? metadata[currentMedia.id] : undefined;
-                  if (!meta) return null;
-                  const hasContent =
-                    meta.platform ||
-                    meta.world ||
-                    meta.users.length > 0 ||
-                    Object.keys(meta.additionalData ?? {}).length > 0;
-                  if (!hasContent) return null;
-
-                  const NAME_TABLE: Record<string, string> = {
-                    Author: "撮影者",
-                    LocationName: "撮影場所",
-                    TakenBy: "撮影者",
-                    TakenAt: "撮影日時",
-                    Platform: "撮影プラットフォーム",
-                    World: "撮影ワールド",
-                  };
+            return (
+              <View className="mt-3 bg-light-background px-5 py-4 dark:bg-dark-surface">
+                <CatalystText variant="subtitle" className="mb-2 text-[15px]">
+                  メタデータ
+                </CatalystText>
+                {meta.platform ? (
+                  <View className="flex-row border-b border-light-divider py-2 dark:border-dark-divider">
+                    <CatalystText variant="caption" tone="muted" className="w-32">
+                      撮影プラットフォーム
+                    </CatalystText>
+                    <CatalystText variant="caption" className="flex-1">
+                      {meta.platform}
+                    </CatalystText>
+                  </View>
+                ) : null}
+                {meta.world ? (
+                  <View className="flex-row border-b border-light-divider py-2 dark:border-dark-divider">
+                    <CatalystText variant="caption" tone="muted" className="w-32">
+                      撮影ワールド
+                    </CatalystText>
+                    <Pressable
+                      className="flex-1 active:opacity-75"
+                      onPress={() =>
+                        router.push(
+                          `/search/${encodeURIComponent(`platform:${meta.platform} world:"${meta.world!.name}"`)}`,
+                        )
+                      }
+                    >
+                      <CatalystText variant="caption" tone="tint">
+                        {meta.world.name}
+                      </CatalystText>
+                    </Pressable>
+                  </View>
+                ) : null}
+                {meta.users.length > 0 ? (
+                  <View className="flex-row border-b border-light-divider py-2 dark:border-dark-divider">
+                    <CatalystText variant="caption" tone="muted" className="w-32">
+                      写っているユーザー
+                    </CatalystText>
+                    <CatalystText variant="caption" className="flex-1">
+                      {meta.users.map((u) => u.displayName).join(", ")}
+                    </CatalystText>
+                  </View>
+                ) : null}
+                {Object.entries(meta.additionalData ?? {}).map(([key, value]) => {
+                  const ref = meta.additionalData2?.[key]?.ref ?? "";
+                  const isWorldLink = key === "World" && ref.startsWith("wrld_");
+                  const isAuthorLink = ref.startsWith("usr_");
+                  const searchQuery = isWorldLink
+                    ? `platform:VRChat world:"${value}"`
+                    : isAuthorLink
+                      ? `takenBy:${ref}`
+                      : null;
+                  const displayValue = key === "TakenAt" ? abs(value) : value;
 
                   return (
-                    <>
-                      <View className="border-t border-light-border dark:border-dark-border my-2" />
-                      <Text className="text-sm font-semibold text-light-text dark:text-dark-text mb-2">メタデータ</Text>
-                      {meta.platform && (
-                        <View className="flex-row py-1.5 border-b border-light-divider dark:border-dark-divider">
-                          <Text className="w-32 text-sm text-light-text-muted dark:text-dark-text-muted">
-                            撮影プラットフォーム
-                          </Text>
-                          <Text className="flex-1 text-sm text-light-text dark:text-dark-text">{meta.platform}</Text>
-                        </View>
+                    <View key={key} className="flex-row border-b border-light-divider py-2 dark:border-dark-divider">
+                      <CatalystText variant="caption" tone="muted" className="w-32">
+                        {METADATA_LABELS[key] ?? key}
+                      </CatalystText>
+                      {searchQuery ? (
+                        <Pressable
+                          className="flex-1 active:opacity-75"
+                          onPress={() => router.push(`/search/${encodeURIComponent(searchQuery)}`)}
+                        >
+                          <CatalystText variant="caption" tone="tint">
+                            {displayValue}
+                          </CatalystText>
+                        </Pressable>
+                      ) : (
+                        <CatalystText variant="caption" className="flex-1">
+                          {displayValue}
+                        </CatalystText>
                       )}
-                      {meta.world && (
-                        <View className="flex-row py-1.5 border-b border-light-divider dark:border-dark-divider">
-                          <Text className="w-32 text-sm text-light-text-muted dark:text-dark-text-muted">
-                            撮影ワールド
-                          </Text>
-                          <Pressable
-                            className="flex-1"
-                            onPress={() =>
-                              router.push(
-                                `/search/${encodeURIComponent(`platform:${meta.platform} world:"${meta.world!.name}"`)}`,
-                              )
-                            }
-                          >
-                            <Text className="text-sm text-blue-500">{meta.world.name}</Text>
-                          </Pressable>
-                        </View>
-                      )}
-                      {meta.users.length > 0 && (
-                        <View className="flex-row py-1.5 border-b border-light-divider dark:border-dark-divider">
-                          <Text className="w-32 text-sm text-light-text-muted dark:text-dark-text-muted">
-                            写っているユーザー
-                          </Text>
-                          <Text className="flex-1 text-sm text-light-text dark:text-dark-text">
-                            {meta.users.map((u) => u.displayName).join(", ")}
-                          </Text>
-                        </View>
-                      )}
-                      {Object.entries(meta.additionalData ?? {}).map(([key, value]) => {
-                        const ref = meta.additionalData2?.[key]?.ref ?? "";
-                        const isWorldLink = key === "World" && ref.startsWith("wrld_");
-                        const isAuthorLink = ref.startsWith("usr_");
-                        const searchQuery = isWorldLink
-                          ? `platform:VRChat world:"${value}"`
-                          : isAuthorLink
-                            ? `takenBy:${ref}`
-                            : null;
-
-                        return (
-                          <View
-                            key={key}
-                            className="flex-row py-1.5 border-b border-light-divider dark:border-dark-divider"
-                          >
-                            <Text className="w-32 text-sm text-light-text-muted dark:text-dark-text-muted">
-                              {NAME_TABLE[key] ?? key}
-                            </Text>
-                            {searchQuery ? (
-                              <Pressable
-                                className="flex-1"
-                                onPress={() => router.push(`/search/${encodeURIComponent(searchQuery)}`)}
-                              >
-                                <Text className="text-sm text-blue-500">{key === "TakenAt" ? abs(value) : value}</Text>
-                              </Pressable>
-                            ) : (
-                              <Text className="flex-1 text-sm text-light-text dark:text-dark-text">
-                                {key === "TakenAt" ? abs(value) : value}
-                              </Text>
-                            )}
-                          </View>
-                        );
-                      })}
-                    </>
+                    </View>
                   );
-                })()}
-              </>
-            )}
-          </View>
+                })}
+              </View>
+            );
+          })()}
         </ScrollView>
       )}
 
@@ -524,11 +548,15 @@ export default function StatusDetailsPage() {
         <Modal visible={isEditSheetVisible} animationType="slide" presentationStyle="pageSheet">
           <View className="flex-1 bg-light-background dark:bg-dark-background">
             <View className="flex-row justify-between items-center px-4 py-3 border-b border-light-border dark:border-dark-border">
-              <TouchableOpacity onPress={() => setIsEditSheetVisible(false)}>
+              <Pressable className="active:opacity-70" onPress={() => setIsEditSheetVisible(false)}>
                 <Text className="text-[17px] text-light-tint dark:text-dark-tint">キャンセル</Text>
-              </TouchableOpacity>
+              </Pressable>
               <Text className="text-[17px] font-semibold text-light-text dark:text-dark-text">キャプションを編集</Text>
-              <TouchableOpacity onPress={handleEditSave} disabled={isEditingSaving || editingCaption.length === 0}>
+              <Pressable
+                className="active:opacity-70 disabled:opacity-40"
+                onPress={handleEditSave}
+                disabled={isEditingSaving || editingCaption.length === 0}
+              >
                 <Text
                   className={cn(
                     "text-[17px] font-semibold text-light-tint dark:text-dark-tint",
@@ -537,7 +565,7 @@ export default function StatusDetailsPage() {
                 >
                   保存
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
             <TextInput
               className="flex-1 p-4 text-base text-light-text dark:text-dark-text"
@@ -556,22 +584,22 @@ export default function StatusDetailsPage() {
               className="flex-row items-center px-1 py-2 bg-light-background dark:bg-dark-background"
               style={{ elevation: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 2 }}
             >
-              <TouchableOpacity onPress={() => setIsEditSheetVisible(false)} className="p-3">
+              <Pressable onPress={() => setIsEditSheetVisible(false)} className="p-3 active:opacity-70">
                 <UniArrowLeft size={24} className="text-light-text dark:text-dark-text" />
-              </TouchableOpacity>
+              </Pressable>
               <Text className="flex-1 text-lg font-medium ml-2 text-light-text dark:text-dark-text">
                 キャプションを編集
               </Text>
-              <TouchableOpacity
+              <Pressable
                 onPress={handleEditSave}
                 disabled={isEditingSaving || editingCaption.length === 0}
                 className={cn(
-                  "m-2 px-4 py-2 rounded-full bg-[#1976D2]",
-                  (isEditingSaving || editingCaption.length === 0) && "bg-[#90CAF9]",
+                  "m-2 rounded-full bg-light-tint px-4 py-2 active:opacity-80 dark:bg-dark-tint",
+                  (isEditingSaving || editingCaption.length === 0) && "opacity-40",
                 )}
               >
-                <UniCheck size={22} className="text-white" />
-              </TouchableOpacity>
+                <UniCheck size={22} className="text-light-tint-foreground dark:text-dark-tint-foreground" />
+              </Pressable>
             </View>
             <TextInput
               className="flex-1 p-4 text-base text-light-text dark:text-dark-text"

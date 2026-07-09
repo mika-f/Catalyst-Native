@@ -1,5 +1,6 @@
 import { EmojiPickerSheet, type EmojiPickerSheetRef } from "@/components/emoji-verse";
 import { ReactionBar } from "@/components/reaction-bar";
+import { CatalystAvatar, CatalystText } from "@/components/design-system";
 import { StatusText } from "@/components/status/text";
 import { StatusVisibilityBadge } from "@/components/status/visibility-badge";
 import { MediaCarousel } from "@/components/ui/media-carousel";
@@ -16,12 +17,10 @@ import {
   useStreamingReactions,
 } from "@/models/streaming";
 import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy, CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
 import React, { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
-import { withUniwind } from "uniwind";
 
 export type StatusRenderingMode = "twtr" | "plain";
 
@@ -38,8 +37,6 @@ type Props = {
   status: CatalystStatus | CatalystStatusV1_1;
   renderingMode?: StatusRenderingMode;
 };
-
-const UniImage = withUniwind(Image);
 
 export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) => {
   const router = useRouter();
@@ -160,60 +157,67 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
   );
 
   return (
-    <View className="py-2">
-      {/* Header */}
-      <Pressable onPress={navigateToStatus}>
-        <View className="flex-row items-center px-4 mb-1">
-          <Pressable onPress={navigateToUser}>
-            {user?.profile?.iconUrl ? (
-              <UniImage
-                source={{
-                  uri: getCdnUrl({
-                    src: user.profile.iconUrl,
-                    variant: "icon",
-                    width: 64,
-                  }),
-                }}
-                className="w-8 h-8 rounded-full"
-                contentFit="cover"
-              />
-            ) : (
-              <View className="w-8 h-8 rounded-full bg-[#888] opacity-25" />
-            )}
-          </Pressable>
+    <View className="bg-light-background py-3 dark:bg-dark-background">
+      <View className="flex-row gap-3 px-4">
+        <Pressable accessibilityRole="button" className="active:opacity-75" onPress={navigateToUser}>
+          <CatalystAvatar
+            source={
+              user?.profile?.iconUrl
+                ? getCdnUrl({ src: user.profile.iconUrl, variant: "icon", width: 80 })
+                : null
+            }
+            fallback={user.displayName}
+            size="md"
+          />
+        </Pressable>
 
-          <View className="flex-row items-center flex-1 ml-2 overflow-hidden">
-            <Pressable className="flex flex-row items-center gap-1 shrink overflow-hidden" onPress={navigateToUser}>
-              <Text className="font-bold text-sm text-black dark:text-white shrink" numberOfLines={1}>
+        <View className="min-w-0 flex-1">
+          <View className="flex-row items-center gap-1.5">
+            <Pressable
+              accessibilityRole="button"
+              className="min-w-0 flex-row items-center gap-1 active:opacity-75"
+              onPress={navigateToUser}
+            >
+              <CatalystText variant="label" className="min-w-0 shrink" numberOfLines={1}>
                 {user.displayName}
-              </Text>
+              </CatalystText>
               <ProfileEmoji emoji={user.profileEmoji} size={14} />
             </Pressable>
             <StatusVisibilityBadge privacy={privacy} />
-            <Text className="text-neutral-500 text-sm shrink-0">・{rel(status.createdAt)}</Text>
           </View>
-        </View>
-      </Pressable>
 
-      {/* Media carousel */}
-      {medias.length > 0 && <MediaCarousel key={status.id} medias={medias} />}
-
-      {/* Body */}
-      {status.body.length > 0 && (
-        <Pressable onPress={navigateToStatus}>
-          {renderingMode === "twtr" ? (
-            <View className="px-4 py-2">
-              <StatusText status={status.body} />
+          <Pressable accessibilityRole="button" className="mt-0.5 active:opacity-90" onPress={navigateToStatus}>
+            <View className="flex-row items-center">
+              <CatalystText variant="caption" tone="muted" numberOfLines={1}>
+                @{user.screenName}
+              </CatalystText>
+              <CatalystText variant="caption" tone="muted">
+                {" · "}
+                {rel(status.createdAt)}
+              </CatalystText>
             </View>
-          ) : (
-            <Text className="px-4 py-2 text-sm">{status.body}</Text>
-          )}
-        </Pressable>
-      )}
 
-      {/* Reactions */}
-      {(hasReactions || isLoggedIn) && (
-        <Pressable className="px-4 pb-1" onPress={navigateToStatus}>
+            {status.body.length > 0 ? (
+              <View className="mt-2">
+                {renderingMode === "twtr" ? (
+                  <StatusText status={status.body} />
+                ) : (
+                  <Text className="text-[15px] leading-5 text-light-text dark:text-dark-text">{status.body}</Text>
+                )}
+              </View>
+            ) : null}
+          </Pressable>
+        </View>
+      </View>
+
+      {medias.length > 0 ? (
+        <View className="mt-3">
+          <MediaCarousel key={status.id} medias={medias} />
+        </View>
+      ) : null}
+
+      {hasReactions || isLoggedIn ? (
+        <Pressable accessibilityRole="button" className="px-4 pt-2 active:opacity-90" onPress={navigateToStatus}>
           <ReactionBar
             reactions={reactions}
             onReact={handleReact}
@@ -221,7 +225,7 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
             onAddReaction={isLoggedIn ? () => emojiPickerRef.current?.open() : undefined}
           />
         </Pressable>
-      )}
+      ) : null}
 
       <EmojiPickerSheet ref={emojiPickerRef} onReact={handleReact} />
     </View>

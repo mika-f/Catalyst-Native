@@ -15,17 +15,25 @@ import { withUniwind } from "uniwind";
 
 const UniLink = withUniwind(Link);
 
-function wrapBareStrings(node: React.ReactNode): React.ReactNode {
+function wrapBareStrings(node: React.ReactNode, textClassName: string): React.ReactNode {
   if (typeof node === "string") {
     const trimmed = node.trim();
-    return trimmed ? <Text className="text-sm text-light-text dark:text-dark-text">{trimmed}</Text> : null;
+    return trimmed ? <Text className={textClassName}>{trimmed}</Text> : null;
   }
 
   return node;
 }
 
 export const StatusText = React.memo(
-  ({ status }: { status: string }) => {
+  ({
+    linkClassName = "text-light-tint dark:text-dark-tint leading-none",
+    status,
+    textClassName = "text-[15px] leading-5 text-light-text dark:text-dark-text",
+  }: {
+    linkClassName?: string;
+    status: string;
+    textClassName?: string;
+  }) => {
     const handleLinkPress = useCallback((url: string) => {
       openUrlWithBrowser(url);
     }, []);
@@ -76,70 +84,70 @@ export const StatusText = React.memo(
           jsxs,
           components: {
             h1: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             h2: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             h3: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             h4: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             h5: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             h6: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             code: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             pre: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             div: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             a: ({ href, children }: { href: string; children: React.ReactNode }) => {
               if (href.startsWith("/")) {
                 return (
                   // @ts-expect-error
-                  <UniLink className="text-blue-500 leading-none" href={href}>
+                  <UniLink className={linkClassName} href={href}>
                     {children}
                   </UniLink>
                 );
               }
 
               return (
-                <Text className="text-blue-500 leading-none" onPress={() => handleLinkPress(href)}>
+                <Text className={linkClassName} onPress={() => handleLinkPress(href)}>
                   {children}
                 </Text>
               );
             },
             br: () => <View />,
             p: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
             span: ({ children }: { children: React.ReactNode }) => (
-              <Text className="text-black dark:text-white">{children}</Text>
+              <Text className={textClassName}>{children}</Text>
             ),
           },
         });
 
       return u.processSync(html).result;
-    }, [status, handleLinkPress]);
+    }, [status, handleLinkPress, linkClassName, textClassName]);
 
     return (
       <View>
         {React.Children.map(
           React.isValidElement(val) ? (val.props as { children?: React.ReactNode }).children : val,
-          wrapBareStrings,
+          (child) => wrapBareStrings(child, textClassName),
         )}
       </View>
     );
   },
-  (a, b) => a.status === b.status,
+  (a, b) => a.status === b.status && a.textClassName === b.textClassName && a.linkClassName === b.linkClassName,
 );
 StatusText.displayName = "StatusText";
