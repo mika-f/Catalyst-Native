@@ -9,8 +9,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { memo, useCallback, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, View, useWindowDimensions } from "react-native";
-import { RefreshControl } from "react-native-gesture-handler";
+import { ActivityIndicator, Pressable, RefreshControl, View, useWindowDimensions } from "react-native";
 
 const COLUMNS = 2;
 const GAP = 2;
