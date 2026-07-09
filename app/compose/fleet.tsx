@@ -10,6 +10,7 @@ import { getFilteredCategories, useDefaultCategories } from "@/components/emoji-
 import type { EmojiCategory, EmojiItem } from "@/components/emoji-verse/types";
 import { emojiToCodepoints } from "@/components/emoji-verse/unicode";
 import { useContainerUnits } from "@/hooks/use-container-units";
+import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import Slider from "@react-native-community/slider";
@@ -18,7 +19,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
-import { ImageIcon, Pencil, Plus, Trash2, Type, X } from "lucide-react-native";
+import { ImageIcon, Pencil, Plus, Trash2, TriangleAlert, Type, X } from "lucide-react-native";
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -43,6 +44,7 @@ const UniX = withUniwind(X);
 const UniPlus = withUniwind(Plus);
 const UniPencil = withUniwind(Pencil);
 const UniTrash2 = withUniwind(Trash2);
+const UniTriangleAlert = withUniwind(TriangleAlert);
 
 const BG_COLORS = ["#000000", "#1a1a2e", "#0d3b66", "#1b4332", "#7b2d8b", "#c0392b", "#e67e22", "#ffffff"];
 
@@ -309,6 +311,7 @@ export default function FleetComposerScreen() {
 
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [backgroundColor, setBackgroundColor] = useState("#000000");
+  const [isNsfw, setIsNsfw] = useState(false);
   const [texts, setTexts] = useState<TextItem[]>([]);
   const [stickers, setStickers] = useState<StickerItem[]>([]);
   const [editingText, setEditingText] = useState<{
@@ -600,6 +603,7 @@ export default function FleetComposerScreen() {
       await client.catalyst.v1.fleet.create({
         body: {
           backgroundColor,
+          isNsfw,
           media: {
             url: uploadUrls.url,
             width: image.width,
@@ -631,6 +635,7 @@ export default function FleetComposerScreen() {
     account,
     image,
     backgroundColor,
+    isNsfw,
     texts,
     stickers,
     containerWidth,
@@ -779,6 +784,30 @@ export default function FleetComposerScreen() {
                   <UniImageIcon size={16} className="text-light-text dark:text-dark-text" />
                   <CatalystText variant="label">
                     {image ? "画像を変更" : "画像を選択"}
+                  </CatalystText>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setIsNsfw((prev) => !prev)}
+                  className={cn(
+                    "flex-row items-center gap-1.5 rounded-full px-3 py-2 active:opacity-80",
+                    isNsfw
+                      ? "bg-light-error-background dark:bg-dark-error-background"
+                      : "bg-light-surface-muted dark:bg-dark-surface-muted",
+                  )}
+                >
+                  <UniTriangleAlert
+                    size={16}
+                    className={cn(
+                      "text-light-text dark:text-dark-text",
+                      isNsfw && "text-light-error dark:text-dark-error",
+                    )}
+                  />
+                  <CatalystText
+                    variant="label"
+                    className={isNsfw ? "text-light-error dark:text-dark-error" : undefined}
+                  >
+                    NSFW
                   </CatalystText>
                 </Pressable>
 
