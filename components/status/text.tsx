@@ -1,3 +1,5 @@
+import { catalystLinkClassName } from "@/components/design-system";
+import { cn } from "@/lib/utils";
 import { openUrlWithBrowser } from "@/models/browser-settings";
 import { extractEntities } from "@natsuneko-laboratory/react-native-twitter-text";
 import { Link } from "expo-router";
@@ -26,7 +28,7 @@ function wrapBareStrings(node: React.ReactNode, textClassName: string): React.Re
 
 export const StatusText = React.memo(
   ({
-    linkClassName = "text-light-tint dark:text-dark-tint leading-none",
+    linkClassName = cn(catalystLinkClassName, "leading-none"),
     status,
     textClassName = "text-[15px] leading-5 text-light-text dark:text-dark-text",
   }: {
@@ -57,6 +59,12 @@ export const StatusText = React.memo(
           case "hashtag": {
             const tag = status.slice(entity.range.start + 1, entity.range.end);
             sb.push(`<a href="/search/%23${tag}">#${tag}</a>`);
+            break;
+          }
+          case "mention": {
+            const mention = status.slice(entity.range.start + 1, entity.range.end);
+            const label = status.slice(entity.range.start, entity.range.end);
+            sb.push(`<a href="/user/${mention}">${label}</a>`);
             break;
           }
           default:

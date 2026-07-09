@@ -45,6 +45,8 @@ export const catalystIconSize: Record<CatalystSize, number> = {
   lg: 22,
 };
 
+export const catalystLinkClassName = "text-light-link dark:text-dark-link";
+
 export const catalystBadgeTone: Record<CatalystBadgeTone, string> = {
   neutral: "bg-light-surface-muted dark:bg-dark-surface-muted",
   accent: "bg-light-toggle dark:bg-dark-toggle",

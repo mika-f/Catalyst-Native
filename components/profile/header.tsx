@@ -211,7 +211,7 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
               onPress={() => openUrlWithBrowser(user.profile!.website)}
             >
               <UniLinkIcon size={14} className="text-light-icon dark:text-dark-icon" />
-              <CatalystText variant="body" tone="tint" className="ml-1" numberOfLines={1}>
+              <CatalystText variant="body" tone="link" className="ml-1" numberOfLines={1}>
                 {user.profile.website}
               </CatalystText>
             </Pressable>
@@ -227,7 +227,7 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
                   onPress={() => openUrlWithBrowser(website)}
                 >
                   <UniLinkIcon size={14} className="text-light-icon dark:text-dark-icon" />
-                  <CatalystText variant="body" tone="tint" className="ml-1" numberOfLines={1}>
+                  <CatalystText variant="body" tone="link" className="ml-1" numberOfLines={1}>
                     {website}
                   </CatalystText>
                 </Pressable>

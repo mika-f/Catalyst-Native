@@ -14,4 +14,5 @@ export { CatalystSwitch, type CatalystSwitchProps } from "./switch";
 export { CatalystTabs, type CatalystTab, type CatalystTabsProps } from "./tabs";
 export { CatalystText, type CatalystTextProps } from "./text";
 export { CatalystTextField, type CatalystTextFieldProps } from "./text-field";
+export { catalystLinkClassName } from "./shared";
 export type { CatalystBadgeTone, CatalystSize, CatalystTone } from "./shared";

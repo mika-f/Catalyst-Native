@@ -1,3 +1,4 @@
+import { catalystLinkClassName } from "@/components/design-system";
 import { openUrlWithBrowser } from "@/models/browser-settings";
 import React, { Fragment, useCallback, useMemo } from "react";
 import { Text, View } from "react-native";
@@ -148,7 +149,7 @@ export const Markdown = React.memo(({ body, selectable = false }: Props) => {
             children: React.ReactNode;
           }) => (
             <Text
-              className="text-light-tint dark:text-dark-tint"
+              className={catalystLinkClassName}
               onPress={() => href && handleLinkPress(href)}
             >
               {children}

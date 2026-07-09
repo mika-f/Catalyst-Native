@@ -1,5 +1,7 @@
+import { catalystLinkClassName } from "@/components/design-system";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { rel } from "@/lib/dayjs";
+import { cn } from "@/lib/utils";
 import { clientAtom } from "@/models/atoms/credential";
 import { Markdown } from "@/components/ui/markdown";
 import type { Notification, NotificationGroup } from "@/models/sdk-types";
@@ -46,7 +48,7 @@ const UserMessageItem = memo(({ notification }: ItemProps) => {
         </View>
         {sender && (
           <Pressable onPress={() => router.push(`/user/${sender.screenName}`)}>
-            <Text className="text-sm text-light-tint dark:text-dark-tint">{sender.displayName}</Text>
+            <Text className={cn("text-sm", catalystLinkClassName)}>{sender.displayName}</Text>
           </Pressable>
         )}
         {message?.createdAt && (

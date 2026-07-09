@@ -4,6 +4,7 @@ import {
   CatalystEmptyState,
   CatalystIconButton,
   CatalystText,
+  catalystLinkClassName,
 } from "@/components/design-system";
 import { EmojiPickerSheet, type EmojiPickerSheetRef } from "@/components/emoji-verse";
 import { ReactionBar } from "@/components/reaction-bar";
@@ -443,7 +444,7 @@ export default function StatusDetailsPage() {
                   <StatusText
                     status={status.body}
                     textClassName="text-[17px] leading-6 text-light-text dark:text-dark-text"
-                    linkClassName="text-[17px] leading-6 text-light-tint dark:text-dark-tint"
+                    linkClassName={cn("text-[17px] leading-6", catalystLinkClassName)}
                   />
                 </View>
               ) : null}

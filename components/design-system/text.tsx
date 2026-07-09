@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { Text as RNText } from "react-native";
 
 type CatalystTextVariant = "body" | "title" | "subtitle" | "label" | "caption" | "mono";
-type CatalystTextTone = "default" | "muted" | "subtle" | "accent" | "tint" | "danger" | "success";
+type CatalystTextTone = "default" | "muted" | "subtle" | "accent" | "tint" | "link" | "danger" | "success";
 
 const variantClassName: Record<CatalystTextVariant, string> = {
   body: "text-sm",
@@ -19,6 +19,7 @@ const toneClassName: Record<CatalystTextTone, string> = {
   subtle: "text-light-text-subtle dark:text-dark-text-subtle",
   accent: "text-light-accent dark:text-dark-accent",
   tint: "text-light-tint dark:text-dark-tint",
+  link: "text-light-link dark:text-dark-link",
   danger: "text-light-error dark:text-dark-error",
   success: "text-light-success dark:text-dark-success",
 };

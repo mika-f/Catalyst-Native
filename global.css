@@ -36,6 +36,11 @@
    */
   --color-light-tint: oklch(0.5547 0.1066 228.5);
 
+  /* hyperlink
+   * ステータス本文の URL・ハッシュタグ・メンション、プロフィールの Web サイト等
+   */
+  --color-light-link: oklch(0.5 0.16 240);
+
   /* default icon
    * 通常アイコン、ナビゲーションアイコン、補助アイコン
    */
@@ -224,6 +229,11 @@
    * リンク、軽めのアクセント、iOS的な tint 的用途
    */
   --color-dark-tint: oklch(1 0 0);
+
+  /* hyperlink
+   * ステータス本文の URL・ハッシュタグ・メンション、プロフィールの Web サイト等
+   */
+  --color-dark-link: oklch(0.7 0.14 240);
 
   /* default icon
    * 通常アイコン、ナビゲーションアイコン、補助アイコン
