@@ -6,7 +6,7 @@ import { clientAtom } from "@/models/atoms/credential";
 import { CatalystRelationships, EgeriaUser } from "@/models/sdk-types";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
-import { ArrowLeft, Ellipsis, ShareIcon, ShieldBan } from "lucide-react-native";
+import { ArrowLeft, Ellipsis, Flag, ShareIcon, ShieldBan } from "lucide-react-native";
 import { useCallback, useRef } from "react";
 import { Animated, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +15,7 @@ import { withUniwind } from "uniwind";
 const UniAnimatedView = withUniwind(Animated.View);
 const UniArrowLeft = withUniwind(ArrowLeft);
 const UniEllipsis = withUniwind(Ellipsis);
+const UniFlag = withUniwind(Flag);
 const UniShare = withUniwind(ShareIcon);
 const UniShieldBan = withUniwind(ShieldBan);
 
@@ -65,6 +66,11 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
       await client.catalyst.v1.blocks.create({ body: { userId: user.id }, throwOnError: true });
     }
   }, [user, relationships, client]);
+  const handleReportUser = useCallback(() => {
+    sheet.current?.dismiss();
+    if (!user) return;
+    router.push(`/report/${user.id}?type=user`);
+  }, [user, router]);
 
   return (
     <View
@@ -128,6 +134,21 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
               </View>
             }
             onPress={handleToggleBlock}
+            destructive
+          />
+        )}
+        {!relationships?.isMyself && (
+          <BottomSheetItem
+            prefixIcon={UniFlag}
+            title={
+              <View className="flex-row items-center">
+                <Text className="shrink text-light-error dark:text-dark-error" numberOfLines={1} ellipsizeMode="tail">
+                  @{user?.screenName}
+                </Text>
+                <Text className="shrink-0 text-light-error dark:text-dark-error">さんを報告</Text>
+              </View>
+            }
+            onPress={handleReportUser}
             destructive
           />
         )}

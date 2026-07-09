@@ -251,7 +251,7 @@ export default Sentry.wrap(function RootLayout() {
                 <Stack.Screen
                   name="report/[id]"
                   options={{
-                    title: "投稿を報告",
+                    title: "報告",
                     headerBackTitle: "キャンセル",
                   }}
                 />

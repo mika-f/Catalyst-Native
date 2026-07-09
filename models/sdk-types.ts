@@ -49,6 +49,7 @@ export type ProfileTagSuggestion = ApiData<Client["catalyst"]["v1"]["profileTags
 export type ReportRequest = NonNullable<
   Parameters<Client["catalyst"]["v1"]["status"]["id"]["report"]["create"]>[0]["body"]
 >;
+export type ReportTargetType = "status" | "fleet" | "album" | "smartAlbum" | "user";
 
 // --- egeria ---
 

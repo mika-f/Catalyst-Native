@@ -28,7 +28,7 @@ import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
-import { Calendar, Copy, ExternalLink, FileQuestion, MessageSquare, MoreHorizontal, Pencil, Send } from "lucide-react-native";
+import { Calendar, Copy, ExternalLink, FileQuestion, Flag, MessageSquare, MoreHorizontal, Pencil, Send } from "lucide-react-native";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -52,6 +52,7 @@ const UniCalendar = withUniwind(Calendar);
 const UniCopy = withUniwind(Copy);
 const UniExternalLink = withUniwind(ExternalLink);
 const UniFileQuestion = withUniwind(FileQuestion);
+const UniFlag = withUniwind(Flag);
 const UniImage = withUniwind(Image);
 const UniMessageSquare = withUniwind(MessageSquare);
 const UniMoreHorizontal = withUniwind(MoreHorizontal);
@@ -508,6 +509,11 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
     openUrlWithBrowser(albumUrl);
   }, [albumUrl]);
 
+  const handleReport = useCallback(() => {
+    menuSheetRef.current?.dismiss();
+    router.push(`/report/${id}?type=${albumType}`);
+  }, [router, id, albumType]);
+
   useEffect(() => {
     if (!id) return;
 
@@ -643,6 +649,9 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
         <BottomSheetItem prefixIcon={UniSend} title="共有する" onPress={handleShare} highlight />
         <BottomSheetItem prefixIcon={UniCopy} title="URL をコピー" onPress={handleCopyUrl} />
         <BottomSheetItem prefixIcon={UniExternalLink} title="ブラウザで開く" onPress={handleOpenBrowser} />
+        {!canEdit && account && (
+          <BottomSheetItem prefixIcon={UniFlag} title="報告する" onPress={handleReport} destructive />
+        )}
       </BottomSheetModal>
     </>
   );

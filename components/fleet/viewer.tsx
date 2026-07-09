@@ -1,11 +1,14 @@
 import { FleetContent, FleetContentData } from "@/components/fleet/content";
 import { getCdnUrl, getIdenticonUrl } from "@/lib/media";
+import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import type { CatalystFleet } from "@/models/sdk-types";
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
+import { Ellipsis } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, Pressable, Text, View } from "react-native";
 import Animated, {
   cancelAnimation,
   runOnJS,
@@ -18,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
 const UniImage = withUniwind(Image);
+const UniEllipsis = withUniwind(Ellipsis);
 
 const FLEET_DURATION = 1000 * 6; // 6 seconds
 
@@ -124,6 +128,8 @@ const ProgressBar = ({ state, paused, onComplete }: ProgressBarProps) => {
 
 export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead }: Props) => {
   const client = useAtomValue(clientAtom);
+  const account = useAtomValue(accountAtom);
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [activeUsername, setActiveUsername] = useState<string | null>(null);
   const [fleets, setFleets] = useState<CatalystFleet[]>([]);
@@ -237,6 +243,23 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
 
   const currentFleet = fleets[currentIndex];
   const contentData = currentFleet ? toFleetContentData(currentFleet) : null;
+  const isMyFleet = !!currentFleet && currentFleet.user.id === account?.user?.id;
+
+  const handleReport = useCallback(() => {
+    if (!currentFleet) return;
+    const fleetId = currentFleet.id;
+    Alert.alert("Fleet を報告しますか？", undefined, [
+      { text: "キャンセル", style: "cancel" },
+      {
+        text: "報告する",
+        style: "destructive",
+        onPress: () => {
+          onClose();
+          router.push(`/report/${fleetId}?type=fleet`);
+        },
+      },
+    ]);
+  }, [currentFleet, onClose, router]);
 
   const iconUrl = currentFleet?.user.profile?.iconUrl
     ? getCdnUrl({ src: currentFleet.user.profile.iconUrl, variant: "icon", width: 64 })
@@ -299,6 +322,18 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
           <Pressable className="flex-1" onPress={goPrev} />
           <Pressable className="flex-1" onPress={goNext} />
         </View>
+
+        {/* Report button */}
+        {!isLoading && currentFleet && account && !isMyFleet && (
+          <Pressable
+            onPress={handleReport}
+            className="absolute right-14 z-20 w-8 h-8 justify-center items-center"
+            style={{ top: insets.top + 48 }}
+            hitSlop={8}
+          >
+            <UniEllipsis size={20} className="text-white" />
+          </Pressable>
+        )}
 
         {/* Close button */}
         <Pressable

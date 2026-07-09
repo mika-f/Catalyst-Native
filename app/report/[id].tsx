@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
-import type { ReportRequest } from "@/models/sdk-types";
+import type { ReportRequest, ReportTargetType } from "@/models/sdk-types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { Check } from "lucide-react-native";
@@ -22,11 +22,22 @@ const REPORT_OPTIONS: { value: ReportRequest["reason"]; label: string; descripti
   { value: "other", label: "その他", description: "上記に当てはまらないその他の問題です" },
 ];
 
-export default function ReportStatusPage() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+const REPORT_TARGET_META: Record<ReportTargetType, { headerTitle: string; targetLabel: string }> = {
+  status: { headerTitle: "投稿を報告", targetLabel: "この投稿" },
+  fleet: { headerTitle: "Fleet を報告", targetLabel: "この Fleet" },
+  album: { headerTitle: "アルバムを報告", targetLabel: "このアルバム" },
+  smartAlbum: { headerTitle: "スマートアルバムを報告", targetLabel: "このスマートアルバム" },
+  user: { headerTitle: "ユーザーを報告", targetLabel: "このユーザー" },
+};
+
+export default function ReportPage() {
+  const { id, type } = useLocalSearchParams<{ id: string; type?: ReportTargetType }>();
   const router = useRouter();
   const theme = useColorScheme() ?? "light";
   const account = useAtomValue(accountAtom);
+
+  const targetType: ReportTargetType = type ?? "status";
+  const { headerTitle, targetLabel } = REPORT_TARGET_META[targetType];
 
   const [reportType, setReportType] = useState<ReportRequest["reason"] | null>(null);
   const [reportDescription, setReportDescription] = useState("");
@@ -38,14 +49,29 @@ export default function ReportStatusPage() {
     if (!account?.credential.client || !id || !reportType) return;
     setIsSubmitting(true);
     try {
-      await account.credential.client.catalyst.v1.status.id.report.create({
-        path: { id },
-        body: {
-          reason: reportType,
-          description: reportDescription.trim() || undefined,
-        },
-        throwOnError: true,
-      });
+      const client = account.credential.client;
+      const body: ReportRequest = {
+        reason: reportType,
+        description: reportDescription.trim() || undefined,
+      };
+
+      switch (targetType) {
+        case "fleet":
+          await client.catalyst.v1.fleet.id.report.create({ path: { id }, body, throwOnError: true });
+          break;
+        case "album":
+          await client.catalyst.v1.album.by.id.id.report.create({ path: { id }, body, throwOnError: true });
+          break;
+        case "smartAlbum":
+          await client.catalyst.v1.smartAlbum.by.id.id.report.create({ path: { id }, body, throwOnError: true });
+          break;
+        case "user":
+          await client.catalyst.v1.user.id.report.create({ path: { id }, body, throwOnError: true });
+          break;
+        default:
+          await client.catalyst.v1.status.id.report.create({ path: { id }, body, throwOnError: true });
+          break;
+      }
       router.back();
       Alert.alert("報告を送信しました", "ご報告ありがとうございます。内容は24時間以内に確認されます。");
     } catch {
@@ -53,13 +79,13 @@ export default function ReportStatusPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [account, id, reportType, reportDescription, router]);
+  }, [account, id, reportType, reportDescription, router, targetType]);
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: "投稿を報告",
+          title: headerTitle,
           headerBackTitle: "キャンセル",
           headerRight: () => (
             <Pressable onPress={handleSubmit} disabled={!canSubmit}>
@@ -88,7 +114,7 @@ export default function ReportStatusPage() {
             <View className="">
               <Text className="text-base font-semibold text-light-text dark:text-dark-text">報告の理由</Text>
               <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                この投稿を報告する理由を選択してください
+                {targetLabel}を報告する理由を選択してください
               </Text>
               <View className="gap-2">
                 {REPORT_OPTIONS.map(({ value, label, description }) => (
