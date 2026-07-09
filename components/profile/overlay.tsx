@@ -1,5 +1,6 @@
 import { BottomSheetItem } from "@/components/bottom-sheet/item";
 import { BottomSheetModal, BottomSheetModalHandle } from "@/components/bottom-sheet/sheet";
+import { CatalystText } from "@/components/design-system";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { clientAtom } from "@/models/atoms/credential";
 import { CatalystRelationships, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
@@ -71,7 +72,7 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
       style={{ height: overlayHeight, paddingTop: insets.top }}
     >
       <UniAnimatedView
-        className="bg-light-background dark:bg-dark-background"
+        className="bg-light-background dark:bg-dark-surface"
         style={[StyleSheet.absoluteFill, { opacity: overlayOpacity }]}
       />
       <View className="relative flex-row flex-1 items-center">
@@ -79,22 +80,22 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
           className="flex-1 flex-row items-center justify-center gap-1 px-16"
           style={{ opacity: overlayOpacity }}
         >
-          <Text className="shrink text-base font-semibold text-center text-light-text dark:text-dark-text" numberOfLines={1}>
+          <CatalystText variant="subtitle" className="shrink text-center" numberOfLines={1}>
             {user?.displayName}
-          </Text>
+          </CatalystText>
           <ProfileEmoji emoji={user?.profileEmoji} size={16} />
         </UniAnimatedView>
 
         {showBackButton && (
           <TouchableOpacity className="absolute p-2 m-2" onPress={handleBack}>
-            <View className="w-9 h-9 rounded-full bg-black/75 items-center justify-center">
+            <View className="h-9 w-9 items-center justify-center rounded-full bg-black/60">
               <UniArrowLeft size={18} className="text-white" />
             </View>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity className="absolute right-0 p-2 m-2" onPress={handleSheetOpen}>
-          <View className="w-9 h-9 rounded-full bg-black/75 items-center justify-center">
+          <View className="h-9 w-9 items-center justify-center rounded-full bg-black/60">
             <UniEllipsis size={18} className="text-white" />
           </View>
         </TouchableOpacity>

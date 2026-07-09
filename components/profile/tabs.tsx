@@ -1,6 +1,7 @@
+import { CatalystText } from "@/components/design-system";
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useRef } from "react";
-import { Animated, Pressable, Text, View, useWindowDimensions } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Animated, Pressable, View, useWindowDimensions } from "react-native";
 
 type Props = {
   activeIndex: number;
@@ -10,50 +11,54 @@ type Props = {
 
 export const ProfileTabs = ({ activeIndex, tabs, onClickTab }: Props) => {
   const { width: screenWidth } = useWindowDimensions();
-  const indicator = useRef(new Animated.Value(0));
+  const [indicator] = useState(() => new Animated.Value(0));
   const tabWidth = screenWidth / tabs.length;
 
   const handleTabClick = useCallback(
     (i: number) => {
       onClickTab?.(i);
 
-      Animated.timing(indicator.current, {
+      Animated.timing(indicator, {
         toValue: i * tabWidth,
         duration: 200,
         useNativeDriver: false,
       }).start();
     },
-    [onClickTab, tabWidth],
+    [indicator, onClickTab, tabWidth],
   );
 
   useEffect(() => {
-    indicator.current.setValue(activeIndex * tabWidth);
-  }, [activeIndex, tabWidth]);
+    indicator.setValue(activeIndex * tabWidth);
+  }, [activeIndex, indicator, tabWidth]);
 
   return (
-    <View className="flex flex-row">
+    <View className="flex-row bg-light-background dark:bg-dark-surface">
       {tabs.map((tab, i) => {
+        const isActive = i === activeIndex;
+
         return (
           <Pressable
-            className="items-center py-3.5"
+            className="items-center justify-center py-3.5 active:bg-light-surface-muted dark:active:bg-dark-surface-muted"
             key={tab.route}
             style={{ width: tabWidth }}
             onPress={() => handleTabClick(i)}
           >
-            <Text
+            <CatalystText
+              variant="label"
+              tone={isActive ? "default" : "muted"}
               className={cn(
-                "text-light-text dark:text-dark-text",
-                i === activeIndex && "font-bold text-light-text dark:text-dark-text",
+                "text-center",
+                isActive ? "font-bold" : "font-semibold",
               )}
             >
               {tab.label}
-            </Text>
+            </CatalystText>
           </Pressable>
         );
       })}
       <Animated.View
-        className="bg-light-accent dark:bg-dark-accent h-1 rounded-none absolute bottom-0"
-        style={{ transform: [{ translateX: indicator.current }], width: tabWidth }}
+        className="absolute bottom-0 h-0.5 rounded-full bg-light-accent dark:bg-dark-accent"
+        style={{ transform: [{ translateX: indicator }], width: tabWidth }}
       />
     </View>
   );

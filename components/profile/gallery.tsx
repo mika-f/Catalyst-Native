@@ -48,7 +48,7 @@ const GalleryCell = memo(({ status, columnWidth }: { status: CatalystStatus; col
         />
         {isImageLoading && (
           <View className="absolute inset-0 items-center justify-center bg-light-skeleton dark:bg-dark-skeleton">
-            <ActivityIndicator />
+            <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
       </View>
@@ -144,7 +144,7 @@ export const UserGallery = memo(
         </View>
         {isLoading && (
           <View className="py-4">
-            <ActivityIndicator />
+            <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
       </View>
