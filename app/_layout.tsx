@@ -81,16 +81,19 @@ export default Sentry.wrap(function RootLayout() {
     "Noto Sans JP Regular": require("@/assets/fonts/NotoSansJP-Regular.ttf"),
     "Noto Sans JP Bold": require("@/assets/fonts/NotoSansJP-Bold.ttf"),
     "HunyaJi-Re": require("@/assets/fonts/HonyaJi-Re.ttf"),
+    "FiraCode-Regular": require("@/assets/fonts/FiraCode-Regular.ttf"),
   });
 
   useEffect(() => {
-    Promise.all([loadTimelineImageQuality(), loadWifiUpgrade(), loadStreamingEnabled()]).then(
-      ([quality, wifiUpgrade, streamingEnabled]) => {
-        setTimelineImageQuality(quality);
-        setTimelineWifiUpgrade(wifiUpgrade);
-        setStreamingEnabled(streamingEnabled);
-      },
-    );
+    Promise.all([
+      loadTimelineImageQuality(),
+      loadWifiUpgrade(),
+      loadStreamingEnabled(),
+    ]).then(([quality, wifiUpgrade, streamingEnabled]) => {
+      setTimelineImageQuality(quality);
+      setTimelineWifiUpgrade(wifiUpgrade);
+      setStreamingEnabled(streamingEnabled);
+    });
   }, [setStreamingEnabled, setTimelineImageQuality, setTimelineWifiUpgrade]);
 
   useAsyncOneTimeEffect(async () => {
@@ -160,7 +163,10 @@ export default Sentry.wrap(function RootLayout() {
                   name="user/[screenName]/followings"
                   options={{ title: "フォロー", headerBackTitle: "戻る" }}
                 />
-                <Stack.Screen name="authorize" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="authorize"
+                  options={{ headerShown: false }}
+                />
                 <Stack.Screen
                   name="contest"
                   options={{ title: "コンテスト", headerBackTitle: "戻る" }}
@@ -194,7 +200,10 @@ export default Sentry.wrap(function RootLayout() {
                 />
                 <Stack.Screen
                   name="settings/accessibility"
-                  options={{ title: "アクセシビリティ", headerBackTitle: "戻る" }}
+                  options={{
+                    title: "アクセシビリティ",
+                    headerBackTitle: "戻る",
+                  }}
                 />
                 <Stack.Screen
                   name="settings/privacy"
@@ -218,12 +227,22 @@ export default Sentry.wrap(function RootLayout() {
                   }}
                 />
                 <Stack.Screen
+                  name="settings/custom-reactions"
+                  options={{
+                    title: "カスタムリアクション",
+                    headerBackTitle: "戻る",
+                  }}
+                />
+                <Stack.Screen
                   name="search/[query]"
                   options={{ headerBackTitle: "戻る" }}
                 />
                 <Stack.Screen
                   name="compose/post"
-                  options={{ title: "新しい投稿", headerBackTitle: "キャンセル" }}
+                  options={{
+                    title: "新しい投稿",
+                    headerBackTitle: "キャンセル",
+                  }}
                 />
                 <Stack.Screen
                   name="compose/fleet"
@@ -231,7 +250,10 @@ export default Sentry.wrap(function RootLayout() {
                 />
                 <Stack.Screen
                   name="report/[id]"
-                  options={{ title: "投稿を報告", headerBackTitle: "キャンセル" }}
+                  options={{
+                    title: "投稿を報告",
+                    headerBackTitle: "キャンセル",
+                  }}
                 />
                 <Stack.Screen
                   name="profile/edit"
