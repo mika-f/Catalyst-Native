@@ -1,19 +1,27 @@
+import { CatalystText } from "@/components/design-system";
 import { Fonts } from "@/constants/theme";
+import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { getCdnUrl } from "@/lib/media";
 import { accountAtom } from "@/models/atoms/account";
+import { clientAtom } from "@/models/atoms/credential";
 import * as Credential from "@/models/credential";
 import { DrawerActions, useIsFocused } from "expo-router/react-navigation";
 import { Image } from "expo-image";
 import { router, useSegments } from "expo-router";
 import type { DrawerNavigationHelpers } from "expo-router/build/react-navigation/drawer/types";
 import { Drawer } from "expo-router/drawer";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { Cog, Images, LogIn, Menu, Trophy, User } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
+
+type RelationshipCounts = {
+  followers: number | null;
+  followings: number | null;
+};
 
 type Route = {
   name: string;
@@ -47,8 +55,10 @@ const UniLogIn = withUniwind(LogIn);
 
 export default function DrawerLayout() {
   const [account, setAccount] = useAtom(accountAtom);
+  const client = useAtomValue(clientAtom);
   const colorScheme = useColorScheme();
   const segments = useSegments();
+  const [counts, setCounts] = useState<RelationshipCounts | null>(null);
   const headers: Route[] = useMemo(() => {
     return [
       account?.user.profile && {
@@ -88,6 +98,20 @@ export default function DrawerLayout() {
 
   const isFocused = useIsFocused();
   const [isProfileTab, setIsProfileTab] = useState(false);
+
+  useAsyncEffect(async () => {
+    const screenName = account?.user.screenName;
+    if (!screenName) {
+      setCounts(null);
+      return;
+    }
+
+    const { data: c } = await client.catalyst.v1.relationships.by.username.username.counts.get({
+      path: { username: screenName },
+      throwOnError: true,
+    });
+    setCounts(c);
+  }, [account?.user.screenName, client.catalyst]);
 
   useEffect(() => {
     if (isFocused) {
@@ -140,14 +164,15 @@ export default function DrawerLayout() {
         <SafeAreaView>
           <View className="flex flex-col pt-4">
             {account?.user.profile != null ? (
-              <Pressable
-                onPress={() => {
-                  navigation.dispatch(DrawerActions.closeDrawer());
-                  router.push(`/user/${account.user.screenName}`);
-                }}
-              >
-                <View className="border-b dark:border-dark-border border-light-border pb-4">
-                  <View className="pl-8">
+              <View className="border-b dark:border-dark-border border-light-border pb-4">
+                <View className="pl-8">
+                  <Pressable
+                    className="active:opacity-80"
+                    onPress={() => {
+                      navigation.dispatch(DrawerActions.closeDrawer());
+                      router.push(`/user/${account.user.screenName}`);
+                    }}
+                  >
                     <UniImage
                       source={getCdnUrl({
                         src: account.user.profile.iconUrl,
@@ -167,9 +192,42 @@ export default function DrawerLayout() {
                         @{account.user.screenName}
                       </Text>
                     </View>
+                  </Pressable>
+
+                  <View className="mt-3 flex-row gap-5">
+                    <Pressable
+                      className="flex-row items-baseline gap-1 active:opacity-80"
+                      onPress={() => {
+                        navigation.dispatch(DrawerActions.closeDrawer());
+                        router.push(`/user/${account.user.screenName}/followings`);
+                      }}
+                      disabled={counts === null || counts.followings === null}
+                    >
+                      <CatalystText variant="label">
+                        {counts === null || counts.followings === null ? "-" : counts.followings}
+                      </CatalystText>
+                      <CatalystText variant="body" tone="muted">
+                        フォロー
+                      </CatalystText>
+                    </Pressable>
+                    <Pressable
+                      className="flex-row items-baseline gap-1 active:opacity-80"
+                      onPress={() => {
+                        navigation.dispatch(DrawerActions.closeDrawer());
+                        router.push(`/user/${account.user.screenName}/followers`);
+                      }}
+                      disabled={counts === null || counts.followers === null}
+                    >
+                      <CatalystText variant="label">
+                        {counts === null || counts.followers === null ? "-" : counts.followers}
+                      </CatalystText>
+                      <CatalystText variant="body" tone="muted">
+                        フォロワー
+                      </CatalystText>
+                    </Pressable>
                   </View>
                 </View>
-              </Pressable>
+              </View>
             ) : (
               <Pressable
                 onPress={() => {
