@@ -40,6 +40,7 @@ import {
   RefreshControl,
   ScrollView,
   Share,
+  type TextLayoutEventData,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -62,6 +63,7 @@ const GRID_COLUMNS = 3;
 const GRID_GAP = 1;
 const GALLERY_COLUMNS = 2;
 const GALLERY_GAP = 2;
+const COLLAPSED_DESCRIPTION_LINES = 6;
 const LOAD_MORE_THRESHOLD = 200;
 
 type AlbumType = "album" | "smartAlbum";
@@ -107,6 +109,17 @@ const AlbumHeader = ({ info }: { info: AlbumInfo }) => {
   const router = useRouter();
   const { user, description, since, until, title, mode } = info;
   const period = formatPeriod(since, until);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isDescriptionTruncated, setIsDescriptionTruncated] = useState(false);
+
+  const handleDescriptionTextLayout = useCallback(
+    (event: NativeSyntheticEvent<TextLayoutEventData>) => {
+      if (isDescriptionExpanded) return;
+
+      setIsDescriptionTruncated(event.nativeEvent.lines.length > COLLAPSED_DESCRIPTION_LINES);
+    },
+    [isDescriptionExpanded],
+  );
 
   return (
     <View className="bg-light-background px-5 pb-5 pt-4 dark:bg-dark-surface">
@@ -148,11 +161,30 @@ const AlbumHeader = ({ info }: { info: AlbumInfo }) => {
         </Pressable>
       )}
 
-      {description.length > 0 && (
-        <CatalystText tone="muted" className="mt-4 leading-5" numberOfLines={4}>
-          {description}
-        </CatalystText>
-      )}
+      {description.length > 0 ? (
+        <View className="mt-4">
+          <CatalystText
+            tone="muted"
+            className="leading-5"
+            numberOfLines={isDescriptionExpanded ? undefined : COLLAPSED_DESCRIPTION_LINES}
+            onTextLayout={handleDescriptionTextLayout}
+          >
+            {description}
+          </CatalystText>
+          {isDescriptionTruncated ? (
+            <Pressable
+              accessibilityRole="button"
+              className="mt-2 self-start active:opacity-70"
+              hitSlop={8}
+              onPress={() => setIsDescriptionExpanded((expanded) => !expanded)}
+            >
+              <CatalystText variant="label" tone="tint">
+                {isDescriptionExpanded ? "折りたたむ" : "全文を表示"}
+              </CatalystText>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
 
       {period.length > 0 && (
         <View className="mt-3 flex-row items-center gap-1.5">
@@ -586,7 +618,7 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
       />
 
       <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
-        {albumInfo && <AlbumHeader info={albumInfo} />}
+        {albumInfo ? <AlbumHeader key={`${albumType}:${id}`} info={albumInfo} /> : null}
         {albumInfo && <CatalystDivider />}
         {albumInfo?.mode === "timeline" ? (
           <TimelineBase fetcher={fetcher} ListEmptyComponent={EmptyState} />
