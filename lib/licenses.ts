@@ -7483,7 +7483,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ` },
-  "lightningcss@1.30.1": { id: "lightningcss@1.30.1", name: "lightningcss", content: ` Mozilla Public License Version 2.0
+  "lightningcss@1.32.0": { id: "lightningcss@1.32.0", name: "lightningcss", content: ` Mozilla Public License Version 2.0
 ==================================
 
 1. Definitions
@@ -8059,7 +8059,7 @@ defined by the Mozilla Public License, v. 2.0.
    See the License for the specific language governing permissions and
    limitations under the License.
 ` },
-  "lightningcss-darwin-arm64@1.30.1": { id: "lightningcss-darwin-arm64@1.30.1", name: "lightningcss-darwin-arm64", content: ` Mozilla Public License Version 2.0
+  "lightningcss-darwin-arm64@1.32.0": { id: "lightningcss-darwin-arm64@1.32.0", name: "lightningcss-darwin-arm64", content: ` Mozilla Public License Version 2.0
 ==================================
 
 1. Definitions
