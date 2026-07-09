@@ -10,6 +10,7 @@ import { ReactionBar } from "@/components/reaction-bar";
 import { ActionBar } from "@/components/status/action-bar";
 import { StatusText } from "@/components/status/text";
 import { StatusVisibilityBadge } from "@/components/status/visibility-badge";
+import { StatusDetailPlaceholder } from "@/components/timeline/placeholder";
 import { MediaCarousel } from "@/components/ui/media-carousel";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { abs, rel } from "@/lib/dayjs";
@@ -45,7 +46,6 @@ import {
 } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Modal,
   Platform,
@@ -388,9 +388,7 @@ export default function StatusDetailsPage() {
           />
         </View>
       ) : !status ? (
-        <View className="flex-1 bg-light-background dark:bg-dark-background items-center justify-center">
-          <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
-        </View>
+        <StatusDetailPlaceholder />
       ) : (
         <ScrollView
           className="flex-1 bg-light-surface-muted dark:bg-dark-background"

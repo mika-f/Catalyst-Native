@@ -6,6 +6,7 @@ import { useAtomValue } from "jotai";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
 import { UserCard } from "./card";
 import { UsersEmptyResult } from "./empty-result";
+import { UserListPlaceholder } from "./skeleton";
 
 type TimelineHandle = {
   scrollToTop: () => void;
@@ -19,6 +20,7 @@ type Props = {
 export const UserList = ({ query, ref }: Props) => {
   const client = useAtomValue(clientAtom);
   const [users, setUsers] = useState<EgeriaUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const list = useRef<FlashListRef<EgeriaUser>>(null);
 
   const onRender = useCallback<ListRenderItem<EgeriaUser>>(({ item }) => {
@@ -26,9 +28,15 @@ export const UserList = ({ query, ref }: Props) => {
   }, []);
 
   useAsyncEffect(async () => {
-    if (client) {
-      const { data } = await client.egeria.v1.search.get({ query: { q: query }, throwOnError: true });
-      setUsers(data.users as EgeriaUser[]);
+    setIsLoading(true);
+    setUsers([]);
+    try {
+      if (client) {
+        const { data } = await client.egeria.v1.search.get({ query: { q: query }, throwOnError: true });
+        setUsers(data.users as EgeriaUser[]);
+      }
+    } finally {
+      setIsLoading(false);
     }
   }, [client, query]);
 
@@ -48,7 +56,7 @@ export const UserList = ({ query, ref }: Props) => {
       data={users}
       keyExtractor={(w) => w.id}
       renderItem={onRender}
-      ListEmptyComponent={UsersEmptyResult}
+      ListEmptyComponent={isLoading ? UserListPlaceholder : UsersEmptyResult}
       ListEmptyComponentStyle={{ minHeight: "80%" }}
     />
   );

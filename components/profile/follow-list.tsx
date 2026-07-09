@@ -1,10 +1,11 @@
 import { UserCard } from "@/components/explorer/users/card";
+import { UserListPlaceholder } from "@/components/explorer/users/skeleton";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { clientAtom } from "@/models/atoms/credential";
 import { CatalystFollowListItem } from "@/models/sdk-types";
 import { FlashList, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 type Props = {
@@ -15,15 +16,22 @@ type Props = {
 export const FollowList = ({ screenName, type }: Props) => {
   const client = useAtomValue(clientAtom);
   const [users, setUsers] = useState<CatalystFollowListItem[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [nextPage, setNextPage] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const isLoadingRef = useRef(false);
 
   const fetchPage = useCallback(
     async (page: number) => {
-      if (!client || isLoading) return;
+      if (!client || isLoadingRef.current) return;
 
-      setIsLoading(true);
+      isLoadingRef.current = true;
+      if (page === 1) {
+        setIsInitialLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
       try {
         const { data: res } =
           type === "followings"
@@ -39,40 +47,45 @@ export const FollowList = ({ screenName, type }: Props) => {
               });
 
         setUsers((prev) => (page === 1 ? res.items : [...prev, ...res.items]));
-        setCurrentPage(res.page.current);
         setNextPage(res.page.next);
       } finally {
-        setIsLoading(false);
+        isLoadingRef.current = false;
+        setIsInitialLoading(false);
+        setIsLoadingMore(false);
       }
     },
-    [client, isLoading, screenName, type],
+    [client, screenName, type],
   );
 
   useAsyncEffect(async () => {
+    setUsers([]);
+    setNextPage(null);
     await fetchPage(1);
   }, [screenName, type]);
 
   const onEndReached = useCallback(() => {
-    if (nextPage !== null) {
+    if (nextPage !== null && !isInitialLoading) {
       fetchPage(nextPage);
     }
-  }, [fetchPage, nextPage]);
+  }, [fetchPage, nextPage, isInitialLoading]);
 
   const renderItem = useCallback<ListRenderItem<CatalystFollowListItem>>(({ item }) => {
     return <UserCard user={{ ...item, profileEmoji: item.profileEmoji ?? null }} />;
   }, []);
 
   const renderFooter = useCallback(() => {
-    if (!isLoading) return null;
+    if (!isLoadingMore) return null;
     return (
       <View className="py-4">
         <ActivityIndicator />
       </View>
     );
-  }, [isLoading]);
+  }, [isLoadingMore]);
 
   const renderEmpty = useCallback(() => {
-    if (isLoading) return null;
+    if (isInitialLoading) {
+      return <UserListPlaceholder />;
+    }
     return (
       <View className="flex-1 items-center justify-center py-16">
         <Text className="text-light-text-muted dark:text-dark-text-muted">
@@ -80,7 +93,7 @@ export const FollowList = ({ screenName, type }: Props) => {
         </Text>
       </View>
     );
-  }, [isLoading, type]);
+  }, [isInitialLoading, type]);
 
   return (
     <FlashList

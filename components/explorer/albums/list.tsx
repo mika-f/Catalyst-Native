@@ -1,4 +1,5 @@
 import { AlbumCard } from "@/components/album/card";
+import { ProfileAlbumsPlaceholder } from "@/components/profile/placeholder";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { clientAtom } from "@/models/atoms/credential";
 import type { CatalystAlbumOrSmartAlbum } from "@/models/sdk-types";
@@ -19,6 +20,7 @@ type Props = {
 export const AlbumList = ({ query, ref }: Props) => {
   const client = useAtomValue(clientAtom);
   const [albums, setAlbums] = useState<CatalystAlbumOrSmartAlbum[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const list = useRef<FlashListRef<CatalystAlbumOrSmartAlbum>>(null);
 
   const onRender = useCallback<ListRenderItem<CatalystAlbumOrSmartAlbum>>(({ item }) => {
@@ -26,12 +28,18 @@ export const AlbumList = ({ query, ref }: Props) => {
   }, []);
 
   useAsyncEffect(async () => {
-    if (client) {
-      const { data } = await client.catalyst.v1.album.search.get({
-        query: { q: query, include_smart_album: true },
-        throwOnError: true,
-      });
-      setAlbums(data.albums);
+    setIsLoading(true);
+    setAlbums([]);
+    try {
+      if (client) {
+        const { data } = await client.catalyst.v1.album.search.get({
+          query: { q: query, include_smart_album: true },
+          throwOnError: true,
+        });
+        setAlbums(data.albums);
+      }
+    } finally {
+      setIsLoading(false);
     }
   }, [client, query]);
 
@@ -51,7 +59,7 @@ export const AlbumList = ({ query, ref }: Props) => {
       data={albums}
       keyExtractor={(w) => w.id}
       renderItem={onRender}
-      ListEmptyComponent={AlbumsEmptyResult}
+      ListEmptyComponent={isLoading ? ProfileAlbumsPlaceholder : AlbumsEmptyResult}
       ListEmptyComponentStyle={{ minHeight: "80%" }}
     />
   );

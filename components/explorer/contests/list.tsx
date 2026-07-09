@@ -6,6 +6,7 @@ import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ContestsEmptyResult } from "./empty-result";
+import { ContestListPlaceholder } from "./skeleton";
 
 type TimelineHandle = {
   scrollToTop: () => void;
@@ -20,6 +21,7 @@ type Props = {
 export const ContestList = ({ states, query, ref }: Props) => {
   const client = useAtomValue(clientAtom);
   const [contests, setContests] = useState<CatalystContest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const list = useRef<FlashListRef<CatalystContest>>(null);
 
   const onRender = useCallback<ListRenderItem<CatalystContest>>(({ item }) => {
@@ -27,19 +29,25 @@ export const ContestList = ({ states, query, ref }: Props) => {
   }, []);
 
   useAsyncEffect(async () => {
-    if (client) {
-      const results = await Promise.all(
-        states.map((state) =>
-          client.catalyst.v1.contest.search.get({
-            query: {
-              q: query || undefined,
-              state: state as "draft" | "published" | "opening" | "closing" | "voting" | "electing" | "closed",
-            },
-            throwOnError: true,
-          }),
-        ),
-      );
-      setContests(results.flatMap((result) => result.data.contests));
+    setIsLoading(true);
+    setContests([]);
+    try {
+      if (client) {
+        const results = await Promise.all(
+          states.map((state) =>
+            client.catalyst.v1.contest.search.get({
+              query: {
+                q: query || undefined,
+                state: state as "draft" | "published" | "opening" | "closing" | "voting" | "electing" | "closed",
+              },
+              throwOnError: true,
+            }),
+          ),
+        );
+        setContests(results.flatMap((result) => result.data.contests));
+      }
+    } finally {
+      setIsLoading(false);
     }
   }, [client, states, query]);
 
@@ -59,7 +67,7 @@ export const ContestList = ({ states, query, ref }: Props) => {
       data={contests}
       keyExtractor={(w) => w.slug}
       renderItem={onRender}
-      ListEmptyComponent={ContestsEmptyResult}
+      ListEmptyComponent={isLoading ? ContestListPlaceholder : ContestsEmptyResult}
       ListEmptyComponentStyle={{ minHeight: "80%" }}
     />
   );

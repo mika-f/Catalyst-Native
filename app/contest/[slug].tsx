@@ -14,6 +14,7 @@ import {
   CatalystText,
   type CatalystBadgeTone,
 } from "@/components/design-system";
+import { ContestDetailPlaceholder } from "@/components/explorer/contests/skeleton";
 import { TimelineBase, type TimelineStatusItem } from "@/components/timeline/base";
 import { TimelineStatus } from "@/components/timeline/status";
 import { Markdown } from "@/components/ui/markdown";
@@ -28,7 +29,6 @@ import { useAtomValue } from "jotai";
 import { ArrowLeft, FileQuestion, ThumbsUp, Trophy } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Pressable,
   View,
@@ -556,11 +556,7 @@ export default function ContestDetailPage() {
     }
 
     if (!contest) {
-      return (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" />
-        </View>
-      );
+      return <ContestDetailPlaceholder />;
     }
 
     return (

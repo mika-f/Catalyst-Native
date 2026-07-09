@@ -1,3 +1,4 @@
+import { ProfileGalleryPlaceholder } from "@/components/profile/placeholder";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { getCdnUrl } from "@/lib/media";
 import { merge } from "@/lib/merge";
@@ -56,13 +57,14 @@ export default function GalleryScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const columnWidth = (screenWidth - GAP * (COLUMNS - 1)) / COLUMNS;
   const [items, setItems] = useState<CatalystStatus[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isLoadingRef = useRef(false);
   const sets = useRef<Set<string>>(new Set());
 
   const fetchItems = useCallback(async () => {
-    setIsLoading(true);
+    setIsInitialLoading(true);
     isLoadingRef.current = true;
     try {
       const { data } = await client.catalyst.v1.timeline.gallery.get({
@@ -71,7 +73,7 @@ export default function GalleryScreen() {
       });
       setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
       isLoadingRef.current = false;
     }
   }, [client]);
@@ -100,12 +102,12 @@ export default function GalleryScreen() {
   }, [items, client]);
 
   const onLoadMore = useCallback(async () => {
-    if (isLoadingRef.current) return;
+    if (isLoadingRef.current || isInitialLoading) return;
 
     const lastItem = items[items.length - 1];
     if (!lastItem) return;
 
-    setIsLoading(true);
+    setIsLoadingMore(true);
     isLoadingRef.current = true;
     try {
       const { data } = await client.catalyst.v1.timeline.gallery.get({
@@ -117,10 +119,10 @@ export default function GalleryScreen() {
         setItems((prev) => merge(prev, result, sets, (item) => item.id));
       }
     } finally {
-      setIsLoading(false);
+      setIsLoadingMore(false);
       isLoadingRef.current = false;
     }
-  }, [items, client]);
+  }, [items, client, isInitialLoading]);
 
   useAsyncOneTimeEffect(fetchItems);
 
@@ -135,7 +137,8 @@ export default function GalleryScreen() {
         masonry
         onEndReached={onLoadMore}
         onEndReachedThreshold={0.75}
-        ListFooterComponent={isLoading ? <ActivityIndicator className="py-4" /> : null}
+        ListFooterComponent={isLoadingMore ? <ActivityIndicator className="py-4" /> : null}
+        ListEmptyComponent={isInitialLoading ? ProfileGalleryPlaceholder : undefined}
       />
     </View>
   );

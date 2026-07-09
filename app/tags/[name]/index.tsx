@@ -1,3 +1,4 @@
+import { UserListPlaceholder } from "@/components/explorer/users/skeleton";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { getCdnUrl } from "@/lib/media";
 import { clientAtom } from "@/models/atoms/credential";
@@ -68,17 +69,6 @@ const UserRow = ({ user }: { user: EgeriaUser & { matchedTags: string[] } }) => 
     </Pressable>
   );
 };
-
-const UserRowSkeleton = () => (
-  <View className="flex-row items-center gap-3 px-4 py-3 border-b border-light-divider dark:border-dark-divider">
-    <View className="w-12 h-12 rounded-full bg-light-skeleton dark:bg-dark-skeleton" />
-    <View className="flex-1 gap-1.5">
-      <View className="h-3.5 w-28 rounded bg-light-skeleton dark:bg-dark-skeleton" />
-      <View className="h-3 w-20 rounded bg-light-skeleton dark:bg-dark-skeleton" />
-      <View className="h-3 w-full rounded bg-light-skeleton dark:bg-dark-skeleton" />
-    </View>
-  </View>
-);
 
 export default function ProfileTagPage() {
   const { name } = useLocalSearchParams<{ name: string }>();
@@ -191,14 +181,7 @@ export default function ProfileTagPage() {
           </View>
         </View>
       )}
-      {loading && (
-        <View>
-          {Array.from({ length: 5 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: skeleton
-            <UserRowSkeleton key={i} />
-          ))}
-        </View>
-      )}
+      {loading && <UserListPlaceholder count={5} />}
     </>
   );
 
