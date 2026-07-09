@@ -1,3 +1,13 @@
+import {
+  CatalystButton,
+  CatalystButtonIcon,
+  CatalystButtonText,
+  CatalystDivider,
+  CatalystSegmentedControl,
+  CatalystSwitch,
+  CatalystText,
+  CatalystTextField,
+} from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import { ContestSelectorSheet, type ContestSelectorSheetRef } from "@/components/contest-selector-sheet";
 import type { CatalystContest } from "@/models/sdk-types";
@@ -12,11 +22,7 @@ import {
   Image,
   Pressable,
   ScrollView,
-  Switch,
-  Text,
-  TextInput,
   View,
-  useColorScheme,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { withUniwind } from "uniwind";
@@ -45,7 +51,6 @@ const PRIVACY_OPTIONS: { value: Privacy; label: string; description: string }[] 
 ];
 
 export default function PostComposerScreen() {
-  const theme = useColorScheme() ?? "light";
   const router = useRouter();
   const params = useLocalSearchParams<{ contest?: string | string[] }>();
   const account = useAtomValue(accountAtom);
@@ -189,124 +194,136 @@ export default function PostComposerScreen() {
           headerBackTitle: "キャンセル",
           headerRight: () => (
             <Pressable onPress={handleSubmit} disabled={!canPost}>
-              <Text
-                className={`text-base font-semibold ${canPost ? "text-light-accent dark:text-dark-accent" : "text-light-text-subtle dark:text-dark-text-subtle"}`}
-              >
+              <CatalystText variant="subtitle" tone={canPost ? "accent" : "subtle"}>
                 投稿
-              </Text>
+              </CatalystText>
             </Pressable>
           ),
         }}
       />
-      <View className="flex-1 bg-light-background dark:bg-dark-background">
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
         {isSubmitting && (
           <View className="absolute inset-0 z-50 items-center justify-center bg-light-overlay dark:bg-dark-overlay">
             <ActivityIndicator size="large" />
           </View>
         )}
-        <ScrollView className="flex-1" contentContainerClassName="p-4 gap-6">
+        <ScrollView className="flex-1" contentContainerClassName="pb-8">
           {/* 画像セクション */}
-          <View className="gap-3">
-            <Text className="text-base font-semibold text-light-text dark:text-dark-text">画像</Text>
+          <View className="pt-2">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+              画像
+            </CatalystText>
+            <View className="bg-light-background dark:bg-dark-surface">
+              {images.length > 0 && (
+                <View className="flex-row flex-wrap gap-2 px-5 py-3">
+                  {images.map((image, index) => (
+                    <View key={image.uri} className="relative">
+                      <Image source={{ uri: image.uri }} className="h-24 w-24 rounded-lg" resizeMode="cover" />
+                      <Pressable
+                        onPress={() => handleRemoveImage(index)}
+                        className="absolute -right-1.5 -top-1.5 h-7 w-7 items-center justify-center rounded-full bg-black/65"
+                      >
+                        <UniX size={15} className="text-white" />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {images.length > 0 && canAddMoreImages && <CatalystDivider className="ml-5 w-auto" />}
+              {canAddMoreImages && (
+                <View className="px-5 py-3">
+                  <CatalystButton tone="secondary" onPress={handlePickImages}>
+                    <CatalystButtonIcon>
+                      <UniImageIcon />
+                    </CatalystButtonIcon>
+                    <CatalystButtonText>
+                      画像を追加 ({images.length}/{MAX_IMAGE_COUNT})
+                    </CatalystButtonText>
+                  </CatalystButton>
+                </View>
+              )}
+            </View>
             {images.length > 0 && (
-              <View className="flex-row flex-wrap gap-2">
-                {images.map((image, index) => (
-                  <View key={image.uri} className="relative">
-                    <Image source={{ uri: image.uri }} className="h-25 w-25 rounded-lg" resizeMode="cover" />
-                    <Pressable
-                      onPress={() => handleRemoveImage(index)}
-                      className="absolute -right-1.5 -top-1.5 h-6 w-6 items-center justify-center rounded-full bg-black/60"
-                    >
-                      <UniX size={14} className="text-white" />
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-            )}
-            {canAddMoreImages && (
-              <Pressable onPress={handlePickImages} className="flex-row items-center gap-2">
-                <UniImageIcon size={18} className="text-light-tint dark:text-dark-tint" />
-                <Text className="text-sm text-light-tint dark:text-dark-tint">
-                  画像を追加 ({images.length}/{MAX_IMAGE_COUNT})
-                </Text>
-              </Pressable>
-            )}
-            {images.length > 0 && (
-              <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">最大10枚まで選択できます</Text>
+              <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
+                最大10枚まで選択できます
+              </CatalystText>
             )}
           </View>
 
-          <View className="h-px bg-light-divider dark:bg-dark-divider" />
-
           {/* キャプションセクション */}
-          <View className="gap-3">
-            <Text className="text-base font-semibold text-light-text dark:text-dark-text">キャプション</Text>
-            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+          <View className="mt-6">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+              キャプション
+            </CatalystText>
+            <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
+              <CatalystTextField
+                value={text}
+                onChangeText={setText}
+                multiline
+                placeholder="本文を入力..."
+                className="min-h-24"
+              />
+            </View>
+            <View className="flex-row items-start justify-between gap-4 px-5 pt-2">
+              <CatalystText variant="caption" tone="subtle" className="flex-1 leading-4">
               {images.length === 0
                 ? "画像がない場合は本文が必須です"
                 : "画像に添えるキャプションを入力できます（任意）"}
-            </Text>
-            <TextInput
-              value={text}
-              onChangeText={setText}
-              multiline
-              placeholder="本文を入力..."
-              placeholderTextColor={theme === "dark" ? "#666" : "#999"}
-              className="min-h-20 rounded-lg border border-light-border bg-light-surface p-3 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-              textAlignVertical="top"
-            />
-            <Text
-              className={`text-right text-xs ${isOverLimit ? "text-light-error dark:text-dark-error" : "text-light-text-muted dark:text-dark-text-muted"}`}
-            >
-              {characterCount} / {MAX_CHARACTER_COUNT}
-            </Text>
+              </CatalystText>
+              <CatalystText variant="caption" tone={isOverLimit ? "danger" : "subtle"}>
+                {characterCount} / {MAX_CHARACTER_COUNT}
+              </CatalystText>
+            </View>
           </View>
-
-          <View className="h-px bg-light-divider dark:bg-dark-divider" />
 
           {/* 閲覧設定セクション */}
-          <View className="gap-3">
-            <Text className="text-base font-semibold text-light-text dark:text-dark-text">閲覧設定</Text>
-            <View className="gap-2">
-              <View className="flex-row items-center justify-between">
-                <Text className="flex-1 text-sm text-light-text dark:text-dark-text">
-                  NSFW コンテンツとしてマークする
-                </Text>
-                <Switch value={isNsfw} onValueChange={setIsNsfw} />
+          <View className="mt-6">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+              閲覧設定
+            </CatalystText>
+            <View className="bg-light-background dark:bg-dark-surface">
+              <View className="min-h-16 flex-row items-center px-5 py-3">
+                <View className="mr-4 flex-1">
+                  <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                    NSFW コンテンツとしてマークする
+                  </CatalystText>
+                  <CatalystText variant="caption" tone="muted">
+                    センシティブなコンテンツとして扱います
+                  </CatalystText>
+                </View>
+                <CatalystSwitch value={isNsfw} onValueChange={setIsNsfw} />
               </View>
-              <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                センシティブなコンテンツや NSFW（職場で閲覧不可）コンテンツを NSFW
-                としてフラグを付けずに繰り返し投稿した場合、複数回の警告に基づいて検索やタイムラインなどから非表示にする措置を講じる場合があります。
-              </Text>
-            </View>
-            <View className="gap-2">
-              <View className="flex-row items-center justify-between">
-                <Text className="flex-1 text-sm text-light-text dark:text-dark-text">スポイラーを有効にする</Text>
-                <Switch value={isSpoiler} onValueChange={setIsSpoiler} />
+              <CatalystDivider className="ml-5 w-auto" />
+              <View className="min-h-16 flex-row items-center px-5 py-3">
+                <View className="mr-4 flex-1">
+                  <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                    スポイラーを有効にする
+                  </CatalystText>
+                  <CatalystText variant="caption" tone="muted">
+                    ネタバレなどを伏せて表示します
+                  </CatalystText>
+                </View>
+                <CatalystSwitch value={isSpoiler} onValueChange={setIsSpoiler} />
               </View>
-              <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                NSFW としてではなく、例えばネタバレ注意などと言った NSFW 以外の理由でスポイラー表示を有効にしたい場合に
-                ON にしてください。
-              </Text>
             </View>
           </View>
 
-          <View className="h-px bg-light-divider dark:bg-dark-divider" />
-
           {/* コンテストセクション */}
-          <View className="gap-3">
-            <Text className="text-base font-semibold text-light-text dark:text-dark-text">コンテスト</Text>
+          <View className="mt-6">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+              コンテスト
+            </CatalystText>
             {selectedContest ? (
-              <View className="flex-row items-center gap-3 rounded-lg border border-light-toggle-border dark:border-dark-toggle-border bg-light-toggle dark:bg-dark-toggle px-3 py-2.5">
+              <View className="flex-row items-center gap-3 bg-light-background px-5 py-3 dark:bg-dark-surface">
                 <UniTrophy size={18} className="text-light-toggle-icon dark:text-dark-toggle-icon" />
                 <View className="flex-1">
-                  <Text className="text-sm font-semibold text-light-toggle-foreground dark:text-dark-toggle-foreground" numberOfLines={1}>
+                  <CatalystText variant="subtitle" className="text-[15px] font-semibold" numberOfLines={1}>
                     {selectedContest.title}
-                  </Text>
+                  </CatalystText>
                   {selectedContest.theme ? (
-                    <Text className="text-xs text-light-toggle-foreground/70 dark:text-dark-toggle-foreground/70" numberOfLines={1}>
+                    <CatalystText variant="caption" tone="muted" numberOfLines={1}>
                       テーマ: {selectedContest.theme}
-                    </Text>
+                    </CatalystText>
                   ) : null}
                 </View>
                 <Pressable
@@ -317,57 +334,43 @@ export default function PostComposerScreen() {
                 </Pressable>
               </View>
             ) : (
-              <Pressable
-                onPress={() => contestSelectorRef.current?.open()}
-                className="flex-row items-center gap-2"
-              >
-                <UniTrophy size={18} className="text-light-tint dark:text-dark-tint" />
-                <Text className="text-sm text-light-tint dark:text-dark-tint">
+              <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
+                <CatalystButton tone="secondary" onPress={() => contestSelectorRef.current?.open()}>
+                  <CatalystButtonIcon>
+                    <UniTrophy />
+                  </CatalystButtonIcon>
+                  <CatalystButtonText>
                   コンテストに参加する
-                </Text>
-              </Pressable>
+                  </CatalystButtonText>
+                </CatalystButton>
+              </View>
             )}
-            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
               コンテストに参加すると、この投稿がコンテストの応募作品として登録されます。
-            </Text>
+            </CatalystText>
           </View>
 
-          <View className="h-px bg-light-divider dark:bg-dark-divider" />
-
           {/* プライバシーセクション */}
-          <View className="gap-3">
-            <Text className="text-base font-semibold text-light-text dark:text-dark-text">プライバシー</Text>
-            <View className="flex-row gap-0 overflow-hidden rounded-lg border border-light-border dark:border-dark-border">
-              {PRIVACY_OPTIONS.map((option) => (
-                <Pressable
-                  key={option.value}
-                  onPress={() => setPrivacy(option.value)}
-                  className={`flex-1 items-center py-2 ${
-                    privacy === option.value
-                      ? "bg-light-accent dark:bg-dark-accent"
-                      : "bg-light-surface dark:bg-dark-surface"
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-medium ${
-                      privacy === option.value
-                        ? "text-light-accent-foreground dark:text-dark-accent-foreground"
-                        : "text-light-text dark:text-dark-text"
-                    }`}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              ))}
+          <View className="mt-6">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+              プライバシー
+            </CatalystText>
+            <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
+              <CatalystSegmentedControl options={PRIVACY_OPTIONS} value={privacy} onValueChange={setPrivacy} />
             </View>
-            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+            <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
               {selectedPrivacy.description}
-            </Text>
-            <View className="flex-row items-center justify-between">
-              <Text className="flex-1 text-sm text-light-text dark:text-dark-text">
-                画像に埋め込まれたメタデータを表示しない
-              </Text>
-              <Switch value={isPrivateMetadata} onValueChange={setIsPrivateMetadata} />
+            </CatalystText>
+            <View className="mt-3 min-h-16 flex-row items-center bg-light-background px-5 py-3 dark:bg-dark-surface">
+              <View className="mr-4 flex-1">
+                <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                  メタデータを非表示
+                </CatalystText>
+                <CatalystText variant="caption" tone="muted">
+                  画像に埋め込まれたメタデータを表示しません
+                </CatalystText>
+              </View>
+              <CatalystSwitch value={isPrivateMetadata} onValueChange={setIsPrivateMetadata} />
             </View>
           </View>
         </ScrollView>

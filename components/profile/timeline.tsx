@@ -56,7 +56,7 @@ const ThumbnailCell = memo(({ status, cellSize }: { status: CatalystStatus; cell
           </View>
           {isImageLoading && (
             <View className="absolute inset-0 items-center justify-center bg-light-skeleton dark:bg-dark-skeleton">
-              <ActivityIndicator />
+              <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
             </View>
           )}
         </View>
@@ -146,7 +146,7 @@ export const UserTimeline = memo(
         ))}
         {isLoading && (
           <View className="py-4">
-            <ActivityIndicator />
+            <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
       </View>

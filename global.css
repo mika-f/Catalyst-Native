@@ -3,6 +3,11 @@
 
 @theme {
   /* =========================================================
+   * Font
+   * ========================================================= */
+  --font-mono: "FiraCode-Regular";
+
+  /* =========================================================
    * Light
    * ========================================================= */
 
@@ -288,7 +293,7 @@
   /* success background
    * 成功バッジ、成功トースト、成功状態の淡い背景
    */
-  --color-dark-success-background: oklch(0.30 0.04 154);
+  --color-dark-success-background: oklch(0.3 0.04 154);
 
   /* success foreground
    * success background 上の文字やアイコン
@@ -313,12 +318,12 @@
   /* error
    * エラー、削除、危険操作、失敗通知
    */
-  --color-dark-error: oklch(0.70 0.19 25);
+  --color-dark-error: oklch(0.7 0.19 25);
 
   /* error background
    * エラーアラート、危険状態の淡い背景
    */
-  --color-dark-error-background: oklch(0.30 0.04 20);
+  --color-dark-error-background: oklch(0.3 0.04 20);
 
   /* error foreground
    * error background 上の文字やアイコン
@@ -328,12 +333,12 @@
   /* info
    * 情報通知、tips、補助的な案内
    */
-  --color-dark-info: oklch(0.76 0.10 235);
+  --color-dark-info: oklch(0.76 0.1 235);
 
   /* info background
    * 情報バッジ、info トーストの背景
    */
-  --color-dark-info-background: oklch(0.30 0.03 235);
+  --color-dark-info-background: oklch(0.3 0.03 235);
 
   /* info foreground
    * info background 上の文字やアイコン
@@ -353,7 +358,7 @@
   /* toggle selected background
    * リアクション済み、選択済みトグル、フィルター選択中の背景
    */
-  --color-dark-toggle: oklch(0.30 0.03 345);
+  --color-dark-toggle: oklch(0.3 0.03 345);
 
   /* toggle selected hover
    * 選択済みトグルにホバーした時の背景
@@ -363,7 +368,7 @@
   /* toggle selected active
    * 選択済みトグルを押し込んだ時の背景
    */
-  --color-dark-toggle-active: oklch(0.40 0.06 350);
+  --color-dark-toggle-active: oklch(0.4 0.06 350);
 
   /* toggle selected border
    * リアクション済みや選択済み状態を示す枠線

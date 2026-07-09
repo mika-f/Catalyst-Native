@@ -1,3 +1,10 @@
+/* eslint-disable react-hooks/immutability, react-hooks/refs, react-hooks/set-state-in-effect */
+import {
+  CatalystButton,
+  CatalystButtonText,
+  CatalystText,
+  CatalystTextField,
+} from "@/components/design-system";
 import { EmojiPickerView } from "@/components/emoji-verse";
 import { getFilteredCategories, useDefaultCategories } from "@/components/emoji-verse/emoji-data";
 import type { EmojiCategory, EmojiItem } from "@/components/emoji-verse/types";
@@ -21,7 +28,6 @@ import {
   Platform,
   Pressable,
   Text,
-  TextInput,
   View,
   useColorScheme,
 } from "react-native";
@@ -328,7 +334,7 @@ export default function FleetComposerScreen() {
   const imgPanRef = useRef<GestureType>(undefined!);
   const imgPinchRef = useRef<GestureType>(undefined!);
 
-  const { onLayout, cqw, cqh } = useContainerUnits();
+  const { onLayout, cqw } = useContainerUnits();
 
   const containerWidth = useSharedValue(0);
   const containerHeight = useSharedValue(0);
@@ -648,16 +654,14 @@ export default function FleetComposerScreen() {
           headerBackTitle: "キャンセル",
           headerRight: () => (
             <Pressable onPress={handleSubmit} disabled={!canPost}>
-              <Text
-                className={`text-base font-semibold ${canPost ? "text-light-accent dark:text-dark-accent" : "text-light-text-subtle dark:text-dark-text-subtle"}`}
-              >
+              <CatalystText variant="subtitle" tone={canPost ? "accent" : "subtle"}>
                 投稿
-              </Text>
+              </CatalystText>
             </Pressable>
           ),
         }}
       />
-      <View className="flex-1 bg-light-background dark:bg-dark-background">
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
         {isSubmitting && (
           <View className="absolute inset-0 z-50 items-center justify-center bg-light-overlay dark:bg-dark-overlay">
             <ActivityIndicator size="large" />
@@ -693,7 +697,7 @@ export default function FleetComposerScreen() {
             ) : (
               <Pressable onPress={handlePickImage} className="flex-1 items-center justify-center gap-2">
                 <UniImageIcon size={40} className="text-light-icon dark:text-dark-icon" />
-                <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">タップして画像を選択</Text>
+                <CatalystText tone="muted">タップして画像を選択</CatalystText>
               </Pressable>
             )}
 
@@ -744,7 +748,9 @@ export default function FleetComposerScreen() {
           >
             {/* Background color */}
             <View className="flex-row items-center gap-2">
-              <Text className="w-16 text-xs text-light-text-muted dark:text-dark-text-muted">背景色</Text>
+              <CatalystText variant="caption" tone="subtle" className="w-16">
+                背景色
+              </CatalystText>
               <View className="flex-1 flex-row gap-2">
                 {BG_COLORS.map((color) => (
                   <Pressable
@@ -768,49 +774,49 @@ export default function FleetComposerScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
                 <Pressable
                   onPress={handlePickImage}
-                  className="flex-row items-center gap-1.5 rounded-full border border-light-border px-3 py-2 dark:border-dark-border"
+                  className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 active:opacity-80 dark:bg-dark-surface-muted"
                 >
                   <UniImageIcon size={16} className="text-light-text dark:text-dark-text" />
-                  <Text className="text-sm text-light-text dark:text-dark-text">
+                  <CatalystText variant="label">
                     {image ? "画像を変更" : "画像を選択"}
-                  </Text>
+                  </CatalystText>
                 </Pressable>
 
                 {texts.length < MAX_TEXTS ? (
                   <Pressable
                     onPress={openAddText}
-                    className="flex-row items-center gap-1.5 rounded-full border border-light-border px-3 py-2 dark:border-dark-border"
+                    className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 active:opacity-80 dark:bg-dark-surface-muted"
                   >
                     <UniType size={16} className="text-light-text dark:text-dark-text" />
                     <UniPlus size={14} className="text-light-text dark:text-dark-text" />
-                    <Text className="text-sm text-light-text dark:text-dark-text">
+                    <CatalystText variant="label">
                       テキスト追加 ({texts.length}/{MAX_TEXTS})
-                    </Text>
+                    </CatalystText>
                   </Pressable>
                 ) : (
-                  <View className="flex-row items-center gap-1.5 rounded-full border border-light-border px-3 py-2 opacity-40 dark:border-dark-border">
+                  <View className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 opacity-40 dark:bg-dark-surface-muted">
                     <UniType size={16} className="text-light-text dark:text-dark-text" />
-                    <Text className="text-sm text-light-text dark:text-dark-text">
+                    <CatalystText variant="label">
                       テキスト ({texts.length}/{MAX_TEXTS})
-                    </Text>
+                    </CatalystText>
                   </View>
                 )}
 
                 {stickers.length < MAX_STICKERS ? (
                   <Pressable
                     onPress={openAddSticker}
-                    className="flex-row items-center gap-1.5 rounded-full border border-light-border px-3 py-2 dark:border-dark-border"
+                    className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 active:opacity-80 dark:bg-dark-surface-muted"
                   >
                     <UniPlus size={14} className="text-light-text dark:text-dark-text" />
-                    <Text className="text-sm text-light-text dark:text-dark-text">
+                    <CatalystText variant="label">
                       ステッカー追加 ({stickers.length}/{MAX_STICKERS})
-                    </Text>
+                    </CatalystText>
                   </Pressable>
                 ) : (
-                  <View className="flex-row items-center gap-1.5 rounded-full border border-light-border px-3 py-2 opacity-40 dark:border-dark-border">
-                    <Text className="text-sm text-light-text dark:text-dark-text">
+                  <View className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 opacity-40 dark:bg-dark-surface-muted">
+                    <CatalystText variant="label">
                       ステッカー ({stickers.length}/{MAX_STICKERS})
-                    </Text>
+                    </CatalystText>
                   </View>
                 )}
               </ScrollView>
@@ -874,7 +880,11 @@ export default function FleetComposerScreen() {
               </ScrollView>
             )}
 
-            {!image && <Text className="text-xs text-light-error dark:text-dark-error">※ 画像は必須です</Text>}
+            {!image && (
+              <CatalystText variant="caption" tone="danger">
+                ※ 画像は必須です
+              </CatalystText>
+            )}
           </BottomSheetView>
         </BottomSheet>
 
@@ -884,31 +894,31 @@ export default function FleetComposerScreen() {
             <Pressable className="flex-1" onPress={() => setEditingText(null)} />
             <View className="gap-3 rounded-t-2xl bg-light-surface-elevated p-4 dark:bg-dark-surface-elevated">
               <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-light-text dark:text-dark-text">
+                <CatalystText variant="subtitle">
                   {editingText?.id === null ? "テキストを追加" : "テキストを編集"}
-                </Text>
+                </CatalystText>
                 <Pressable onPress={() => setEditingText(null)}>
                   <UniX size={20} className="text-light-text dark:text-dark-text" />
                 </Pressable>
               </View>
-              <TextInput
+              <CatalystTextField
                 value={editingText?.body ?? ""}
                 onChangeText={(v) => setEditingText((prev) => prev && { ...prev, body: v })}
                 placeholder="テキストを入力..."
-                placeholderTextColor={theme === "dark" ? "#666" : "#999"}
                 multiline
                 maxLength={500}
                 autoFocus
-                className="min-h-24 rounded-lg border border-light-border bg-light-surface p-3 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-                textAlignVertical="top"
+                className="rounded-lg bg-light-surface p-3 dark:bg-dark-surface"
               />
-              <Text className="text-right text-xs text-light-text-muted dark:text-dark-text-muted">
+              <CatalystText variant="caption" tone="muted" className="text-right">
                 {(editingText?.body ?? "").length} / 500
-              </Text>
+              </CatalystText>
 
               {/* Scale slider */}
               <View className="flex-row items-center gap-2">
-                <Text className="w-12 text-xs text-light-text-muted dark:text-dark-text-muted">拡大縮小</Text>
+                <CatalystText variant="caption" tone="muted" className="w-12">
+                  拡大縮小
+                </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
                   minimumValue={SCALE_MIN}
@@ -922,14 +932,16 @@ export default function FleetComposerScreen() {
                   maximumTrackTintColor={trackColor}
                   thumbTintColor="#e879a0"
                 />
-                <Text className="w-10 text-right text-xs text-light-text-muted dark:text-dark-text-muted">
+                <CatalystText variant="caption" tone="muted" className="w-10 text-right">
                   {(editingText?.scale ?? 1).toFixed(2)}x
-                </Text>
+                </CatalystText>
               </View>
 
               {/* Rotation slider */}
               <View className="flex-row items-center gap-2">
-                <Text className="w-12 text-xs text-light-text-muted dark:text-dark-text-muted">回転</Text>
+                <CatalystText variant="caption" tone="muted" className="w-12">
+                  回転
+                </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
                   minimumValue={-180}
@@ -943,22 +955,20 @@ export default function FleetComposerScreen() {
                   maximumTrackTintColor={trackColor}
                   thumbTintColor="#e879a0"
                 />
-                <Text className="w-10 text-right text-xs text-light-text-muted dark:text-dark-text-muted">
+                <CatalystText variant="caption" tone="muted" className="w-10 text-right">
                   {Math.round(editingText?.rotation ?? 0)}°
-                </Text>
+                </CatalystText>
               </View>
 
-              <Pressable
+              <CatalystButton
                 onPress={handleConfirmText}
                 disabled={!editingText?.body.trim()}
-                className={`items-center rounded-lg py-3 ${editingText?.body.trim() ? "bg-light-accent dark:bg-dark-accent" : "bg-light-surface-muted dark:bg-dark-surface-muted"}`}
+                tone={editingText?.body.trim() ? "primary" : "secondary"}
               >
-                <Text
-                  className={`text-sm font-semibold ${editingText?.body.trim() ? "text-light-accent-foreground dark:text-dark-accent-foreground" : "text-light-text-subtle dark:text-dark-text-subtle"}`}
-                >
+                <CatalystButtonText>
                   {editingText?.id === null ? "追加" : "更新"}
-                </Text>
-              </Pressable>
+                </CatalystButtonText>
+              </CatalystButton>
             </View>
           </KeyboardAvoidingView>
         </Modal>
@@ -968,15 +978,17 @@ export default function FleetComposerScreen() {
             <Pressable className="flex-1" onPress={() => setEditingSticker(null)} />
             <View className="max-h-[85%] gap-3 rounded-t-2xl bg-light-surface-elevated p-4 dark:bg-dark-surface-elevated">
               <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-light-text dark:text-dark-text">
+                <CatalystText variant="subtitle">
                   {editingSticker?.id === null ? "ステッカーを追加" : "ステッカーを編集"}
-                </Text>
+                </CatalystText>
                 <Pressable onPress={() => setEditingSticker(null)}>
                   <UniX size={20} className="text-light-text dark:text-dark-text" />
                 </Pressable>
               </View>
 
-              <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">ステッカーを選択</Text>
+              <CatalystText variant="caption" tone="muted">
+                ステッカーを選択
+              </CatalystText>
               <View className="h-72 overflow-hidden rounded-2xl border border-light-border dark:border-dark-border">
                 {isLoadingReactions || isLoadingDefaultEmojis ? (
                   <View className="flex-1 items-center justify-center py-6">
@@ -986,15 +998,17 @@ export default function FleetComposerScreen() {
                   <EmojiPickerView categories={stickerCategories} onEmojiSelected={handleSelectSticker} />
                 ) : (
                   <View className="flex-1 items-center justify-center px-4 py-6">
-                    <Text className="text-center text-sm text-light-text-muted dark:text-dark-text-muted">
+                    <CatalystText tone="muted" className="text-center">
                       利用できるステッカーがありません
-                    </Text>
+                    </CatalystText>
                   </View>
                 )}
               </View>
 
               <View className="flex-row items-center gap-2">
-                <Text className="w-12 text-xs text-light-text-muted dark:text-dark-text-muted">拡大縮小</Text>
+                <CatalystText variant="caption" tone="muted" className="w-12">
+                  拡大縮小
+                </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
                   minimumValue={SCALE_MIN}
@@ -1008,13 +1022,15 @@ export default function FleetComposerScreen() {
                   maximumTrackTintColor={trackColor}
                   thumbTintColor="#e879a0"
                 />
-                <Text className="w-10 text-right text-xs text-light-text-muted dark:text-dark-text-muted">
+                <CatalystText variant="caption" tone="muted" className="w-10 text-right">
                   {(editingSticker?.scale ?? 1).toFixed(2)}x
-                </Text>
+                </CatalystText>
               </View>
 
               <View className="flex-row items-center gap-2">
-                <Text className="w-12 text-xs text-light-text-muted dark:text-dark-text-muted">回転</Text>
+                <CatalystText variant="caption" tone="muted" className="w-12">
+                  回転
+                </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
                   minimumValue={-180}
@@ -1028,22 +1044,20 @@ export default function FleetComposerScreen() {
                   maximumTrackTintColor={trackColor}
                   thumbTintColor="#e879a0"
                 />
-                <Text className="w-10 text-right text-xs text-light-text-muted dark:text-dark-text-muted">
+                <CatalystText variant="caption" tone="muted" className="w-10 text-right">
                   {Math.round(editingSticker?.rotation ?? 0)}°
-                </Text>
+                </CatalystText>
               </View>
 
-              <Pressable
+              <CatalystButton
                 onPress={handleConfirmSticker}
                 disabled={!editingSticker?.emoji}
-                className={`items-center rounded-lg py-3 ${editingSticker?.emoji ? "bg-light-accent dark:bg-dark-accent" : "bg-light-surface-muted dark:bg-dark-surface-muted"}`}
+                tone={editingSticker?.emoji ? "primary" : "secondary"}
               >
-                <Text
-                  className={`text-sm font-semibold ${editingSticker?.emoji ? "text-light-accent-foreground dark:text-dark-accent-foreground" : "text-light-text-subtle dark:text-dark-text-subtle"}`}
-                >
+                <CatalystButtonText>
                   {editingSticker?.id === null ? "追加" : "更新"}
-                </Text>
-              </Pressable>
+                </CatalystButtonText>
+              </CatalystButton>
             </View>
           </KeyboardAvoidingView>
         </Modal>

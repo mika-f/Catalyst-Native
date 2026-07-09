@@ -5,7 +5,7 @@ import type { CatalystStatus, CatalystStatusV1_1 } from "@/models/sdk-types";
 import { useAtomValue } from "jotai";
 import { Heart } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { withUniwind } from "uniwind";
 
@@ -44,18 +44,24 @@ export const ActionBar = ({ isDefaultFavorited, status }: Props) => {
   }, [account, client, status.id, isFavorited, isTogglingFavorite]);
 
   return (
-    <View className="flex-row items-center px-1">
-      <TouchableOpacity
+    <View className="flex-row items-center">
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={isFavorited ? "お気に入りを解除" : "お気に入りに追加"}
         onPress={toggleFavorite}
         disabled={isTogglingFavorite || !isLoggedIn}
-        className={cn("p-1", (!isLoggedIn || isTogglingFavorite) && "opacity-20")}
+        className={cn(
+          "h-9 min-w-9 items-center justify-center rounded-full border border-light-border bg-light-surface px-2 active:opacity-75 dark:border-dark-border dark:bg-dark-surface-muted",
+          isFavorited && "border-light-error bg-light-error-background dark:border-dark-error dark:bg-dark-error-background",
+          (!isLoggedIn || isTogglingFavorite) && "opacity-30",
+        )}
       >
         <UniHeart
-          size={22}
-          className={cn(isFavorited ? "text-[#FF3B30]" : "text-light-text-subtle dark:text-dark-text-subtle")}
+          size={20}
+          className={cn(isFavorited ? "text-light-error dark:text-dark-error" : "text-light-icon dark:text-dark-icon")}
           fill={isFavorited ? "#FF3B30" : "none"}
         />
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };

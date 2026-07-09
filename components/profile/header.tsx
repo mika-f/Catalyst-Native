@@ -1,6 +1,12 @@
+import {
+  CatalystBadge,
+  CatalystBadgeText,
+  CatalystButton,
+  CatalystButtonText,
+  CatalystText,
+} from "@/components/design-system";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { getCdnUrl } from "@/lib/media";
-import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
@@ -11,10 +17,9 @@ import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { LinkIcon } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import { LayoutChangeEvent, Pressable, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
+import { LayoutChangeEvent, Pressable, View, useWindowDimensions } from "react-native";
 import { withUniwind } from "uniwind";
 import { StatusText } from "../status/text";
-import { SecondaryText } from "../ui/secondary-text";
 
 type RelationshipCounts = {
   followers: number | null;
@@ -33,7 +38,7 @@ type Props = {
 
 export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships, onLayout }: Props) => {
   const { width: screenWidth } = useWindowDimensions();
-  const bannerHeight = screenWidth / 3;
+  const bannerHeight = Math.max(136, screenWidth / 3);
   const account = useAtomValue(accountAtom);
   const client = useAtomValue(clientAtom);
   const router = useRouter();
@@ -93,13 +98,13 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
   }, [user]);
 
   return (
-    <View className="bg-light-background dark:bg-dark-background" onLayout={onLayout}>
+    <View className="bg-light-background dark:bg-dark-surface" onLayout={onLayout}>
       <View>
-        {user ? (
+        {user?.profile?.bannerUrl ? (
           <UniImage
             source={{
               uri: getCdnUrl({
-                src: user.profile!.bannerUrl,
+                src: user.profile.bannerUrl,
                 variant: "header",
                 width: screenWidth,
               }),
@@ -108,143 +113,149 @@ export const ProfileHeader = ({ user, relationships, tags, onUpdateRelationships
             style={{ width: screenWidth, height: bannerHeight }}
           />
         ) : (
-          <View className="bg-neutral-400 dark:bg-neutral-700" style={{ width: screenWidth, height: bannerHeight }} />
+          <View
+            className="bg-light-surface-muted dark:bg-dark-surface-muted"
+            style={{ width: screenWidth, height: bannerHeight }}
+          />
         )}
       </View>
 
-      <View className="relative flex-row items-end px-4 -mt-8">
-        <View className="border-light-background bg-light-background dark:border-dark-background dark:bg-dark-background rounded-full border-4">
-          {user ? (
+      <View className="-mt-12 flex-row items-end px-5">
+        <View className="rounded-full border-4 border-light-background bg-light-surface-muted dark:border-dark-surface dark:bg-dark-surface-muted">
+          {user?.profile?.iconUrl ? (
             <UniImage
               source={{
                 uri: getCdnUrl({
-                  src: user.profile!.iconUrl,
+                  src: user.profile.iconUrl,
                   variant: "icon",
                   width: 128,
                 }),
               }}
-              className="w-24 h-24 rounded-full"
+              className="size-24 rounded-full"
               contentFit="cover"
             />
           ) : (
-            <View className="w-24 h-24 rounded-full bg-neutral-400 dark:bg-neutral-600" />
+            <View className="size-24 rounded-full bg-light-surface-elevated dark:bg-dark-surface-elevated" />
           )}
         </View>
 
         <View className="flex-1" />
 
-        <View className="absolute top-12 right-2">
+        <View className="pb-2">
           {isLoggedIn &&
             (isMyself || relationships?.isMyself ? (
-              <TouchableOpacity
-                className="border rounded-full px-4 py-2 mb-2 mr-4 border-neutral-400 dark:border-neutral-600"
+              <CatalystButton
+                size="sm"
+                tone="secondary"
                 onPress={() => router.push("/profile/edit")}
               >
-                <Text className="font-bold text-black dark:text-white">編集</Text>
-              </TouchableOpacity>
+                <CatalystButtonText>編集</CatalystButtonText>
+              </CatalystButton>
             ) : (
-              <View className="flex-row items-center mb-2 mr-4 gap-2">
+              <View className="flex-row items-center gap-2">
                 {relationships?.isFollowed && (
-                  <View className="bg-neutral-500/20 rounded-xs px-1 py-0.5">
-                    <Text className="text-[10px] text-neutral-500">フォローされています</Text>
-                  </View>
+                  <CatalystBadge tone="neutral" className="h-7">
+                    <CatalystBadgeText>フォローされています</CatalystBadgeText>
+                  </CatalystBadge>
                 )}
-                <TouchableOpacity
-                  className={cn(
-                    "w-32 h-9 rounded-full border items-center justify-center",
-                    relationships?.isFollowing
-                      ? "bg-transparent text-neutral-400 dark:text-neutral-600 border-neutral-400 dark:border-neutral-600"
-                      : "bg-black dark:bg-white",
-                  )}
+                <CatalystButton
+                  size="sm"
+                  tone={relationships?.isFollowing ? "secondary" : "primary"}
                   onPress={handleFollow}
                   disabled={isLoading || relationships === null}
-                  activeOpacity={0.7}
                 >
-                  <Text
-                    className={cn(
-                      "font-bold text-sm",
-                      relationships?.isFollowing ? "text-light-text dark:text-dark-text" : "text-white dark:text-black",
-                    )}
-                  >
-                    {actionText}
-                  </Text>
-                </TouchableOpacity>
+                  <CatalystButtonText>{actionText}</CatalystButtonText>
+                </CatalystButton>
               </View>
             ))}
         </View>
       </View>
 
-      <View className="px-4 pb-4 mt-2 gap-1.5">
-        <View className="flex-row items-center gap-1">
-          <Text className="font-bold text-xl text-light-text dark:text-dark-text">{user?.displayName}</Text>
+      <View className="px-5 pb-5 pt-3">
+        <View className="flex-row items-center gap-1.5">
+          <CatalystText variant="title" className="shrink text-[21px]" numberOfLines={1}>
+            {user?.displayName}
+          </CatalystText>
           <ProfileEmoji emoji={user?.profileEmoji} size={20} />
         </View>
-        <SecondaryText className="text-sm">@{user?.screenName}</SecondaryText>
+        <CatalystText variant="body" tone="muted" className="mt-0.5">
+          @{user?.screenName}
+        </CatalystText>
 
-        <StatusText status={user?.profile?.bio ?? ""} />
+        {user?.profile?.bio ? (
+          <View className="mt-3">
+            <StatusText status={user.profile.bio} />
+          </View>
+        ) : null}
 
         {tags.length > 0 && (
-          <View className="flex flex-row flex-wrap gap-1.5 mt-1">
+          <View className="mt-3 flex-row flex-wrap gap-2">
             {tags.map((tag) => (
               <Pressable
                 key={tag.id}
                 onPress={() => router.push(`/tags/${encodeURIComponent(tag.name)}`)}
-                className="rounded-full bg-light-surface-muted dark:bg-dark-surface-muted px-2.5 py-1"
+                className="rounded-full border border-light-toggle-border bg-light-toggle px-3 py-1.5 active:opacity-80 dark:border-dark-toggle-border dark:bg-dark-toggle"
               >
-                <Text className="text-xs text-light-tint dark:text-dark-tint">#{tag.name}</Text>
+                <CatalystText variant="caption" tone="tint" className="font-semibold">
+                  #{tag.name}
+                </CatalystText>
               </Pressable>
             ))}
           </View>
         )}
 
-        <View className="flex flex-col gap-y-0.5">
+        <View className="mt-3 gap-1.5">
           {user?.profile?.website ? (
-            <TouchableOpacity
-              className="flex flex-row items-center"
+            <Pressable
+              className="flex-row items-center active:opacity-80"
               onPress={() => openUrlWithBrowser(user.profile!.website)}
             >
-              <UniLinkIcon size={14} className="text-neutral-500" />
-              <SecondaryText className="ml-1">{user.profile.website}</SecondaryText>
-            </TouchableOpacity>
+              <UniLinkIcon size={14} className="text-light-icon dark:text-dark-icon" />
+              <CatalystText variant="body" tone="tint" className="ml-1" numberOfLines={1}>
+                {user.profile.website}
+              </CatalystText>
+            </Pressable>
           ) : null}
 
           {user?.profile?.additionalWebsites
             ?.filter((w) => !!w.trim())
             .map((website, i) => {
               return (
-                <TouchableOpacity
-                  className="flex flex-row items-center"
+                <Pressable
+                  className="flex-row items-center active:opacity-80"
                   key={`${website}-${i}`}
                   onPress={() => openUrlWithBrowser(website)}
                 >
-                  <UniLinkIcon size={14} className="text-neutral-500" />
-                  <SecondaryText className="ml-1">{website}</SecondaryText>
-                </TouchableOpacity>
+                  <UniLinkIcon size={14} className="text-light-icon dark:text-dark-icon" />
+                  <CatalystText variant="body" tone="tint" className="ml-1" numberOfLines={1}>
+                    {website}
+                  </CatalystText>
+                </Pressable>
               );
             })}
         </View>
 
-        <View className="flex flex-row gap-x-4">
-          <TouchableOpacity
-            className="flex flex-row items-center gap-x-1"
+        <View className="mt-4 flex-row gap-5">
+          <Pressable
+            className="flex-row items-baseline gap-1 active:opacity-80"
             onPress={() => router.push(`/user/${user?.screenName}/followings`)}
             disabled={counts === null || counts.followings === null}
           >
-            <Text className="font-bold text-sm text-light-text dark:text-dark-text">
+            <CatalystText variant="label">
               {counts === null || counts.followings === null ? "-" : counts.followings}
-            </Text>
-            <SecondaryText className="text-sm">フォロー</SecondaryText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex flex-row items-center gap-x-1"
+            </CatalystText>
+            <CatalystText variant="body" tone="muted">フォロー</CatalystText>
+          </Pressable>
+          <Pressable
+            className="flex-row items-baseline gap-1 active:opacity-80"
             onPress={() => router.push(`/user/${user?.screenName}/followers`)}
             disabled={counts === null || counts.followers === null}
           >
-            <Text className="font-bold text-sm text-light-text dark:text-dark-text">
+            <CatalystText variant="label">
               {counts === null || counts.followers === null ? "-" : counts.followers}
-            </Text>
-            <SecondaryText className="text-sm">フォロワー</SecondaryText>
-          </TouchableOpacity>
+            </CatalystText>
+            <CatalystText variant="body" tone="muted">フォロワー</CatalystText>
+          </Pressable>
         </View>
       </View>
     </View>

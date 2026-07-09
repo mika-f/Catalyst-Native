@@ -1,4 +1,13 @@
+import {
+  CatalystDivider,
+  CatalystEmptyState,
+  CatalystListItem,
+  CatalystListItemContent,
+  CatalystMediaFrame,
+  CatalystText,
+} from "@/components/design-system";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
+import { cn } from "@/lib/utils";
 import { getCdnUrl } from "@/lib/media";
 import { clientAtom } from "@/models/atoms/credential";
 import {
@@ -14,12 +23,13 @@ import { Image } from "expo-image";
 import { useAtomValue } from "jotai";
 import { Trophy } from "lucide-react-native";
 import React, { useCallback, useImperativeHandle, useRef, useState } from "react";
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import { View, useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
 const UniImage = withUniwind(Image);
 const UniTrophy = withUniwind(Trophy);
+const UniBottomSheetTextInput = withUniwind(BottomSheetTextInput);
 
 const fmt = (d: string) => dayjs(d).format("YYYY/MM/DD");
 
@@ -76,53 +86,61 @@ export const ContestSelectorSheet = ({ onSelect, ref }: Props) => {
 
   const renderItem = useCallback(
     ({ item }: { item: CatalystContest }) => (
-      <Pressable
+      <CatalystListItem
+        divided={false}
         onPress={() => handleSelect(item)}
-        className="flex-row items-center gap-3 px-4 py-3 border-b border-light-divider dark:border-dark-divider"
+        className="min-h-18 bg-light-background px-5 py-3 dark:bg-dark-surface"
       >
         {item.headerUrl ? (
-          <UniImage
-            source={{ uri: getCdnUrl({ src: item.headerUrl, variant: "header", width: 120 }) }}
-            className="w-16 h-10 rounded-lg"
-            contentFit="cover"
-          />
+          <CatalystMediaFrame className="h-11 w-18">
+            <UniImage
+              source={{ uri: getCdnUrl({ src: item.headerUrl, variant: "header", width: 120 }) }}
+              className="h-full w-full"
+              contentFit="cover"
+            />
+          </CatalystMediaFrame>
         ) : (
-          <View className="w-16 h-10 rounded-lg bg-light-surface-muted dark:bg-dark-surface-muted items-center justify-center">
+          <CatalystMediaFrame className="h-11 w-18 items-center justify-center">
             <UniTrophy size={20} className="text-light-text-subtle dark:text-dark-text-subtle" />
-          </View>
+          </CatalystMediaFrame>
         )}
-        <View className="flex-1 gap-0.5">
-          <Text className="text-sm font-semibold text-light-text dark:text-dark-text" numberOfLines={1}>
+        <CatalystListItemContent>
+          <CatalystText variant="subtitle" className="text-[15px] font-semibold" numberOfLines={1}>
             {item.title}
-          </Text>
+          </CatalystText>
           {item.theme ? (
-            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted" numberOfLines={1}>
+            <CatalystText variant="caption" tone="muted" numberOfLines={1}>
               テーマ: {item.theme}
-            </Text>
+            </CatalystText>
           ) : null}
-          <Text className="text-xs text-light-text-subtle dark:text-dark-text-subtle">受付終了: {fmt(item.until)}</Text>
-        </View>
-      </Pressable>
+          <CatalystText variant="caption" tone="subtle">受付終了: {fmt(item.until)}</CatalystText>
+        </CatalystListItemContent>
+      </CatalystListItem>
     ),
     [handleSelect],
   );
 
   const listHeader = (
     <>
-      <Text className="py-3 text-center text-[17px] font-semibold text-light-text dark:text-dark-text">
+      <CatalystText variant="subtitle" className="py-3 text-center">
         コンテストを選択
-      </Text>
-      <View className="h-px bg-light-divider dark:bg-dark-divider" />
-      <View className="mx-4 my-3 rounded-lg bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border px-3 py-2">
-        <BottomSheetTextInput
+      </CatalystText>
+      <CatalystDivider />
+      <View className="bg-light-surface-muted px-5 py-3 dark:bg-dark-background">
+        <UniBottomSheetTextInput
           value={query}
           onChangeText={setQuery}
           placeholder="コンテストを検索..."
-          placeholderTextColor={theme === "dark" ? "#666" : "#999"}
-          style={{ fontSize: 14, color: theme === "dark" ? "#F0F0F0" : "#1A1A1A" }}
+          className={cn(
+            "h-10 rounded-full bg-light-background px-4 text-base text-light-text dark:bg-dark-surface dark:text-dark-text",
+          )}
+          placeholderTextColorClassName="accent-light-text-subtle dark:accent-dark-text-subtle"
+          cursorColorClassName="accent-light-tint dark:accent-dark-tint"
+          selectionColorClassName="accent-light-tint dark:accent-dark-tint"
           returnKeyType="search"
         />
       </View>
+      <CatalystDivider />
     </>
   );
 
@@ -148,13 +166,13 @@ export const ContestSelectorSheet = ({ onSelect, ref }: Props) => {
         ListHeaderComponent={listHeader}
         contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
         ListEmptyComponent={
-          <View className="items-center justify-center py-12">
-            <UniTrophy size={40} className="text-light-text-subtle dark:text-dark-text-subtle mb-3" />
-            <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
-              現在応募受付中のコンテストはありません
-            </Text>
-          </View>
+          <CatalystEmptyState
+            title="応募受付中のコンテストはありません"
+            icon={<UniTrophy />}
+            className="min-h-80"
+          />
         }
+        ItemSeparatorComponent={() => <CatalystDivider className="ml-5 w-auto" />}
       />
     </BottomSheetModal>
   );

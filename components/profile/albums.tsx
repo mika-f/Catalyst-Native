@@ -1,4 +1,5 @@
 import { AlbumCard } from "@/components/album/card";
+import { CatalystEmptyState } from "@/components/design-system";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { clientAtom } from "@/models/atoms/credential";
 import { CatalystAlbumOrSmartAlbum, EgeriaUser } from "@/models/sdk-types";
@@ -6,7 +7,7 @@ import { FlashList, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { Images } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { withUniwind } from "uniwind";
 
 import "@/global.css";
@@ -14,14 +15,11 @@ import "@/global.css";
 const UniImages = withUniwind(Images);
 
 const AlbumsEmpty = () => (
-  <View className="flex items-center justify-center h-full">
-    <View className="flex items-center justify-center">
-      <UniImages size={64} className="text-light-gray dark:text-dark-gray" />
-      <Text className="font-semibold text-light-gray dark:text-dark-gray mt-2 text-center">
-        アルバムはまだありません
-      </Text>
-    </View>
-  </View>
+  <CatalystEmptyState
+    title="アルバムはまだありません"
+    icon={<UniImages />}
+    className="min-h-96"
+  />
 );
 
 type Props = {
@@ -58,7 +56,7 @@ export const UserAlbums = ({ user }: Props) => {
   if (isLoading && albums.length === 0) {
     return (
       <View className="py-4">
-        <ActivityIndicator />
+        <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
       </View>
     );
   }

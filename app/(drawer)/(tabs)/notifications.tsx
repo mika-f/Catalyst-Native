@@ -3,7 +3,7 @@ import { UserMessageList } from "@/components/notification/user-message";
 import { Tab, Tabs } from "@/components/tabs";
 import { TimelineHandle } from "@/components/timeline/base";
 import { useScrollToTop } from "expo-router/react-navigation";
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { View } from "react-native";
 
 const TABS: Tab[] = [
@@ -30,7 +30,9 @@ export default function NotificationsScreen() {
       },
     };
   }, [activeTab]);
-  scroller.current = scrollActiveTimelineToTopHandler;
+  useEffect(() => {
+    scroller.current = scrollActiveTimelineToTopHandler;
+  }, [scrollActiveTimelineToTopHandler]);
 
   useScrollToTop(scroller);
 

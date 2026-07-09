@@ -1,12 +1,12 @@
+import { CatalystDivider, CatalystEmptyState, CatalystText } from "@/components/design-system";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { merge } from "@/lib/merge";
-import { cn } from "@/lib/utils";
 import { clientAtom } from "@/models/atoms/credential";
 import { CatalystStatusV1_1 } from "@/models/sdk-types";
 import { useAtomValue } from "jotai";
 import { HeartOff, Lock } from "lucide-react-native";
 import React, { memo, useCallback, useImperativeHandle, useRef, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { withUniwind } from "uniwind";
 import { TimelineStatus } from "../timeline/status";
 import { UserTimelineHandle } from "./timeline";
@@ -15,26 +15,27 @@ const UniHeartOff = withUniwind(HeartOff);
 const UniLock = withUniwind(Lock);
 
 const ItemSeparator = () => {
-  return <View className={cn("h-px bg-light-border dark:bg-dark-border")} />;
+  return <CatalystDivider />;
 };
 
 const PrivacyNotice = () => {
   return (
-    <View className="flex-row items-center justify-center gap-2 px-4 py-3 bg-light-surface dark:bg-dark-surface">
+    <View className="flex-row items-center justify-center gap-2 border-b border-light-divider bg-light-background px-5 py-3 dark:border-dark-divider dark:bg-dark-surface">
       <UniLock size={14} className="text-light-text-muted dark:text-dark-text-muted" />
-      <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
+      <CatalystText tone="muted" className="text-center">
         いいねは非公開です。自分にのみ表示されます。
-      </Text>
+      </CatalystText>
     </View>
   );
 };
 
 const EmptyState = () => {
   return (
-    <View className="items-center justify-center py-16">
-      <UniHeartOff size={48} className="text-light-text-muted dark:text-dark-text-muted" />
-      <Text className="mt-4 text-base text-light-text-muted dark:text-dark-text-muted">いいねした投稿がありません</Text>
-    </View>
+    <CatalystEmptyState
+      title="いいねした投稿がありません"
+      icon={<UniHeartOff />}
+      className="min-h-96"
+    />
   );
 };
 
@@ -102,7 +103,7 @@ export const UserLikes = memo(
         )}
         {isLoading && (
           <View className="py-4">
-            <ActivityIndicator />
+            <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
       </View>

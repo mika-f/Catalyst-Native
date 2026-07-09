@@ -13,7 +13,7 @@ import type {
 } from "@/models/sdk-types";
 import { useScrollToTop } from "expo-router/react-navigation";
 import { useAtomValue } from "jotai";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -51,7 +51,7 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
   const client = useAtomValue(clientAtom);
   const [user, setUser] = useState<EgeriaUser | null>(null);
   const [activeTab, setActiveTab] = useState(0);
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollY] = useState(() => new Animated.Value(0));
   const [headerHeight, setHeaderHeight] = useState(0);
   const NAV_BAR_HEIGHT = insets.top + 44;
   const isMyself = user?.id === account?.user.id;
@@ -88,7 +88,9 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
       },
     };
   }, []);
-  scroller.current = scrollActiveTimelineToTopHandler;
+  useEffect(() => {
+    scroller.current = scrollActiveTimelineToTopHandler;
+  }, [scrollActiveTimelineToTopHandler]);
 
   useScrollToTop(scroller);
 
@@ -154,37 +156,35 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
     }
   }, [account, client, screenName]);
 
-  const handleScroll = useMemo(
-    () =>
-      Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
-        useNativeDriver: false,
-        listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-          const { contentOffset, layoutMeasurement, contentSize } =
-            event.nativeEvent;
-          const distanceFromBottom =
-            contentSize.height - layoutMeasurement.height - contentOffset.y;
-          if (distanceFromBottom < LOAD_MORE_THRESHOLD) {
-            tabContentRef.current?.loadMore();
-          }
-        },
-      }),
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+      scrollY.setValue(contentOffset.y);
+
+      const distanceFromBottom =
+        contentSize.height - layoutMeasurement.height - contentOffset.y;
+      if (distanceFromBottom < LOAD_MORE_THRESHOLD) {
+        tabContentRef.current?.loadMore();
+      }
+    },
     [scrollY],
   );
 
   if (!user) {
     return (
-      <View className="flex-1 bg-light-background dark:bg-dark-background items-center justify-center">
-        <ActivityIndicator size="large" />
+      <View className="flex-1 items-center justify-center bg-light-background dark:bg-dark-background">
+        <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-light-background dark:bg-dark-background">
+    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
       <Animated.ScrollView
         ref={view}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        className="bg-light-surface-muted dark:bg-dark-background"
       >
         <ProfileHeader
           user={user}
@@ -195,7 +195,7 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
         />
 
         <View
-          className="flex-row border-b border-neutral-500 bg-light-background dark:bg-dark-background"
+          className="flex-row border-b border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-surface"
           style={{ width: screenWidth }}
         >
           <ProfileTabs
@@ -222,7 +222,7 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
 
       {/* Sticky Tab Bar Overlay */}
       <Animated.View
-        className="flex-row border-b border-neutral-500 bg-light-background dark:bg-dark-background"
+        className="flex-row border-b border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-surface"
         style={{
           position: "absolute",
           top: NAV_BAR_HEIGHT,

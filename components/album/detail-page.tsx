@@ -1,5 +1,14 @@
 import { BottomSheetItem } from "@/components/bottom-sheet/item";
 import { BottomSheetModal, type BottomSheetModalHandle } from "@/components/bottom-sheet/sheet";
+import {
+  CatalystAvatar,
+  CatalystBadge,
+  CatalystBadgeText,
+  CatalystDivider,
+  CatalystEmptyState,
+  CatalystIconButton,
+  CatalystText,
+} from "@/components/design-system";
 import { TimelineBase } from "@/components/timeline/base";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { getCdnUrl } from "@/lib/media";
@@ -30,8 +39,7 @@ import {
   RefreshControl,
   ScrollView,
   Share,
-  Text,
-  TouchableOpacity,
+  type TextLayoutEventData,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -54,6 +62,7 @@ const GRID_COLUMNS = 3;
 const GRID_GAP = 1;
 const GALLERY_COLUMNS = 2;
 const GALLERY_GAP = 2;
+const COLLAPSED_DESCRIPTION_LINES = 6;
 const LOAD_MORE_THRESHOLD = 200;
 
 type AlbumType = "album" | "smartAlbum";
@@ -89,48 +98,99 @@ const formatPeriod = (since?: string, until?: string): string => {
   return "";
 };
 
+const modeLabel: Record<CatalystAlbumDisplayMode, string> = {
+  gallery: "ギャラリー",
+  grid: "グリッド",
+  timeline: "タイムライン",
+};
+
 const AlbumHeader = ({ info }: { info: AlbumInfo }) => {
   const router = useRouter();
-  const { user, description, since, until } = info;
+  const { user, description, since, until, title, mode } = info;
   const period = formatPeriod(since, until);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isDescriptionTruncated, setIsDescriptionTruncated] = useState(false);
 
-  const hasContent = user || description.length > 0 || period.length > 0;
-  if (!hasContent) return null;
+  const handleDescriptionTextLayout = useCallback(
+    (event: NativeSyntheticEvent<TextLayoutEventData>) => {
+      if (isDescriptionExpanded) return;
+
+      setIsDescriptionTruncated(event.nativeEvent.lines.length > COLLAPSED_DESCRIPTION_LINES);
+    },
+    [isDescriptionExpanded],
+  );
 
   return (
-    <View className="px-4 py-3 bg-light-background dark:bg-dark-background">
+    <View className="bg-light-background px-5 pb-5 pt-4 dark:bg-dark-surface">
+      <View className="flex-row items-start gap-3">
+        <View className="min-w-0 flex-1">
+          <CatalystText variant="title" className="text-[21px]" numberOfLines={2}>
+            {title}
+          </CatalystText>
+          <View className="mt-2 flex-row">
+            <CatalystBadge tone="neutral">
+              <CatalystBadgeText>{modeLabel[mode]}</CatalystBadgeText>
+            </CatalystBadge>
+          </View>
+        </View>
+      </View>
+
       {user && (
-        <TouchableOpacity
-          className="flex-row items-center mb-2"
-          activeOpacity={0.7}
+        <Pressable
+          className="mt-4 flex-row items-center active:opacity-80"
           onPress={() => router.push(`/user/${user.screenName}`)}
         >
-          {user.profile?.iconUrl ? (
-            <UniImage
-              source={{ uri: getCdnUrl({ src: user.profile.iconUrl, variant: "icon", width: 64 }) }}
-              className="w-8 h-8 rounded-full"
-              contentFit="cover"
-            />
-          ) : (
-            <View className="w-8 h-8 rounded-full bg-light-skeleton dark:bg-dark-skeleton" />
-          )}
-          <View className="ml-2">
-            <Text className="text-sm font-semibold text-light-text dark:text-dark-text">{user.displayName}</Text>
-            <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">@{user.screenName}</Text>
+          <CatalystAvatar
+            source={
+              user.profile?.iconUrl
+                ? getCdnUrl({ src: user.profile.iconUrl, variant: "icon", width: 64 })
+                : null
+            }
+            fallback={user.displayName}
+            size="md"
+          />
+          <View className="ml-3 min-w-0 flex-1">
+            <CatalystText variant="label" numberOfLines={1}>
+              {user.displayName}
+            </CatalystText>
+            <CatalystText variant="caption" tone="muted" numberOfLines={1}>
+              @{user.screenName}
+            </CatalystText>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       )}
 
-      {description.length > 0 && (
-        <Text className="text-sm text-light-text-muted dark:text-dark-text-muted mb-1" numberOfLines={3}>
-          {description}
-        </Text>
-      )}
+      {description.length > 0 ? (
+        <View className="mt-4">
+          <CatalystText
+            tone="muted"
+            className="leading-5"
+            numberOfLines={isDescriptionExpanded ? undefined : COLLAPSED_DESCRIPTION_LINES}
+            onTextLayout={handleDescriptionTextLayout}
+          >
+            {description}
+          </CatalystText>
+          {isDescriptionTruncated ? (
+            <Pressable
+              accessibilityRole="button"
+              className="mt-2 self-start active:opacity-70"
+              hitSlop={8}
+              onPress={() => setIsDescriptionExpanded((expanded) => !expanded)}
+            >
+              <CatalystText variant="label" tone="tint">
+                {isDescriptionExpanded ? "折りたたむ" : "全文を表示"}
+              </CatalystText>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
 
       {period.length > 0 && (
-        <View className="flex-row items-center gap-1">
-          <UniCalendar size={12} className="text-light-text-muted dark:text-dark-text-muted" />
-          <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">{period}</Text>
+        <View className="mt-3 flex-row items-center gap-1.5">
+          <UniCalendar size={14} className="text-light-text-muted dark:text-dark-text-muted" />
+          <CatalystText variant="caption" tone="muted">
+            {period}
+          </CatalystText>
         </View>
       )}
     </View>
@@ -138,9 +198,12 @@ const AlbumHeader = ({ info }: { info: AlbumInfo }) => {
 };
 
 const EmptyState = () => (
-  <View className="items-center justify-center px-6 py-16">
-    <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">まだ投稿がありません</Text>
-  </View>
+  <CatalystEmptyState
+    title="まだ投稿がありません"
+    description="このアルバムに表示できる投稿はまだありません。"
+    icon={<UniMessageSquare />}
+    className="min-h-96"
+  />
 );
 
 const GridCell = memo(({ status, cellSize }: { status: CatalystStatus; cellSize: number }) => {
@@ -167,7 +230,7 @@ const GridCell = memo(({ status, cellSize }: { status: CatalystStatus; cellSize:
           />
           {isImageLoading && (
             <View className="absolute inset-0 items-center justify-center bg-light-skeleton dark:bg-dark-skeleton">
-              <ActivityIndicator />
+              <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
             </View>
           )}
         </View>
@@ -209,7 +272,7 @@ const GalleryCell = memo(({ item, columnWidth }: { item: GalleryItem; columnWidt
         />
         {isImageLoading && (
           <View className="absolute inset-0 items-center justify-center bg-light-skeleton dark:bg-dark-skeleton">
-            <ActivityIndicator />
+            <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
       </View>
@@ -334,9 +397,17 @@ const AlbumVisualContent = ({
 
     return (
       <ScrollView
+        className="bg-light-surface-muted dark:bg-dark-background"
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColorClassName="accent-light-tint dark:accent-dark-tint"
+            colorsClassName="accent-light-tint dark:accent-dark-tint"
+          />
+        }
       >
         {rows.length === 0 && !isLoading ? <EmptyState /> : null}
         {rows.map((row, rowIndex) => (
@@ -350,7 +421,7 @@ const AlbumVisualContent = ({
         ))}
         {isLoading && (
           <View className="py-4">
-            <ActivityIndicator />
+            <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
       </ScrollView>
@@ -363,9 +434,17 @@ const AlbumVisualContent = ({
 
   return (
     <ScrollView
+      className="bg-light-surface-muted dark:bg-dark-background"
       onScroll={handleScroll}
       scrollEventThrottle={16}
-      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+          tintColorClassName="accent-light-tint dark:accent-dark-tint"
+          colorsClassName="accent-light-tint dark:accent-dark-tint"
+        />
+      }
     >
       {leftColumn.length === 0 && rightColumn.length === 0 && !isLoading ? <EmptyState /> : null}
       <View className="flex-row" style={{ gap: GALLERY_GAP }}>
@@ -382,7 +461,7 @@ const AlbumVisualContent = ({
       </View>
       {isLoading && (
         <View className="py-4">
-          <ActivityIndicator />
+          <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
         </View>
       )}
     </ScrollView>
@@ -497,8 +576,8 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
     return (
       <>
         <Stack.Screen options={{ title: "", headerBackTitle: "戻る" }} />
-        <View className="flex-1 bg-light-background dark:bg-dark-background items-center justify-center">
-          <ActivityIndicator size="large" />
+        <View className="flex-1 items-center justify-center bg-light-background dark:bg-dark-background">
+          <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
         </View>
       </>
     );
@@ -508,14 +587,12 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
     return (
       <>
         <Stack.Screen options={{ title: "", headerBackTitle: "戻る" }} />
-        <View className="flex-1 bg-light-background dark:bg-dark-background items-center justify-center">
-          <UniFileQuestion size={64} className="text-light-gray dark:text-dark-gray" />
-          <Text className="font-semibold text-light-gray dark:text-dark-gray mt-2 text-center">
-            {albumType === "album" ? "アルバム" : "スマートアルバム"}が見つかりません
-          </Text>
-          <Text className="text-sm text-light-gray dark:text-dark-gray mt-2 text-center">
-            削除されたか、アクセスできないコンテンツです
-          </Text>
+        <View className="flex-1 bg-light-background dark:bg-dark-background">
+          <CatalystEmptyState
+            title={`${albumType === "album" ? "アルバム" : "スマートアルバム"}が見つかりません`}
+            description="削除されたか、アクセスできないコンテンツです"
+            icon={<UniFileQuestion />}
+          />
         </View>
       </>
     );
@@ -530,8 +607,10 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
           headerRight: () => (
             <View className="flex-row items-center">
               {canEdit && (
-                <TouchableOpacity
-                  style={{ padding: 8 }}
+                <CatalystIconButton
+                  label="編集"
+                  size="sm"
+                  tone="ghost"
                   onPress={() => {
                     if (albumType === "album") {
                       router.push(`/album/${id}/edit`);
@@ -540,20 +619,20 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
                     }
                   }}
                 >
-                  <UniPencil size={20} className="text-light-tint dark:text-dark-tint" />
-                </TouchableOpacity>
+                  <UniPencil className="text-light-tint dark:text-dark-tint" />
+                </CatalystIconButton>
               )}
-              <TouchableOpacity style={{ padding: 8 }} onPress={showMenu}>
-                <UniMoreHorizontal size={20} className="text-light-tint dark:text-dark-tint" />
-              </TouchableOpacity>
+              <CatalystIconButton label="メニュー" size="sm" tone="ghost" onPress={showMenu}>
+                <UniMoreHorizontal className="text-light-tint dark:text-dark-tint" />
+              </CatalystIconButton>
             </View>
           ),
         }}
       />
 
-      <View className="flex-1 bg-light-background dark:bg-dark-background">
-        {albumInfo && <AlbumHeader info={albumInfo} />}
-        {albumInfo && <View className="h-px bg-light-divider dark:bg-dark-divider" />}
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+        {albumInfo ? <AlbumHeader key={`${albumType}:${id}`} info={albumInfo} /> : null}
+        {albumInfo && <CatalystDivider />}
         {albumInfo?.mode === "timeline" ? (
           <TimelineBase fetcher={fetcher} ListEmptyComponent={EmptyState} />
         ) : (

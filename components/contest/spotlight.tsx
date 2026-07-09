@@ -1,5 +1,13 @@
+import {
+  CatalystButton,
+  CatalystButtonText,
+  CatalystDivider,
+  CatalystIconButton,
+  CatalystMediaFrame,
+  CatalystSurface,
+  CatalystText,
+} from "@/components/design-system";
 import { getCdnUrl } from "@/lib/media";
-import { cn } from "@/lib/utils";
 import { dismissContestSpotlight, getDismissedContestSpotlightIds } from "@/models/contest-spotlight";
 import { clientAtom, credentialAtom } from "@/models/atoms/credential";
 import { contestSpotlightAtom } from "@/models/atoms/contests";
@@ -10,7 +18,7 @@ import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
 import { ArrowRight, CalendarDays, Camera, Trophy, Vote, X } from "lucide-react-native";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { withUniwind } from "uniwind";
 
 const UniArrowRight = withUniwind(ArrowRight);
@@ -97,68 +105,57 @@ const ContestSpotlightItem = memo(({ contest, canCompose }: ContestSpotlightItem
 
   return (
     <View className="flex-row gap-3 p-3">
-      <Pressable
-        className="h-24 w-28 overflow-hidden rounded-md bg-light-surface-muted dark:bg-dark-surface-muted"
-        onPress={() => router.push(`/contest/${contest.slug}` as never)}
-      >
-        {contest.headerUrl ? (
-          <Image
-            source={{ uri: getCdnUrl({ src: contest.headerUrl, variant: "header", width: 512 }) }}
-            className="h-full w-full"
-            contentFit="cover"
-          />
-        ) : (
-          <View className="h-full w-full items-center justify-center">
-            <UniTrophy size={28} className="text-light-text-subtle dark:text-dark-text-subtle" />
-          </View>
-        )}
+      <Pressable onPress={() => router.push(`/contest/${contest.slug}` as never)}>
+        <CatalystMediaFrame className="h-24 w-28 rounded-lg">
+          {contest.headerUrl ? (
+            <Image
+              source={{ uri: getCdnUrl({ src: contest.headerUrl, variant: "header", width: 512 }) }}
+              className="h-full w-full"
+              contentFit="cover"
+            />
+          ) : (
+            <View className="h-full w-full items-center justify-center">
+              <UniTrophy size={28} className="text-light-text-subtle dark:text-dark-text-subtle" />
+            </View>
+          )}
+        </CatalystMediaFrame>
       </Pressable>
 
       <View className="min-w-0 flex-1 justify-between gap-2">
         <View className="min-w-0 gap-1">
           <View className="flex-row items-center gap-1.5">
             <StateIcon state={state} />
-            <Text className="text-xs font-semibold text-light-text-muted dark:text-dark-text-muted">
+            <CatalystText variant="caption" tone="muted" className="font-semibold">
               {STATE_LABELS[state]}
-            </Text>
+            </CatalystText>
             {remaining ? (
-              <Text className="text-xs font-semibold text-light-error dark:text-dark-error">{remaining}</Text>
+              <CatalystText variant="caption" tone="danger" className="font-semibold">
+                {remaining}
+              </CatalystText>
             ) : null}
           </View>
           <Pressable onPress={() => router.push(`/contest/${contest.slug}` as never)}>
-            <Text className="text-sm font-bold text-light-text dark:text-dark-text" numberOfLines={2}>
+            <CatalystText variant="label" numberOfLines={2}>
               {contest.title}
-            </Text>
+            </CatalystText>
           </Pressable>
-          <Text className="text-xs text-light-text-muted dark:text-dark-text-muted" numberOfLines={1}>
+          <CatalystText variant="caption" tone="muted" numberOfLines={1}>
             {getScheduleText(contest)}
-          </Text>
+          </CatalystText>
         </View>
 
         <View className="flex-row items-center justify-between gap-2">
-          <Text className="min-w-0 flex-1 text-xs text-light-text-subtle dark:text-dark-text-subtle" numberOfLines={1}>
+          <CatalystText variant="caption" tone="subtle" className="min-w-0 flex-1" numberOfLines={1}>
             {contest.theme ? `テーマ: ${contest.theme}` : "フォトコンテスト"}
-          </Text>
-          <Pressable
-            className={cn(
-              "shrink-0 rounded-md px-3 py-1.5",
-              isOpening && canCompose
-                ? "bg-light-accent dark:bg-dark-accent"
-                : "border border-light-border dark:border-dark-border",
-            )}
+          </CatalystText>
+          <CatalystButton
+            size="sm"
+            tone={isOpening && canCompose ? "primary" : "secondary"}
+            className="min-h-8 rounded-md px-3"
             onPress={() => router.push(destination as never)}
           >
-            <Text
-              className={cn(
-                "text-xs font-semibold",
-                isOpening && canCompose
-                  ? "text-light-accent-foreground dark:text-dark-accent-foreground"
-                  : "text-light-text dark:text-dark-text",
-              )}
-            >
-              {action}
-            </Text>
-          </Pressable>
+            <CatalystButtonText className="text-xs">{action}</CatalystButtonText>
+          </CatalystButton>
         </View>
       </View>
     </View>
@@ -181,48 +178,52 @@ export const ContestSpotlight = memo(({ contests, onDismiss }: ContestSpotlightP
   if (!spotlight) return null;
 
   return (
-    <View className="mx-3 my-3 overflow-hidden rounded-lg border border-light-border bg-light-surface dark:border-dark-border dark:bg-dark-surface">
-      <View className="flex-row items-center justify-between gap-3 border-b border-light-divider px-3 py-2.5 dark:border-dark-divider">
+    <CatalystSurface variant="muted" className="mx-3 my-3 overflow-hidden rounded-2xl">
+      <View className="flex-row items-center justify-between gap-3 px-3 py-2.5">
         <View className="min-w-0">
-          <Text className="text-xs font-semibold uppercase text-light-text-muted dark:text-dark-text-muted">
+          <CatalystText variant="caption" tone="muted" className="font-semibold uppercase">
             Photo Contest
-          </Text>
-          <Text className="text-base font-bold text-light-text dark:text-dark-text" numberOfLines={1}>
+          </CatalystText>
+          <CatalystText variant="subtitle" numberOfLines={1}>
             開催中のフォトコンテスト
-          </Text>
+          </CatalystText>
         </View>
         <View className="flex-row items-center gap-1">
           <Pressable className="flex-row items-center gap-1 px-2 py-1" onPress={() => router.push("/contest" as never)}>
-            <Text className="text-sm font-semibold text-light-tint dark:text-dark-tint">一覧</Text>
+            <CatalystText tone="tint" className="font-semibold">一覧</CatalystText>
             <UniArrowRight size={16} className="text-light-tint dark:text-dark-tint" />
           </Pressable>
-          <Pressable
-            className="h-8 w-8 items-center justify-center rounded-full active:bg-light-surface-muted dark:active:bg-dark-surface-muted"
+          <CatalystIconButton
+            label="このコンテスト情報を非表示"
+            size="sm"
             onPress={() => onDismiss?.(spotlight.slug)}
-            accessibilityLabel="このコンテスト情報を非表示"
           >
             <UniX size={16} className="text-light-icon dark:text-dark-icon" />
-          </Pressable>
+          </CatalystIconButton>
         </View>
       </View>
+      <CatalystDivider />
 
       <ContestSpotlightItem contest={spotlight} canCompose={!!credential.accessToken} />
 
       {rest.length > 0 ? (
-        <Pressable
-          className="flex-row items-center justify-between border-t border-light-divider px-3 py-3 dark:border-dark-divider"
-          onPress={() => router.push("/contest" as never)}
-        >
-          <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">
-            ほか{rest.length}件のコンテスト
-          </Text>
-          <View className="flex-row items-center gap-1">
-            <Text className="text-sm font-semibold text-light-tint dark:text-dark-tint">一覧へ</Text>
-            <UniArrowRight size={16} className="text-light-tint dark:text-dark-tint" />
-          </View>
-        </Pressable>
+        <>
+          <CatalystDivider />
+          <Pressable
+            className="flex-row items-center justify-between px-3 py-3"
+            onPress={() => router.push("/contest" as never)}
+          >
+            <CatalystText tone="muted">ほか{rest.length}件のコンテスト</CatalystText>
+            <View className="flex-row items-center gap-1">
+              <CatalystText tone="tint" className="font-semibold">
+                一覧へ
+              </CatalystText>
+              <UniArrowRight size={16} className="text-light-tint dark:text-dark-tint" />
+            </View>
+          </Pressable>
+        </>
       ) : null}
-    </View>
+    </CatalystSurface>
   );
 });
 
@@ -277,7 +278,7 @@ export const CurrentContestSpotlight = memo(() => {
     return () => {
       ignore = true;
     };
-  }, [client]);
+  }, [client, setContests]);
 
   const visibleContests = useMemo(
     () => contests.filter((contest) => !dismissedIds.has(contest.slug)),

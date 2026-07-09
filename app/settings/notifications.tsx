@@ -1,5 +1,10 @@
+import {
+  CatalystDivider,
+  CatalystListItemContent,
+  CatalystSwitch,
+  CatalystText,
+} from "@/components/design-system";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
-import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { streamingEnabledAtom } from "@/models/atoms/streaming";
 import {
@@ -22,7 +27,7 @@ import {
 import { saveStreamingEnabled } from "@/models/streaming-settings";
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 
 export default function NotificationSettingsPage() {
   const account = useAtomValue(accountAtom);
@@ -33,7 +38,8 @@ export default function NotificationSettingsPage() {
   const [enabledTypes, setEnabledTypes] = useState<Set<string>>(new Set());
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isStreamingEnabled, setIsStreamingEnabled] = useAtom(streamingEnabledAtom);
+  const [isStreamingEnabled, setIsStreamingEnabled] =
+    useAtom(streamingEnabledAtom);
 
   // 初期化
   useAsyncOneTimeEffect(async () => {
@@ -73,7 +79,9 @@ export default function NotificationSettingsPage() {
     };
   }, [isPushEnabled, account]);
 
-  const isEffectivelyEnabled = isPushEnabled && (authStatus === "authorized" || authStatus === "provisional");
+  const isEffectivelyEnabled =
+    isPushEnabled &&
+    (authStatus === "authorized" || authStatus === "provisional");
 
   // Push通知トグル
   const handlePushToggle = useCallback(
@@ -108,7 +116,10 @@ export default function NotificationSettingsPage() {
             if (token && account) {
               setFcmToken(token);
               await saveFcmToken(token);
-              await registerTokenToBackend(token, account.credential.accessToken);
+              await registerTokenToBackend(
+                token,
+                account.credential.accessToken,
+              );
             }
           }
         }
@@ -118,7 +129,10 @@ export default function NotificationSettingsPage() {
         await savePushEnabled(false);
         const savedToken = await loadSavedFcmToken();
         if (savedToken && account) {
-          await unregisterTokenFromBackend(savedToken, account.credential.accessToken);
+          await unregisterTokenFromBackend(
+            savedToken,
+            account.credential.accessToken,
+          );
         }
       }
     },
@@ -159,96 +173,159 @@ export default function NotificationSettingsPage() {
   })();
 
   if (isLoading) {
-    return <View className="flex-1" />;
+    return (
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background" />
+    );
   }
 
   return (
-    <ScrollView className="flex-1" contentContainerClassName="pb-8">
+    <ScrollView
+      className="flex-1 bg-light-surface-muted dark:bg-dark-background"
+      contentContainerClassName="pb-8"
+    >
       {/* セクション1: 全体設定 */}
-      <View className="mt-4 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">通知設定</Text>
-        <View className="rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
-          <View className="px-4 py-3 flex-row items-center justify-between">
-            <View className="flex-1 mr-3">
-              <Text className="text-base text-light-text dark:text-dark-text">Push通知</Text>
-              {isPushEnabled && <Text className="text-xs text-light-gray dark:text-dark-gray mt-1">有効</Text>}
-            </View>
-            <Switch value={isPushEnabled} onValueChange={handlePushToggle} disabled={!isLoggedIn} />
+      <View className="pt-2">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+          通知設定
+        </CatalystText>
+        <View className="bg-light-background dark:bg-dark-surface">
+          <View className="min-h-16 flex-row items-center px-5 py-3">
+            <CatalystListItemContent className="mr-3">
+              <CatalystText
+                variant="subtitle"
+                className="text-[15px] font-semibold"
+              >
+                Push通知
+              </CatalystText>
+              {
+                <CatalystText variant="caption" tone="muted">
+                  {isPushEnabled
+                    ? "通知を受け取ります"
+                    : "通知を受け取りません"}
+                </CatalystText>
+              }
+            </CatalystListItemContent>
+            <CatalystSwitch
+              value={isPushEnabled}
+              onValueChange={handlePushToggle}
+              disabled={!isLoggedIn}
+            />
           </View>
         </View>
 
         {/* フッター */}
         {authStatus === "denied" && isLoggedIn ? (
-          <View className="px-4 pt-1.5">
+          <View className="px-5 pt-2">
             <Pressable onPress={openSystemSettings}>
-              <Text className="text-sm text-light-tint dark:text-dark-tint">設定を開く</Text>
+              <CatalystText variant="label" tone="tint">
+                設定を開く
+              </CatalystText>
             </Pressable>
-            <Text className="text-xs text-orange-500 mt-1">
+            <CatalystText
+              variant="caption"
+              tone="danger"
+              className="mt-1 leading-4"
+            >
               通知がオフになっています。端末の設定から通知を有効にしてください。
-            </Text>
+            </CatalystText>
           </View>
         ) : footerText ? (
-          <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">{footerText}</Text>
+          <CatalystText
+            variant="caption"
+            tone="subtle"
+            className="px-5 pt-2 leading-4"
+          >
+            {footerText}
+          </CatalystText>
         ) : null}
       </View>
 
-      <View className="mt-6 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">リアルタイム更新</Text>
-        <View className="rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
-          <View className="px-4 py-3 flex-row items-center justify-between">
-            <View className="flex-1 mr-3">
-              <Text className="text-base text-light-text dark:text-dark-text">ストリーミング接続</Text>
-              <Text className="text-xs text-light-gray dark:text-dark-gray mt-1">
-                投稿のリアクションを開いている間に自動更新します
-              </Text>
-            </View>
-            <Switch value={isStreamingEnabled} onValueChange={handleStreamingToggle} disabled={!isLoggedIn} />
-          </View>
-        </View>
-        <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
-          streaming.natsuneko.com への WebSocket 接続を使用します。
-        </Text>
-      </View>
-
       {/* セクション2: 通知タイプ別設定 */}
-      {isPushEnabled && (
-        <View className="mt-6 mx-4">
-          <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">通知の種類</Text>
-          <View className="rounded-xl bg-white dark:bg-neutral-800 overflow-hidden">
+      {
+        <View className="mt-6">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            通知の種類
+          </CatalystText>
+          <View className="bg-light-background dark:bg-dark-surface">
             {PUSH_NOTIFICATION_TYPES.map((type, index) => (
-              <View
-                key={type.key}
-                className={cn(
-                  "px-4 py-3 flex-row items-center justify-between",
-                  index < PUSH_NOTIFICATION_TYPES.length - 1 && "border-b border-light-border dark:border-dark-border",
-                )}
-              >
-                <View className="flex-1 mr-3">
-                  <Text className="text-base text-light-text dark:text-dark-text">{type.displayName}</Text>
-                  <Text className="text-xs text-light-gray dark:text-dark-gray mt-1">{type.description}</Text>
+              <View key={type.key}>
+                <View className="min-h-16 flex-row items-center px-5 py-3">
+                  <CatalystListItemContent className="mr-3">
+                    <CatalystText
+                      variant="subtitle"
+                      className="text-[15px] font-semibold"
+                    >
+                      {type.displayName}
+                    </CatalystText>
+                    <CatalystText variant="caption" tone="muted">
+                      {type.description}
+                    </CatalystText>
+                  </CatalystListItemContent>
+                  <CatalystSwitch
+                    value={enabledTypes.has(type.key)}
+                    onValueChange={(v) => handleTypeToggle(type.key, v)}
+                    disabled={!isEffectivelyEnabled}
+                  />
                 </View>
-                <Switch
-                  value={enabledTypes.has(type.key)}
-                  onValueChange={(v) => handleTypeToggle(type.key, v)}
-                  disabled={!isEffectivelyEnabled}
-                />
+                {index < PUSH_NOTIFICATION_TYPES.length - 1 && (
+                  <CatalystDivider className="ml-5 w-auto" />
+                )}
               </View>
             ))}
           </View>
-          <Text className="px-4 pt-1.5 text-xs text-light-gray dark:text-dark-gray">
+          <CatalystText
+            variant="caption"
+            tone="subtle"
+            className="px-5 pt-2 leading-4"
+          >
             受け取りたい通知の種類を選択してください。
-          </Text>
+          </CatalystText>
         </View>
-      )}
+      }
+
+      <View className="mt-6">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+          リアルタイム更新
+        </CatalystText>
+        <View className="bg-light-background dark:bg-dark-surface">
+          <View className="min-h-16 flex-row items-center px-5 py-3">
+            <CatalystListItemContent className="mr-3">
+              <CatalystText
+                variant="subtitle"
+                className="text-[15px] font-semibold"
+              >
+                ストリーミング接続
+              </CatalystText>
+              <CatalystText variant="caption" tone="muted">
+                投稿のリアクションを開いている間に自動更新します
+              </CatalystText>
+            </CatalystListItemContent>
+            <CatalystSwitch
+              value={isStreamingEnabled}
+              onValueChange={handleStreamingToggle}
+              disabled={!isLoggedIn}
+            />
+          </View>
+        </View>
+        <CatalystText
+          variant="caption"
+          tone="subtle"
+          className="px-5 pt-2 leading-4"
+        >
+          streaming.natsuneko.com への WebSocket 接続を使用します。
+        </CatalystText>
+      </View>
 
       {/* デバッグ情報 */}
       {__DEV__ && (
-        <View className="mt-6 mx-4">
-          <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">デバッグ情報</Text>
-          <View className="rounded-xl bg-white dark:bg-neutral-800 overflow-hidden">
-            <View className="px-4 py-3 flex-row items-center justify-between border-b border-light-border dark:border-dark-border">
-              <Text className="text-sm text-light-gray dark:text-dark-gray">システム許可状態</Text>
-              <Text className="text-sm text-light-gray dark:text-dark-gray">
+        <View className="mt-6">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            デバッグ情報
+          </CatalystText>
+          <View className="bg-light-background dark:bg-dark-surface">
+            <View className="flex-row items-center justify-between px-5 py-3">
+              <CatalystText tone="muted">システム許可状態</CatalystText>
+              <CatalystText tone="muted">
                 {authStatus === "notDetermined"
                   ? "未決定"
                   : authStatus === "denied"
@@ -256,18 +333,23 @@ export default function NotificationSettingsPage() {
                     : authStatus === "authorized"
                       ? "許可"
                       : "暫定許可"}
-              </Text>
+              </CatalystText>
             </View>
-            <View className="px-4 py-3">
+            <CatalystDivider className="ml-5 w-auto" />
+            <View className="px-5 py-3">
               {fcmToken ? (
                 <View>
-                  <Text className="text-xs text-light-gray dark:text-dark-gray mb-1">FCMトークン</Text>
-                  <Text className="text-xs text-light-gray dark:text-dark-gray font-mono" selectable>
+                  <CatalystText variant="caption" tone="muted" className="mb-1">
+                    FCMトークン
+                  </CatalystText>
+                  <CatalystText variant="mono" tone="muted" selectable>
                     {fcmToken}
-                  </Text>
+                  </CatalystText>
                 </View>
               ) : (
-                <Text className="text-xs text-light-gray dark:text-dark-gray">FCMトークン: 未取得</Text>
+                <CatalystText variant="caption" tone="muted">
+                  FCMトークン: 未取得
+                </CatalystText>
               )}
             </View>
           </View>

@@ -9,7 +9,7 @@ import { UsersEmptyResult } from "./empty-result";
 
 type TimelineHandle = {
   scrollToTop: () => void;
-}
+};
 
 type Props = {
   query: string;
@@ -30,13 +30,17 @@ export const UserList = ({ query, ref }: Props) => {
       const { data } = await client.egeria.v1.search.get({ query: { q: query }, throwOnError: true });
       setUsers(data.users as EgeriaUser[]);
     }
-  }, [query]);
+  }, [client, query]);
 
-  useImperativeHandle(ref, () => ({
-    scrollToTop: () => {
-      list.current?.scrollToOffset({ offset: 0, animated: true });
-    }
-  }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToTop: () => {
+        list.current?.scrollToOffset({ offset: 0, animated: true });
+      },
+    }),
+    [],
+  );
 
   return (
     <FlashList
@@ -45,7 +49,7 @@ export const UserList = ({ query, ref }: Props) => {
       keyExtractor={(w) => w.id}
       renderItem={onRender}
       ListEmptyComponent={UsersEmptyResult}
-      ListEmptyComponentStyle={{ minHeight: "100%" }}
+      ListEmptyComponentStyle={{ minHeight: "80%" }}
     />
   );
 };

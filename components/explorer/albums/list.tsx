@@ -9,7 +9,7 @@ import { AlbumsEmptyResult } from "./empty-result";
 
 type TimelineHandle = {
   scrollToTop: () => void;
-}
+};
 
 type Props = {
   query: string;
@@ -33,13 +33,17 @@ export const AlbumList = ({ query, ref }: Props) => {
       });
       setAlbums(data.albums);
     }
-  }, [query]);
+  }, [client, query]);
 
-  useImperativeHandle(ref, () => ({
-    scrollToTop: () => {
-      list.current?.scrollToOffset({ offset: 0, animated: true });
-    }
-  }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToTop: () => {
+        list.current?.scrollToOffset({ offset: 0, animated: true });
+      },
+    }),
+    [],
+  );
 
   return (
     <FlashList
@@ -48,7 +52,7 @@ export const AlbumList = ({ query, ref }: Props) => {
       keyExtractor={(w) => w.id}
       renderItem={onRender}
       ListEmptyComponent={AlbumsEmptyResult}
-      ListEmptyComponentStyle={{ minHeight: "100%" }}
+      ListEmptyComponentStyle={{ minHeight: "80%" }}
     />
   );
 };

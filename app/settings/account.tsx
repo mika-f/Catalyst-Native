@@ -1,28 +1,34 @@
+import {
+  CatalystDivider,
+  CatalystListItem,
+  CatalystListItemContent,
+  CatalystText,
+  CatalystTextField,
+} from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import * as Credential from "@/models/credential";
 import { router } from "expo-router";
 import { useAtom } from "jotai";
-import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, Alert, View } from "react-native";
 
 export default function AccountSettingsPage() {
   const [account, setAccount] = useAtom(accountAtom);
-  const [screenName, setScreenName] = useState("");
+  const [screenName, setScreenName] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const user = account?.user;
   const isLoggedIn = !!account;
   const canEditScreenName = user ? user.screenName === user.id : false;
-
-  useEffect(() => {
-    if (screenName === "" && user) {
-      setScreenName(user.screenName);
-    }
-  }, [user, screenName]);
-
-  const trimmed = screenName.trim();
-  const isSaveDisabled = !user || !canEditScreenName || trimmed === "" || trimmed === user.screenName || isSaving;
+  const currentScreenName = screenName ?? user?.screenName ?? "";
+  const trimmed = currentScreenName.trim();
+  const isSaveDisabled =
+    !user ||
+    !canEditScreenName ||
+    trimmed === "" ||
+    trimmed === user.screenName ||
+    isSaving;
 
   const save = useCallback(async () => {
     if (!account || !user || isSaveDisabled) return;
@@ -43,6 +49,7 @@ export default function AccountSettingsPage() {
       const { data: me } = await account.credential.client.egeria.v1.me.get({ throwOnError: true });
       if (me?.user) {
         setAccount({ ...account, user: me.user });
+        setScreenName(me.user.screenName);
       }
     } catch {
       setErrorMessage("ユーザー名の更新に失敗しました。");
@@ -76,12 +83,15 @@ export default function AccountSettingsPage() {
           try {
             if (account) {
               const token = account.credential.client.accessToken;
-              const res = await fetch(`https://api.natsuneko.com/egeria/v1/me`, {
-                method: "DELETE",
-                headers: {
-                  Authorization: `Bearer ${token}`,
+              const res = await fetch(
+                `https://api.natsuneko.com/egeria/v1/me`,
+                {
+                  method: "DELETE",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
                 },
-              });
+              );
 
               if (res.ok) {
                 Alert.alert(
@@ -100,87 +110,142 @@ export default function AccountSettingsPage() {
     ]);
   }, [account, setAccount]);
 
-  const footerText = !canEditScreenName ? "すでに1度ユーザー名を変更しているため、変更できません。" : errorMessage;
+  const footerText = !canEditScreenName
+    ? "すでに1度ユーザー名を変更しているため、変更できません。"
+    : errorMessage;
 
   const handleLogin = useCallback(async () => {
     const { credential, isLoggedIn: loggedIn, user } = await Credential.login();
     if (loggedIn && user) {
       setAccount({ user, credential });
+      setScreenName(null);
     }
   }, [setAccount]);
 
   if (!isLoggedIn) {
     return (
-      <View className="flex-1">
-        <View className="mt-4 mx-4 rounded-xl bg-light-surface dark:bg-dark-surface overflow-hidden">
-          <Pressable className="px-4 py-3.5" onPress={handleLogin}>
-            <Text className="text-base text-light-tint dark:text-dark-tint">ログイン</Text>
-          </Pressable>
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+        <View className="bg-light-background dark:bg-dark-surface">
+          <CatalystListItem
+            divided={false}
+            className="min-h-14 px-5 py-3.5"
+            onPress={handleLogin}
+          >
+            <CatalystListItemContent className="gap-0">
+              <CatalystText
+                variant="subtitle"
+                tone="tint"
+                className="text-[15px] font-semibold"
+              >
+                ログイン
+              </CatalystText>
+            </CatalystListItemContent>
+          </CatalystListItem>
         </View>
       </View>
     );
   }
 
   return (
-    <View className="flex-1">
-      <View className="mt-4 mx-4">
-        <Text className="px-4 pb-1.5 text-xs text-light-gray dark:text-dark-gray uppercase">ユーザー名</Text>
-        <View className="rounded-xl bg-light-background dark:bg-dark-surface overflow-hidden">
-          <View className="px-4 py-3 flex-row items-center border-b border-light-border dark:border-dark-border">
-            <Text className="text-base text-light-gray dark:text-dark-gray mr-2">@</Text>
-            <TextInput
-              className="flex-1 text-base text-light-text dark:text-dark-text"
-              value={screenName}
+    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+      <View className="pt-2">
+        <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+          ユーザー名
+        </CatalystText>
+        <View className="bg-light-background dark:bg-dark-surface">
+          <View className="min-h-14 flex-row items-center px-5 py-3">
+            <CatalystText tone="subtle" className="mr-2 text-base leading-6">
+              @
+            </CatalystText>
+            <CatalystTextField
+              className="flex-1 rounded-none bg-transparent p-0 leading-5"
+              style={{
+                paddingVertical: 1,
+                includeFontPadding: false,
+                textAlignVertical: "center",
+              }}
+              value={currentScreenName}
               onChangeText={setScreenName}
               autoCapitalize="none"
               autoCorrect={false}
               editable={canEditScreenName}
               placeholder="ユーザー名"
-              style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
             />
           </View>
-          <Pressable className="px-4 py-3.5" onPress={save} disabled={isSaveDisabled}>
+          <CatalystDivider className="ml-5 w-auto" />
+          <CatalystListItem
+            divided={false}
+            className="min-h-14 px-5 py-3.5 disabled:opacity-50"
+            onPress={save}
+            disabled={isSaveDisabled}
+          >
             {isSaving ? (
               <View className="flex-row items-center gap-2">
                 <ActivityIndicator size="small" />
-                <Text className="text-base text-light-tint dark:text-dark-tint">保存中...</Text>
+                <CatalystText
+                  variant="subtitle"
+                  tone="tint"
+                  className="text-[15px] font-semibold"
+                >
+                  保存中...
+                </CatalystText>
               </View>
             ) : (
-              <Text
-                className={
-                  isSaveDisabled
-                    ? "text-base text-light-gray dark:text-dark-gray"
-                    : "text-base text-light-tint dark:text-dark-tint"
-                }
+              <CatalystText
+                variant="subtitle"
+                tone={isSaveDisabled ? "subtle" : "tint"}
+                className="text-[15px] font-semibold"
               >
                 変更を保存
-              </Text>
+              </CatalystText>
             )}
-          </Pressable>
+          </CatalystListItem>
         </View>
         {footerText && (
-          <Text
-            className={`px-4 pt-1.5 text-xs ${errorMessage ? "text-red-500" : "text-light-gray dark:text-dark-gray"}`}
+          <CatalystText
+            variant="caption"
+            tone={errorMessage ? "danger" : "subtle"}
+            className="px-5 pt-2 leading-4"
           >
             {footerText}
-          </Text>
+          </CatalystText>
         )}
       </View>
 
-      <View className="mt-6 mx-4">
-        <View className="rounded-xl bg-white dark:bg-neutral-800 overflow-hidden">
-          <Pressable className="px-4 py-3.5" onPress={handleLogout}>
-            <Text className="text-base text-light-error dark:text-dark-error">ログアウト</Text>
-          </Pressable>
-        </View>
+      <View className="mt-6 bg-light-background dark:bg-dark-surface">
+        <CatalystListItem
+          divided={false}
+          className="min-h-14 px-5 py-3.5"
+          onPress={handleLogout}
+        >
+          <CatalystListItemContent className="gap-0">
+            <CatalystText
+              variant="subtitle"
+              tone="danger"
+              className="text-[15px] font-semibold"
+            >
+              ログアウト
+            </CatalystText>
+          </CatalystListItemContent>
+        </CatalystListItem>
       </View>
 
-      <View className="mt-6 mx-4">
-        <View className="rounded-xl bg-white dark:bg-neutral-800 overflow-hidden">
-          <Pressable className="px-4 py-3.5" onPress={handleDeleteAccount}>
-            <Text className="text-base text-light-error dark:text-dark-error">アカウント削除</Text>
-          </Pressable>
-        </View>
+      <View className="mt-6 bg-light-background dark:bg-dark-surface">
+        <CatalystListItem
+          divided={false}
+          className="min-h-14 px-5 py-3.5"
+          onPress={handleDeleteAccount}
+        >
+          <CatalystListItemContent className="gap-0">
+            <CatalystText
+              variant="subtitle"
+              tone="danger"
+              className="text-[15px] font-semibold"
+            >
+              アカウント削除
+            </CatalystText>
+          </CatalystListItemContent>
+        </CatalystListItem>
       </View>
     </View>
   );

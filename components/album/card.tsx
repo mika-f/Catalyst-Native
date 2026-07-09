@@ -1,9 +1,10 @@
+import { CatalystBadge, CatalystBadgeText, CatalystMediaFrame, CatalystText } from "@/components/design-system";
 import { getCdnUrl } from "@/lib/media";
 import type { CatalystAlbumOrSmartAlbum, Media } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Globe, Images, Lock } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { withUniwind } from "uniwind";
 
 const UniGlobe = withUniwind(Globe);
@@ -22,46 +23,55 @@ export const AlbumCard = ({ album }: Props) => {
   const route = album.type !== "album" ? `/smart-album/${album.id}` : `/album/${album.id}`;
 
   return (
-    <Pressable onPress={() => router.push(route as never)} className="p-2 m-2 bg-light-surface dark:bg-dark-surface rounded-xl">
-      {/* サムネイル画像 */}
-      <View className="h-50 rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-800">
-        {pictures.length === 0 && <EmptyThumbnail />}
-        {pictures.length === 1 && <SingleThumbnail media={pictures[0]} />}
-        {pictures.length === 2 && <DoubleThumbnail medias={pictures as [Media, Media]} />}
-        {pictures.length === 3 && <TripleThumbnail medias={pictures as [Media, Media, Media]} />}
-      </View>
+    <Pressable onPress={() => router.push(route as never)} className="mx-3 py-3 active:opacity-80">
+      <View className="gap-2">
+        <CatalystMediaFrame className="h-50">
+          {pictures.length === 0 && <EmptyThumbnail />}
+          {pictures.length === 1 && <SingleThumbnail media={pictures[0]} />}
+          {pictures.length === 2 && <DoubleThumbnail medias={pictures as [Media, Media]} />}
+          {pictures.length === 3 && <TripleThumbnail medias={pictures as [Media, Media, Media]} />}
+        </CatalystMediaFrame>
 
-      {/* アルバム情報 */}
-      <View className="px-1 pt-2 gap-1">
-        <Text className="text-base font-bold text-neutral-900 dark:text-neutral-100" numberOfLines={1}>
-          {album.name}
-        </Text>
+        <View className="gap-1 px-1 pb-1">
+          <View className="flex-row items-start gap-2">
+            <CatalystText variant="subtitle" className="min-w-0 flex-1" numberOfLines={1}>
+              {album.name}
+            </CatalystText>
+            <CatalystBadge tone={album.type !== "album" ? "accent" : "neutral"} className="h-6">
+              <CatalystBadgeText>{album.type !== "album" ? "Smart" : "Album"}</CatalystBadgeText>
+            </CatalystBadge>
+          </View>
 
-        {album.description.length > 0 && (
-          <Text className="text-sm text-neutral-500 dark:text-neutral-400" numberOfLines={2}>
-            {album.description}
-          </Text>
-        )}
-
-        <View className="flex-row items-center gap-1">
-          {album.user && (
-            <>
-              <Text className="text-xs text-neutral-500 dark:text-neutral-400">{album.user.displayName}</Text>
-              <Text className="text-xs text-neutral-500 dark:text-neutral-400">•</Text>
-            </>
+          {album.description.length > 0 && (
+            <CatalystText tone="muted" numberOfLines={2}>
+              {album.description}
+            </CatalystText>
           )}
 
-          <Text className="text-xs text-neutral-500 dark:text-neutral-400">
-            {album.type !== "album" ? "スマートアルバム" : "アルバム"}
-          </Text>
+          <View className="flex-row items-center gap-1">
+            {album.user && (
+              <>
+                <CatalystText variant="caption" tone="muted">
+                  {album.user.displayName}
+                </CatalystText>
+                <CatalystText variant="caption" tone="muted">
+                  /
+                </CatalystText>
+              </>
+            )}
 
-          <View className="flex-1" />
+            <CatalystText variant="caption" tone="muted">
+              {album.isPublic ? "公開" : "非公開"}
+            </CatalystText>
 
-          {album.isPublic ? (
-            <UniGlobe size={12} className="text-neutral-500 dark:text-neutral-400" />
-          ) : (
-            <UniLock size={12} className="text-neutral-500 dark:text-neutral-400" />
-          )}
+            <View className="flex-1" />
+
+            {album.isPublic ? (
+              <UniGlobe size={12} className="text-light-icon dark:text-dark-icon" />
+            ) : (
+              <UniLock size={12} className="text-light-icon dark:text-dark-icon" />
+            )}
+          </View>
         </View>
       </View>
     </Pressable>
@@ -70,7 +80,7 @@ export const AlbumCard = ({ album }: Props) => {
 
 const EmptyThumbnail = () => (
   <View className="flex-1 items-center justify-center">
-    <UniImages size={48} className="text-neutral-400" />
+    <UniImages size={48} className="text-light-icon dark:text-dark-icon" />
   </View>
 );
 

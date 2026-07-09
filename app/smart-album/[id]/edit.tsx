@@ -4,12 +4,18 @@ import {
   SmartAlbumForm,
   type SmartAlbumCondition,
 } from "@/components/smart-album/form";
+import {
+  CatalystButton,
+  CatalystButtonText,
+  CatalystDivider,
+  CatalystText,
+} from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -144,7 +150,7 @@ export default function SmartAlbumEditScreen() {
       <>
         <Stack.Screen options={{ title: "スマートアルバム編集" }} />
         <View className="flex-1 items-center justify-center bg-light-background dark:bg-dark-background">
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
         </View>
       </>
     );
@@ -155,20 +161,22 @@ export default function SmartAlbumEditScreen() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable onPress={handleSave} disabled={!canSave}>
-              <Text
-                className={`text-base font-semibold ${canSave ? "text-light-accent dark:text-dark-accent" : "text-light-text-subtle dark:text-dark-text-subtle"}`}
+            <Pressable onPress={handleSave} disabled={!canSave} hitSlop={8} className="px-1 py-2">
+              <CatalystText
+                variant="subtitle"
+                tone={canSave ? "tint" : "subtle"}
+                className={!canSave ? "opacity-60" : undefined}
               >
                 保存
-              </Text>
+              </CatalystText>
             </Pressable>
           ),
         }}
       />
-      <View className="flex-1 bg-light-background dark:bg-dark-background" style={{ paddingBottom: insets.bottom }}>
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background" style={{ paddingBottom: insets.bottom }}>
         {isSubmitting && (
           <View className="absolute inset-0 z-50 items-center justify-center bg-light-overlay dark:bg-dark-overlay">
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>
         )}
         <SmartAlbumForm
@@ -192,16 +200,15 @@ export default function SmartAlbumEditScreen() {
           onChangeDisplayMode={setDisplayMode}
           footer={
             <>
-              <View className="h-px bg-light-divider dark:bg-dark-divider" />
-              <View className="gap-3">
-                <Pressable
-                  onPress={handleDelete}
-                  className="items-center rounded-lg border border-light-error bg-light-error-background p-3 dark:border-dark-error dark:bg-dark-error-background"
-                >
-                  <Text className="text-sm font-semibold text-light-error dark:text-dark-error">
-                    スマートアルバムを削除
-                  </Text>
-                </Pressable>
+              <View className="mt-6">
+                <CatalystDivider />
+                <View className="bg-light-background px-5 py-4 dark:bg-dark-surface">
+                  <CatalystButton tone="danger" onPress={handleDelete}>
+                    <CatalystButtonText>
+                      スマートアルバムを削除
+                    </CatalystButtonText>
+                  </CatalystButton>
+                </View>
               </View>
             </>
           }
