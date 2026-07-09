@@ -1,4 +1,15 @@
-import { CatalystSwitch } from "@/components/design-system";
+import {
+  CatalystBadge,
+  CatalystBadgeText,
+  CatalystButton,
+  CatalystButtonIcon,
+  CatalystButtonText,
+  CatalystDivider,
+  CatalystSegmentedControl,
+  CatalystSwitch,
+  CatalystText,
+  CatalystTextField,
+} from "@/components/design-system";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -10,7 +21,7 @@ import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/d
 import dayjs from "dayjs";
 import { Plus, X } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
-import { Platform, Pressable, ScrollView, Text, TextInput, View, useColorScheme } from "react-native";
+import { Platform, Pressable, ScrollView, Text, View, useColorScheme } from "react-native";
 import { withUniwind } from "uniwind";
 
 import "@/global.css";
@@ -227,204 +238,197 @@ export const SmartAlbumForm = ({
 
   return (
     <>
-      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-6">
+      <ScrollView
+        className="flex-1 bg-light-surface-muted dark:bg-dark-background"
+        contentContainerClassName="pb-8"
+      >
         {/* 基本情報 */}
-        <View className="gap-3">
-          <Text className="text-base font-semibold text-light-text dark:text-dark-text">基本情報</Text>
-          <TextInput
-            value={title}
-            onChangeText={onChangeTitle}
-            placeholder="タイトル"
-            placeholderTextColor={theme === "dark" ? "#666" : "#999"}
-            className="rounded-lg border border-light-border bg-light-surface p-3 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-            style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
-          />
-          <TextInput
-            value={description}
-            onChangeText={onChangeDescription}
-            multiline
-            placeholder="説明（任意）"
-            placeholderTextColor={theme === "dark" ? "#666" : "#999"}
-            className="min-h-25 rounded-lg border border-light-border bg-light-surface p-3 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-            textAlignVertical="top"
-          />
+        <View className="pt-2">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            基本情報
+          </CatalystText>
+          <View className="bg-light-background dark:bg-dark-surface">
+            <View className="min-h-14 px-5 py-3">
+              <CatalystTextField value={title} onChangeText={onChangeTitle} placeholder="タイトル" />
+            </View>
+            <CatalystDivider className="ml-5 w-auto" />
+            <View className="px-5 py-3">
+              <CatalystTextField
+                value={description}
+                onChangeText={onChangeDescription}
+                multiline
+                placeholder="説明（任意）"
+              />
+            </View>
+          </View>
         </View>
 
-        <View className="h-px bg-light-divider dark:bg-dark-divider" />
-
         {/* 条件 */}
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text className="text-base font-semibold text-light-text dark:text-dark-text">条件</Text>
-              <Text className="mt-1 text-xs text-light-text-muted dark:text-dark-text-muted">
-                登録された条件で投稿を収集します（最大{MAX_CONDITIONS}件）
-              </Text>
-            </View>
-            <Pressable
+        <View className="mt-6">
+          <View className="flex-row items-center justify-between px-5 pb-2">
+            <CatalystText variant="caption" tone="subtle">
+              条件
+            </CatalystText>
+            <CatalystButton
+              size="sm"
+              tone="secondary"
               onPress={openAddConditionSheet}
               disabled={conditions.length >= MAX_CONDITIONS}
-              className={`flex-row items-center gap-1.5 rounded-lg border px-3 py-2 ${
-                conditions.length >= MAX_CONDITIONS
-                  ? "border-light-border bg-light-surface-muted opacity-50 dark:border-dark-border dark:bg-dark-surface-muted"
-                  : "border-light-border bg-light-surface dark:border-dark-border dark:bg-dark-surface"
-              }`}
             >
-              <UniPlus size={14} className="text-light-text dark:text-dark-text" />
-              <Text className="text-sm text-light-text dark:text-dark-text">条件を追加</Text>
-            </Pressable>
+              <CatalystButtonIcon>
+                <UniPlus />
+              </CatalystButtonIcon>
+              <CatalystButtonText>条件を追加</CatalystButtonText>
+            </CatalystButton>
           </View>
 
           {conditions.length === 0 ? (
-            <View className="rounded-lg border border-dashed border-light-border p-4 dark:border-dark-border">
-              <Text className="text-center text-sm text-light-text-muted dark:text-dark-text-muted">
+            <View className="bg-light-background px-5 py-6 dark:bg-dark-surface">
+              <CatalystText tone="muted" className="text-center">
                 条件がありません。追加してください。
-              </Text>
+              </CatalystText>
             </View>
           ) : (
-            <View className="gap-2">
-              {conditions.map((condition) => (
-                <View
-                  key={condition.id}
-                  className="flex-row items-center justify-between rounded-lg border border-light-border bg-light-surface p-3 dark:border-dark-border dark:bg-dark-surface"
-                >
+            <View className="bg-light-background dark:bg-dark-surface">
+              {conditions.map((condition, index) => (
+                <View key={condition.id}>
+                <View className="min-h-14 flex-row items-center justify-between px-5 py-3">
                   <View className="flex-1 flex-row items-center gap-2">
                     {condition.isExclude && (
-                      <View className="rounded px-2 py-0.5 bg-light-error-background dark:bg-dark-error-background">
-                        <Text className="text-xs font-medium text-light-error-foreground dark:text-dark-error-foreground">
-                          除外
-                        </Text>
-                      </View>
+                      <CatalystBadge tone="danger">
+                        <CatalystBadgeText>除外</CatalystBadgeText>
+                      </CatalystBadge>
                     )}
-                    <View className="rounded px-2 py-0.5 bg-light-surface-muted dark:bg-dark-surface-muted">
-                      <Text className="text-xs font-medium text-light-text-muted dark:text-dark-text-muted">
-                        {CONDITION_TYPE_BADGE[condition.type]}
-                      </Text>
-                    </View>
-                    <Text className="flex-1 text-sm text-light-text dark:text-dark-text" numberOfLines={1}>
+                    <CatalystBadge tone="neutral">
+                      <CatalystBadgeText>{CONDITION_TYPE_BADGE[condition.type]}</CatalystBadgeText>
+                    </CatalystBadge>
+                    <CatalystText className="flex-1" numberOfLines={1}>
                       {condition.value}
-                    </Text>
+                    </CatalystText>
                   </View>
                   <Pressable onPress={() => handleRemoveCondition(condition.id)} className="p-1">
                     <UniX size={16} className="text-light-text-muted dark:text-dark-text-muted" />
                   </Pressable>
                 </View>
+                  {index < conditions.length - 1 && <CatalystDivider className="ml-5 w-auto" />}
+                </View>
               ))}
             </View>
           )}
+          <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
+            登録された条件で投稿を収集します（最大{MAX_CONDITIONS}件）
+          </CatalystText>
         </View>
 
-        <View className="h-px bg-light-divider dark:bg-dark-divider" />
-
         {/* 期間設定 */}
-        <View className="gap-3">
-          <Text className="text-base font-semibold text-light-text dark:text-dark-text">期間設定</Text>
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-light-text dark:text-dark-text">開始日時を設定</Text>
+        <View className="mt-6">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            期間設定
+          </CatalystText>
+          <View className="bg-light-background dark:bg-dark-surface">
+          <View className="min-h-14 flex-row items-center justify-between px-5 py-3">
+            <CatalystText variant="subtitle" className="text-[15px] font-semibold">開始日時を設定</CatalystText>
             <CatalystSwitch value={since !== null} onValueChange={(enabled) => onChangeSince(enabled ? now : null)} />
           </View>
           {since !== null &&
             (Platform.OS === "ios" ? (
+              <View className="px-5 pb-3">
               <DateTimePicker
                 value={new Date(since)}
                 mode="datetime"
                 display="compact"
                 onChange={(_, date) => date && onChangeSince(date.toISOString())}
               />
+              </View>
             ) : (
               <Pressable
                 onPress={() => openAndroidDateTimePicker(since, onChangeSince)}
-                className="rounded-lg border border-light-border bg-light-surface p-3 dark:border-dark-border dark:bg-dark-surface"
+                className="mx-5 mb-3 rounded-lg bg-light-surface-muted p-3 dark:bg-dark-surface-muted"
               >
-                <Text className="text-base text-light-text dark:text-dark-text">
+                <CatalystText>
                   {dayjs(since).format("YYYY/MM/DD HH:mm")}
-                </Text>
+                </CatalystText>
               </Pressable>
             ))}
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-light-text dark:text-dark-text">終了日時を設定</Text>
+          <CatalystDivider className="ml-5 w-auto" />
+          <View className="min-h-14 flex-row items-center justify-between px-5 py-3">
+            <CatalystText variant="subtitle" className="text-[15px] font-semibold">終了日時を設定</CatalystText>
             <CatalystSwitch value={until !== null} onValueChange={(enabled) => onChangeUntil(enabled ? now : null)} />
           </View>
           {until !== null &&
             (Platform.OS === "ios" ? (
-              <DateTimePicker
-                value={new Date(until)}
-                mode="datetime"
-                display="compact"
-                onChange={(_, date) => date && onChangeUntil(date.toISOString())}
-              />
+              <View className="px-5 pb-3">
+                <DateTimePicker
+                  value={new Date(until)}
+                  mode="datetime"
+                  display="compact"
+                  onChange={(_, date) => date && onChangeUntil(date.toISOString())}
+                />
+              </View>
             ) : (
               <Pressable
                 onPress={() => openAndroidDateTimePicker(until, onChangeUntil)}
-                className="rounded-lg border border-light-border bg-light-surface p-3 dark:border-dark-border dark:bg-dark-surface"
+                className="mx-5 mb-3 rounded-lg bg-light-surface-muted p-3 dark:bg-dark-surface-muted"
               >
-                <Text className="text-base text-light-text dark:text-dark-text">
+                <CatalystText>
                   {dayjs(until).format("YYYY/MM/DD HH:mm")}
-                </Text>
+                </CatalystText>
               </Pressable>
             ))}
+          </View>
         </View>
-
-        <View className="h-px bg-light-divider dark:bg-dark-divider" />
 
         {/* 表示モード */}
-        <View className="gap-3">
-          <Text className="text-base font-semibold text-light-text dark:text-dark-text">表示モード</Text>
-          <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-            アルバム内の投稿の表示方法を選択します
-          </Text>
-          <View className="flex-row overflow-hidden rounded-lg border border-light-border dark:border-dark-border">
-            {DISPLAY_MODE_OPTIONS.map((option) => (
-              <Pressable
-                key={option.value}
-                onPress={() => onChangeDisplayMode(option.value)}
-                className={`flex-1 items-center py-2 ${
-                  displayMode === option.value
-                    ? "bg-light-accent dark:bg-dark-accent"
-                    : "bg-light-surface dark:bg-dark-surface"
-                }`}
-              >
-                <Text
-                  className={`text-xs font-medium ${
-                    displayMode === option.value
-                      ? "text-light-accent-foreground dark:text-dark-accent-foreground"
-                      : "text-light-text dark:text-dark-text"
-                  }`}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            ))}
+        <View className="mt-6">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            表示モード
+          </CatalystText>
+          <View className="bg-light-background px-5 py-3 dark:bg-dark-surface">
+            <CatalystSegmentedControl
+              options={DISPLAY_MODE_OPTIONS}
+              value={displayMode}
+              onValueChange={onChangeDisplayMode}
+            />
           </View>
+          <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
+            アルバム内の投稿の表示方法を選択します
+          </CatalystText>
         </View>
-
-        <View className="h-px bg-light-divider dark:bg-dark-divider" />
 
         {/* 投稿設定 */}
-        <View className="gap-3">
-          <Text className="text-base font-semibold text-light-text dark:text-dark-text">投稿設定</Text>
-          <View className="flex-row items-center justify-between">
-            <Text className="flex-1 text-sm text-light-text dark:text-dark-text">NSFWコンテンツを許可</Text>
+        <View className="mt-6">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            投稿設定
+          </CatalystText>
+          <View className="bg-light-background dark:bg-dark-surface">
+          <View className="min-h-14 flex-row items-center justify-between px-5 py-3">
+            <CatalystText variant="subtitle" className="flex-1 text-[15px] font-semibold">NSFWコンテンツを許可</CatalystText>
             <CatalystSwitch value={isAllowNsfw} onValueChange={onChangeIsAllowNsfw} />
           </View>
-          <View className="flex-row items-center justify-between">
-            <Text className="flex-1 text-sm text-light-text dark:text-dark-text">他人の投稿を許可</Text>
+          <CatalystDivider className="ml-5 w-auto" />
+          <View className="min-h-14 flex-row items-center justify-between px-5 py-3">
+            <CatalystText variant="subtitle" className="flex-1 text-[15px] font-semibold">他人の投稿を許可</CatalystText>
             <CatalystSwitch value={isAllowOthers} onValueChange={onChangeIsAllowOthers} />
+          </View>
           </View>
         </View>
 
-        <View className="h-px bg-light-divider dark:bg-dark-divider" />
-
         {/* 公開設定 */}
-        <View className="gap-3">
-          <Text className="text-base font-semibold text-light-text dark:text-dark-text">公開設定</Text>
-          <View className="flex-row items-center justify-between">
-            <Text className="flex-1 text-sm text-light-text dark:text-dark-text">公開アルバム</Text>
+        <View className="mt-6">
+          <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
+            公開設定
+          </CatalystText>
+          <View className="min-h-16 flex-row items-center bg-light-background px-5 py-3 dark:bg-dark-surface">
+            <View className="mr-4 flex-1">
+              <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                公開アルバム
+              </CatalystText>
+              <CatalystText variant="caption" tone="muted">
+                {isPublic ? "すべてのユーザーがこのアルバムを閲覧できます" : "自分のみがこのアルバムを閲覧できます"}
+              </CatalystText>
+            </View>
             <CatalystSwitch value={isPublic} onValueChange={onChangeIsPublic} />
           </View>
-          <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
-            {isPublic ? "すべてのユーザーがこのアルバムを閲覧できます" : "自分のみがこのアルバムを閲覧できます"}
-          </Text>
         </View>
 
         {footer}
@@ -440,14 +444,14 @@ export const SmartAlbumForm = ({
         handleIndicatorStyle={{ backgroundColor: theme === "dark" ? "#48484A" : "#C7C7CC" }}
       >
         <BottomSheetScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-          <Text className="text-base font-semibold text-light-text dark:text-dark-text">条件を追加</Text>
-          <Text className="text-xs text-light-text-muted dark:text-dark-text-muted">
+          <CatalystText variant="subtitle">条件を追加</CatalystText>
+          <CatalystText variant="caption" tone="muted">
             種類を選んで条件を1件ずつ追加します。
-          </Text>
+          </CatalystText>
 
           {/* 条件タイプ選択 */}
           <View className="gap-2">
-            <Text className="text-sm font-medium text-light-text dark:text-dark-text">条件タイプ</Text>
+            <CatalystText variant="label">条件タイプ</CatalystText>
             <View className="flex-row flex-wrap gap-2">
               {(["hashtag", "takenBy", "contest", "user"] as ConditionType[]).map((type) => (
                 <Pressable
@@ -475,48 +479,36 @@ export const SmartAlbumForm = ({
 
           {/* 値入力 */}
           <View className="gap-2">
-            <Text className="text-sm font-medium text-light-text dark:text-dark-text">値</Text>
-            <TextInput
-              // value={conditionValue}
+            <CatalystText variant="label">値</CatalystText>
+            <CatalystTextField
+              value={conditionValue}
               onChangeText={setConditionValue}
               placeholder={CONDITION_PLACEHOLDERS[conditionType]}
-              placeholderTextColor={theme === "dark" ? "#666" : "#999"}
-              className="rounded-lg border border-light-border bg-light-surface p-3 text-base text-light-text dark:border-dark-border dark:bg-dark-surface dark:text-dark-text"
-              style={Platform.OS === "ios" ? { lineHeight: undefined } : undefined}
+              className="rounded-lg bg-light-surface p-3 dark:bg-dark-surface"
             />
           </View>
 
           {/* 除外条件トグル */}
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-sm font-medium text-light-text dark:text-dark-text">除外条件にする</Text>
-              <Text className="mt-0.5 text-xs text-light-text-muted dark:text-dark-text-muted">
+              <CatalystText variant="label">除外条件にする</CatalystText>
+              <CatalystText variant="caption" tone="muted" className="mt-0.5">
                 この条件に一致する投稿を結果から除外します
-              </Text>
+              </CatalystText>
             </View>
             <CatalystSwitch value={conditionIsExclude} onValueChange={setConditionIsExclude} />
           </View>
 
           {/* 追加ボタン */}
-          <Pressable
+          <CatalystButton
             onPress={handleAddCondition}
             disabled={!conditionValue.trim()}
-            className={`items-center rounded-lg p-3 ${
-              conditionValue.trim()
-                ? "bg-light-accent dark:bg-dark-accent"
-                : "bg-light-surface-muted opacity-50 dark:bg-dark-surface-muted"
-            }`}
+            tone={conditionValue.trim() ? "primary" : "secondary"}
           >
-            <Text
-              className={`text-base font-semibold ${
-                conditionValue.trim()
-                  ? "text-light-accent-foreground dark:text-dark-accent-foreground"
-                  : "text-light-text-muted dark:text-dark-text-muted"
-              }`}
-            >
+            <CatalystButtonText>
               追加
-            </Text>
-          </Pressable>
+            </CatalystButtonText>
+          </CatalystButton>
         </BottomSheetScrollView>
       </BottomSheetModal>
     </>

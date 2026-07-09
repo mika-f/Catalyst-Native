@@ -1,10 +1,11 @@
 import { conditionToHashtag, SmartAlbumForm, type SmartAlbumCondition } from "@/components/smart-album/form";
+import { CatalystText } from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
 import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
 import { Stack, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
@@ -65,16 +66,14 @@ export default function SmartAlbumComposerScreen() {
           headerBackTitle: "キャンセル",
           headerRight: () => (
             <Pressable onPress={handleSubmit} disabled={!canCreate}>
-              <Text
-                className={`text-base font-semibold ${canCreate ? "text-light-accent dark:text-dark-accent" : "text-light-text-subtle dark:text-dark-text-subtle"}`}
-              >
+              <CatalystText variant="subtitle" tone={canCreate ? "accent" : "subtle"}>
                 作成
-              </Text>
+              </CatalystText>
             </Pressable>
           ),
         }}
       />
-      <View className="flex-1 bg-light-background dark:bg-dark-background" style={{ paddingBottom: insets.bottom}}>
+      <View className="flex-1 bg-light-surface-muted dark:bg-dark-background" style={{ paddingBottom: insets.bottom}}>
         {isSubmitting && (
           <View className="absolute inset-0 z-50 items-center justify-center bg-light-overlay dark:bg-dark-overlay">
             <ActivityIndicator size="large" />

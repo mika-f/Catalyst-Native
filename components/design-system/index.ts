@@ -7,6 +7,7 @@ export { CatalystIconButton, type CatalystIconButtonProps } from "./icon-button"
 export { CatalystListItem, CatalystListItemContent, type CatalystListItemContentProps, type CatalystListItemProps } from "./list-item";
 export { CatalystMediaFrame, type CatalystMediaFrameProps } from "./media-frame";
 export { CatalystSearchField, type CatalystSearchFieldProps } from "./search-field";
+export { CatalystSegmentedControl, type CatalystSegmentedControlOption, type CatalystSegmentedControlProps } from "./segmented-control";
 export { CatalystSurface, type CatalystSurfaceProps } from "./surface";
 export { CatalystSwitch, type CatalystSwitchProps } from "./switch";
 export { CatalystTabs, type CatalystTab, type CatalystTabsProps } from "./tabs";
