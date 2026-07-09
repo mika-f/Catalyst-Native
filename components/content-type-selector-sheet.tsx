@@ -1,4 +1,9 @@
-import { cn } from "@/lib/utils";
+import {
+  CatalystDivider,
+  CatalystListItem,
+  CatalystListItemContent,
+  CatalystText,
+} from "@/components/design-system";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -7,7 +12,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { BookImage, ChevronRight, Images, PenLine } from "lucide-react-native";
 import React, { useCallback, useImperativeHandle, useRef } from "react";
-import { Pressable, Text, View, useColorScheme } from "react-native";
+import { View, useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
@@ -101,39 +106,33 @@ export const ContentTypeSelectorSheet = ({ onSelect, ref }: Props) => {
       }}
     >
       <BottomSheetView style={{ paddingBottom: insets.bottom * 2 }}>
-        <Text className="py-3 text-center text-[17px] font-semibold text-light-text dark:text-dark-text">
+        <CatalystText variant="subtitle" className="py-3 text-center">
           作成するコンテンツを選択
-        </Text>
-        <View className="mb-2 h-px bg-light-divider dark:bg-dark-divider" />
-        <View className="bg-light-surface dark:bg-dark-surface rounded-xl mx-2">
+        </CatalystText>
+        <CatalystDivider />
+        <View className="bg-light-background dark:bg-dark-surface">
           {CONTENT_TYPES.map((contentType, i) => (
-            <Pressable
-              key={contentType.key}
-              onPress={() => handleSelect(contentType.key)}
-              className="flex-row items-start px-4 py-2"
-            >
-              <View className="mr-4 h-11 w-11 items-center justify-center rounded-lg bg-light-accent/10 dark:bg-dark-accent/10">
-                <View className="text-light-accent dark:text-dark-accent">
-                  <contentType.icon size={24} className="text-light-accent dark:text-dark-accent" />
-                </View>
-              </View>
-              <View
-                className={cn(
-                  "flex-row mr-12 pb-4 items-center",
-                  i + 1 !== CONTENT_TYPES.length && "border-b border-light-border dark:border-dark-border",
-                )}
+            <View key={contentType.key}>
+              <CatalystListItem
+                divided={false}
+                onPress={() => handleSelect(contentType.key)}
+                className="min-h-18 px-5 py-3.5"
               >
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-light-text dark:text-dark-text">
-                    {contentType.title}
-                  </Text>
-                  <Text className="mt-0.5 text-xs text-light-text-muted dark:text-dark-text-muted">
-                    {contentType.description}
-                  </Text>
+                <View className="size-11 items-center justify-center rounded-xl bg-light-surface-muted dark:bg-dark-surface-muted">
+                  <contentType.icon size={23} className="text-light-accent dark:text-dark-accent" />
                 </View>
+                <CatalystListItemContent>
+                  <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+                    {contentType.title}
+                  </CatalystText>
+                  <CatalystText variant="caption" tone="muted">
+                    {contentType.description}
+                  </CatalystText>
+                </CatalystListItemContent>
                 <UniChevronRight size={16} className="text-light-text-subtle dark:text-dark-text-subtle" />
-              </View>
-            </Pressable>
+              </CatalystListItem>
+              {i + 1 !== CONTENT_TYPES.length && <CatalystDivider className="ml-20 w-auto" />}
+            </View>
           ))}
         </View>
       </BottomSheetView>
