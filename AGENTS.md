@@ -23,6 +23,22 @@ pnpm lint           # expo lint
 
 There are no automated tests in this project.
 
+## Git / Commits
+
+エージェントがコミットを作成するときは、コミットメッセージ本文の末尾に `Co-Authored-By` トレイラを付けてください。
+
+```
+Co-Authored-By: Grok <noreply@x.ai>
+```
+
+```
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+- 使用しているエージェントに応じた名前とメールを使う
+- トレイラは本文と空行 1 行で区切る（Git trailer 形式）
+- ユーザーが明示的に別形式を指定した場合はそれに従う
+
 ## アーキテクチャ
 
 このプロジェクトは Expo と expo-router を使用した React Native モバイルアプリで、ソーシャルネットワーククライアント「Catalyst」の実装です。
