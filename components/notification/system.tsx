@@ -8,6 +8,7 @@ import { useAtomValue } from "jotai";
 import React, { Ref, useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, Platform, RefreshControl, Text, View, useColorScheme } from "react-native";
 import { FollowNotification } from "./follow";
+import { SystemNotificationPlaceholder } from "./placeholder";
 import { ReactionNotification } from "./reaction";
 
 const REACTION_TITLE = "natsuneko-laboratory:reaction:increment";
@@ -38,7 +39,8 @@ export const SystemNotificationList = ({ ref }: Props) => {
   const client = useAtomValue(clientAtom);
   const [items, setItems] = useState<Notification[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const list = useRef<FlashListRef<Notification>>(null);
 
   const fetchNotifications = useCallback(
@@ -74,14 +76,17 @@ export const SystemNotificationList = ({ ref }: Props) => {
   }, [client]);
 
   useAsyncOneTimeEffect(async () => {
-    if (!client) return;
-    setIsLoading(true);
+    if (!client) {
+      setIsInitialLoading(false);
+      return;
+    }
+    setIsInitialLoading(true);
     try {
       const notifications = await fetchNotifications(null, null);
       setItems(notifications);
       await markAllAsRead();
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   });
 
@@ -116,8 +121,8 @@ export const SystemNotificationList = ({ ref }: Props) => {
   }, [items, fetchNotifications, markAllAsRead]);
 
   const onLoadMore = useCallback(async () => {
-    if (isLoading || items.length === 0) return;
-    setIsLoading(true);
+    if (isLoadingMore || isInitialLoading || items.length === 0) return;
+    setIsLoadingMore(true);
     try {
       const until = items[items.length - 1].id;
       const newItems = await fetchNotifications(null, until);
@@ -127,9 +132,9 @@ export const SystemNotificationList = ({ ref }: Props) => {
         setItems((prev) => [...prev, ...unique]);
       }
     } finally {
-      setIsLoading(false);
+      setIsLoadingMore(false);
     }
-  }, [items, isLoading, fetchNotifications]);
+  }, [items, isLoadingMore, isInitialLoading, fetchNotifications]);
 
   const renderItem = useCallback(({ item }: { item: Notification }) => {
     if (item.title === REACTION_TITLE) {
@@ -151,8 +156,8 @@ export const SystemNotificationList = ({ ref }: Props) => {
       onEndReached={onLoadMore}
       onEndReachedThreshold={0.75}
       ItemSeparatorComponent={ItemSeparator}
-      ListFooterComponent={isLoading ? <ActivityIndicator className="py-4" /> : null}
-      ListEmptyComponent={!isLoading ? EmptyState : undefined}
+      ListFooterComponent={isLoadingMore ? <ActivityIndicator className="py-4" /> : null}
+      ListEmptyComponent={isInitialLoading ? SystemNotificationPlaceholder : EmptyState}
     />
   );
 };

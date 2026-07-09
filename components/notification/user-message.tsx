@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { Ref, memo, useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, Text, View } from "react-native";
+import { UserMessagePlaceholder } from "./placeholder";
 
 const MESSAGE_TITLE = "natsuneko-laboratory:kiana:message";
 const ISSUER_CATALYST_USER_MESSAGE = "natsuneko-laboratory:catalyst-message";
@@ -74,7 +75,8 @@ export const UserMessageList = ({ ref }: Props) => {
   const client = useAtomValue(clientAtom);
   const [items, setItems] = useState<Notification[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const list = useRef<FlashListRef<Notification>>(null);
 
   const fetchMessages = useCallback(
@@ -107,14 +109,17 @@ export const UserMessageList = ({ ref }: Props) => {
   }, [client]);
 
   useAsyncOneTimeEffect(async () => {
-    if (!client) return;
-    setIsLoading(true);
+    if (!client) {
+      setIsInitialLoading(false);
+      return;
+    }
+    setIsInitialLoading(true);
     try {
       const messages = await fetchMessages(null, null);
       setItems(messages);
       await markAllAsRead();
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   });
 
@@ -148,8 +153,8 @@ export const UserMessageList = ({ ref }: Props) => {
   }, [items, fetchMessages, markAllAsRead]);
 
   const onLoadMore = useCallback(async () => {
-    if (isLoading || items.length === 0) return;
-    setIsLoading(true);
+    if (isLoadingMore || isInitialLoading || items.length === 0) return;
+    setIsLoadingMore(true);
     try {
       const until = items[items.length - 1].id;
       const newItems = await fetchMessages(null, until);
@@ -159,9 +164,9 @@ export const UserMessageList = ({ ref }: Props) => {
         setItems((prev) => [...prev, ...unique]);
       }
     } finally {
-      setIsLoading(false);
+      setIsLoadingMore(false);
     }
-  }, [items, isLoading, fetchMessages]);
+  }, [items, isLoadingMore, isInitialLoading, fetchMessages]);
 
   const renderItem = useCallback(({ item }: { item: Notification }) => {
     return <UserMessageItem notification={item} />;
@@ -177,8 +182,8 @@ export const UserMessageList = ({ ref }: Props) => {
       onEndReached={onLoadMore}
       onEndReachedThreshold={0.75}
       ItemSeparatorComponent={ItemSeparator}
-      ListFooterComponent={isLoading ? <ActivityIndicator className="py-4" /> : null}
-      ListEmptyComponent={!isLoading ? EmptyState : undefined}
+      ListFooterComponent={isLoadingMore ? <ActivityIndicator className="py-4" /> : null}
+      ListEmptyComponent={isInitialLoading ? UserMessagePlaceholder : EmptyState}
     />
   );
 };
