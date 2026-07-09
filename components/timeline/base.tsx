@@ -4,6 +4,7 @@ import type { CatalystStatus, CatalystStatusV1_1 } from "@/models/sdk-types";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import React, { useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, RefreshControl, StyleProp, View, ViewStyle } from "react-native";
+import { TimelinePlaceholder } from "./placeholder";
 import { TimelineStatus } from "./status";
 
 const ItemSeparator = () => {
@@ -45,7 +46,8 @@ export const TimelineBase = ({
 }: Props) => {
   const [items, setItems] = useState<TimelineStatusItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const listRef = useRef<FlashListRef<TimelineStatusItem>>(null);
   const sets = useRef<Set<string>>(new Set());
   const hasMore = useRef(true);
@@ -79,9 +81,9 @@ export const TimelineBase = ({
   }, [items, fetcher, onRefreshCallback]);
 
   const onLoadMore = useCallback(async () => {
-    if (!hasMore.current || isLoadingRef.current) return;
+    if (!hasMore.current || isLoadingRef.current || isInitialLoading) return;
 
-    setIsLoading(true);
+    setIsLoadingMore(true);
     isLoadingRef.current = true;
 
     try {
@@ -99,13 +101,14 @@ export const TimelineBase = ({
         hasMore.current = false;
       }
     } finally {
-      setIsLoading(false);
+      setIsLoadingMore(false);
       isLoadingRef.current = false;
     }
-  }, [items, fetcher]);
+  }, [items, fetcher, isInitialLoading]);
 
   useAsyncOneTimeEffect(async () => {
-    setIsLoading(true);
+    setIsInitialLoading(true);
+    isLoadingRef.current = true;
 
     try {
       if (items.length === 0) {
@@ -116,7 +119,8 @@ export const TimelineBase = ({
         }
       }
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
+      isLoadingRef.current = false;
     }
   });
 
@@ -130,6 +134,10 @@ export const TimelineBase = ({
     [],
   );
 
+  const EmptyComponent = isInitialLoading
+    ? TimelinePlaceholder
+    : ListEmptyComponent;
+
   return (
     <FlashList
       ref={listRef}
@@ -141,9 +149,9 @@ export const TimelineBase = ({
       onEndReachedThreshold={0.75}
       ItemSeparatorComponent={ItemSeparator}
       ListHeaderComponent={ListHeaderComponent}
-      ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
-      ListEmptyComponent={!isLoading ? ListEmptyComponent : undefined}
-      ListEmptyComponentStyle={!isLoading ? ListEmptyComponentStyle : undefined}
+      ListFooterComponent={isLoadingMore ? <LoadingIndicator /> : null}
+      ListEmptyComponent={EmptyComponent}
+      ListEmptyComponentStyle={!isInitialLoading ? ListEmptyComponentStyle : undefined}
     />
   );
 };
