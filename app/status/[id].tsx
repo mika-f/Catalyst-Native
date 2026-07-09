@@ -407,11 +407,17 @@ export default function StatusDetailsPage() {
                   </CatalystText>
                 </Pressable>
 
-                <StatusVisibilityBadge privacy={privacy} />
+                <StatusVisibilityBadge className="ml-2 self-center" privacy={privacy} />
               </View>
+            </View>
 
+            {status.medias.length > 0 ? (
+              <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} />
+            ) : null}
+
+            <View className="px-5 py-4">
               {status.body.length > 0 ? (
-                <View className="mt-4">
+                <View>
                   <StatusText
                     status={status.body}
                     textClassName="text-[17px] leading-6 text-light-text dark:text-dark-text"
@@ -420,7 +426,7 @@ export default function StatusDetailsPage() {
                 </View>
               ) : null}
 
-              <View className="mt-4 flex-row items-center">
+              <View className={status.body.length > 0 ? "mt-4 flex-row items-center" : "flex-row items-center"}>
                 <CatalystText variant="caption" tone="muted">
                   {abs(status.createdAt)}
                 </CatalystText>
@@ -429,13 +435,9 @@ export default function StatusDetailsPage() {
                   {rel(status.createdAt)}
                 </CatalystText>
               </View>
-            </View>
 
-            {status.medias.length > 0 ? (
-              <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} />
-            ) : null}
+              <View className="my-3 h-px bg-light-divider dark:bg-dark-divider" />
 
-            <View className="px-5 py-3">
               <ActionBar isDefaultFavorited={isFavorited} status={status} />
 
               <View className="my-3 h-px bg-light-divider dark:bg-dark-divider" />

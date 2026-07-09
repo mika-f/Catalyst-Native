@@ -158,7 +158,7 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
 
   return (
     <View className="bg-light-background py-3 dark:bg-dark-background">
-      <View className="flex-row gap-3 px-4">
+      <View className="flex-row items-center gap-3 px-4">
         <Pressable accessibilityRole="button" className="active:opacity-75" onPress={navigateToUser}>
           <CatalystAvatar
             source={
@@ -172,7 +172,7 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
         </Pressable>
 
         <View className="min-w-0 flex-1">
-          <View className="flex-row items-center gap-1.5">
+          <View className="flex-row items-center gap-1">
             <Pressable
               accessibilityRole="button"
               className="min-w-0 flex-row items-center gap-1 active:opacity-75"
@@ -183,7 +183,6 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
               </CatalystText>
               <ProfileEmoji emoji={user.profileEmoji} size={14} />
             </Pressable>
-            <StatusVisibilityBadge privacy={privacy} />
           </View>
 
           <Pressable accessibilityRole="button" className="mt-0.5 active:opacity-90" onPress={navigateToStatus}>
@@ -196,24 +195,26 @@ export const TimelineStatus = memo(({ status, renderingMode = "twtr" }: Props) =
                 {rel(status.createdAt)}
               </CatalystText>
             </View>
-
-            {status.body.length > 0 ? (
-              <View className="mt-2">
-                {renderingMode === "twtr" ? (
-                  <StatusText status={status.body} />
-                ) : (
-                  <Text className="text-[15px] leading-5 text-light-text dark:text-dark-text">{status.body}</Text>
-                )}
-              </View>
-            ) : null}
           </Pressable>
         </View>
+
+        <StatusVisibilityBadge className="ml-2 self-center" privacy={privacy} />
       </View>
 
       {medias.length > 0 ? (
         <View className="mt-3">
           <MediaCarousel key={status.id} medias={medias} />
         </View>
+      ) : null}
+
+      {status.body.length > 0 ? (
+        <Pressable accessibilityRole="button" className="px-4 pt-3 active:opacity-90" onPress={navigateToStatus}>
+          {renderingMode === "twtr" ? (
+            <StatusText status={status.body} />
+          ) : (
+            <Text className="text-[15px] leading-5 text-light-text dark:text-dark-text">{status.body}</Text>
+          )}
+        </Pressable>
       ) : null}
 
       {hasReactions || isLoggedIn ? (
