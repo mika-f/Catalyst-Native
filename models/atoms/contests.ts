@@ -1,4 +1,4 @@
-import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest } from "@/models/sdk-types";
 import { atom } from "jotai";
 
 export const contestSpotlightAtom = atom<CatalystContest[]>([]);

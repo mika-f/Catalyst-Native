@@ -7,7 +7,7 @@ import {
   type CatalystBadgeTone,
 } from "@/components/design-system";
 import { getCdnUrl } from "@/lib/media";
-import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest } from "@/models/sdk-types";
 import dayjs from "dayjs";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -71,20 +71,34 @@ export const ContestCard = ({ contest }: Props) => {
       <CatalystMediaFrame>
         {contest.headerUrl ? (
           <UniImage
-            source={{ uri: getCdnUrl({ src: contest.headerUrl, variant: "header", width: 1500 }) }}
+            source={{
+              uri: getCdnUrl({
+                src: contest.headerUrl,
+                variant: "header",
+                width: 1500,
+              }),
+            }}
             className="h-32 w-full"
             contentFit="cover"
           />
         ) : (
           <View className="h-32 w-full items-center justify-center bg-light-surface-muted dark:bg-dark-surface-muted">
-            <UniTrophy size={40} className="text-light-icon dark:text-dark-icon" />
+            <UniTrophy
+              size={40}
+              className="text-light-icon dark:text-dark-icon"
+            />
           </View>
         )}
       </CatalystMediaFrame>
 
       <View className="gap-1.5 pt-2">
-        <CatalystBadge tone={STATE_BADGE_TONE[contest.state] ?? "neutral"} className="self-start rounded-full">
-          <CatalystBadgeText>{STATE_LABEL[contest.state] ?? contest.state}</CatalystBadgeText>
+        <CatalystBadge
+          tone={STATE_BADGE_TONE[contest.state] ?? "neutral"}
+          className="self-start rounded-full"
+        >
+          <CatalystBadgeText>
+            {STATE_LABEL[contest.state] ?? contest.state}
+          </CatalystBadgeText>
         </CatalystBadge>
 
         <CatalystText variant="subtitle" numberOfLines={2}>

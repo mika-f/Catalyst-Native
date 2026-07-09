@@ -3,7 +3,7 @@ import { BottomSheetModal, BottomSheetModalHandle } from "@/components/bottom-sh
 import { CatalystText } from "@/components/design-system";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystRelationships, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystRelationships, EgeriaUser } from "@/models/sdk-types";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { ArrowLeft, Ellipsis, ShareIcon, ShieldBan } from "lucide-react-native";
@@ -60,9 +60,9 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
 
     const isBlocking = relationships.isBlocking;
     if (isBlocking) {
-      await client.catalyst.unblock(user.id);
+      await client.catalyst.v1.blocks.delete({ body: { userId: user.id }, throwOnError: true });
     } else {
-      await client.catalyst.block(user.id);
+      await client.catalyst.v1.blocks.create({ body: { userId: user.id }, throwOnError: true });
     }
   }, [user, relationships, client]);
 

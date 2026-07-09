@@ -12,7 +12,7 @@ import { dismissContestSpotlight, getDismissedContestSpotlightIds } from "@/mode
 import { clientAtom, credentialAtom } from "@/models/atoms/credential";
 import { contestSpotlightAtom } from "@/models/atoms/contests";
 import { Image } from "@/components/ui/image";
-import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest } from "@/models/sdk-types";
 import dayjs from "dayjs";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
@@ -259,9 +259,13 @@ export const CurrentContestSpotlight = memo(() => {
         return;
       }
 
-      const results = await Promise.all(TARGET_STATES.map((state) => client.catalyst.searchContests(undefined, state)));
+      const results = await Promise.all(
+        TARGET_STATES.map((state) =>
+          client.catalyst.v1.contest.search.get({ query: { state }, throwOnError: true }),
+        ),
+      );
       if (!ignore) {
-        setContests(sortContests(results.flat()));
+        setContests(sortContests(results.flatMap((result) => result.data.contests)));
       }
     };
 

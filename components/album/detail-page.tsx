@@ -21,9 +21,8 @@ import type {
   CatalystAlbumDisplayMode,
   CatalystSmartAlbum,
   CatalystStatus,
-  EgeriaUser,
   Media,
-} from "@natsuneko-laboratory/catalyst-sdk";
+} from "@/models/sdk-types";
 import dayjs from "dayjs";
 import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
@@ -71,7 +70,7 @@ type AlbumType = "album" | "smartAlbum";
 type AlbumInfo = {
   title: string;
   description: string;
-  user?: EgeriaUser;
+  user?: CatalystAlbum["user"];
   since?: string;
   until?: string;
   mode: CatalystAlbumDisplayMode;
@@ -515,7 +514,10 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
     const fetchInfo = async () => {
       try {
         if (albumType === "album") {
-          const album: CatalystAlbum = await client.catalyst.getAlbum(id);
+          const { data: album } = await client.catalyst.v1.album.by.id.id.get({
+            path: { id },
+            throwOnError: true,
+          });
           setAlbumInfo({
             title: album.name,
             description: album.description,
@@ -523,7 +525,10 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
             mode: album.mode,
           });
         } else {
-          const album: CatalystSmartAlbum = await client.catalyst.getSmartAlbum(id);
+          const { data: album } = await client.catalyst.v1.smartAlbum.by.id.id.get({
+            path: { id },
+            throwOnError: true,
+          });
           setAlbumInfo({
             title: album.name,
             description: album.description,
@@ -550,10 +555,18 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
       if (until) opts.until = until;
 
       if (albumType === "album") {
-        const album = await client.catalyst.getAlbum(id, opts);
+        const { data: album } = await client.catalyst.v1.album.by.id.id.get({
+          path: { id },
+          query: opts,
+          throwOnError: true,
+        });
         return album.statuses;
       }
-      const album = await client.catalyst.getSmartAlbum(id, opts);
+      const { data: album } = await client.catalyst.v1.smartAlbum.by.id.id.get({
+        path: { id },
+        query: opts,
+        throwOnError: true,
+      });
       return album.statuses;
     },
     [client, id, albumType],

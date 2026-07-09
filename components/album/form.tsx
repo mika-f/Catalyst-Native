@@ -5,11 +5,14 @@ import {
   CatalystText,
   CatalystTextField,
 } from "@/components/design-system";
-import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
-const DISPLAY_MODE_OPTIONS: { value: CatalystAlbumDisplayMode; label: string }[] = [
+const DISPLAY_MODE_OPTIONS: {
+  value: CatalystAlbumDisplayMode;
+  label: string;
+}[] = [
   { value: "timeline", label: "タイムライン" },
   { value: "grid", label: "グリッド" },
   { value: "gallery", label: "ギャラリー" },
@@ -50,7 +53,11 @@ export const AlbumForm = ({
         </CatalystText>
         <View className="bg-light-background dark:bg-dark-surface">
           <View className="min-h-14 px-5 py-3">
-            <CatalystTextField value={title} onChangeText={onChangeTitle} placeholder="タイトル" />
+            <CatalystTextField
+              value={title}
+              onChangeText={onChangeTitle}
+              placeholder="タイトル"
+            />
           </View>
           <CatalystDivider className="ml-5 w-auto" />
           <View className="px-5 py-3">
@@ -76,7 +83,11 @@ export const AlbumForm = ({
             onValueChange={onChangeDisplayMode}
           />
         </View>
-        <CatalystText variant="caption" tone="subtle" className="px-5 pt-2 leading-4">
+        <CatalystText
+          variant="caption"
+          tone="subtle"
+          className="px-5 pt-2 leading-4"
+        >
           アルバム内の投稿の表示方法を選択します
         </CatalystText>
       </View>
@@ -88,11 +99,16 @@ export const AlbumForm = ({
         </CatalystText>
         <View className="min-h-16 flex-row items-center bg-light-background px-5 py-3 dark:bg-dark-surface">
           <View className="mr-4 flex-1">
-            <CatalystText variant="subtitle" className="text-[15px] font-semibold">
+            <CatalystText
+              variant="subtitle"
+              className="text-[15px] font-semibold"
+            >
               公開アルバム
             </CatalystText>
             <CatalystText variant="caption" tone="muted">
-              {isPublic ? "すべてのユーザーがこのアルバムを閲覧できます" : "自分のみがこのアルバムを閲覧できます"}
+              {isPublic
+                ? "すべてのユーザーがこのアルバムを閲覧できます"
+                : "自分のみがこのアルバムを閲覧できます"}
             </CatalystText>
           </View>
           <CatalystSwitch value={isPublic} onValueChange={onChangeIsPublic} />

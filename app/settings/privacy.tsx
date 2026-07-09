@@ -54,9 +54,9 @@ export default function PrivacySettingsPage() {
       return;
     }
 
-    account.credential.client.catalyst
-      .getPrivacySettings()
-      .then(async (s) => {
+    account.credential.client.catalyst.v1.privacy.settings
+      .get({ throwOnError: true })
+      .then(async ({ data: s }) => {
         setSettings(s);
         await saveCachedSettings(s);
       })
@@ -75,7 +75,10 @@ export default function PrivacySettingsPage() {
 
       setSavingKey(key);
       try {
-        await account.credential.client.catalyst.updatePrivacySettings(updated);
+        await account.credential.client.catalyst.v1.privacy.settings.patch({
+          body: updated,
+          throwOnError: true,
+        });
         setSettings(updated);
         await saveCachedSettings(updated);
       } finally {

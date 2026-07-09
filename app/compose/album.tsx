@@ -1,7 +1,7 @@
 import { AlbumForm } from "@/components/album/form";
 import { CatalystText } from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
-import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import { Stack, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { useCallback, useMemo, useState } from "react";
@@ -29,11 +29,14 @@ export default function AlbumComposerScreen() {
 
     try {
       const client = account.credential.client;
-      await client.catalyst.createAlbum({
-        title: title.trim(),
-        description: description.trim(),
-        isPublic,
-        mode: displayMode,
+      await client.catalyst.v1.album.create({
+        body: {
+          title: title.trim(),
+          description: description.trim(),
+          isPublic,
+          mode: displayMode,
+        },
+        throwOnError: true,
       });
 
       Toast.show({ type: "success", text1: "アルバムを作成しました" });

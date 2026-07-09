@@ -1,7 +1,7 @@
 import { UserCard } from "@/components/explorer/users/card";
 import { useAsyncEffect } from "@/hooks/use-async-effect";
 import { clientAtom } from "@/models/atoms/credential";
-import { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystFollowListItem } from "@/models/sdk-types";
 import { FlashList, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { useCallback, useState } from "react";
@@ -14,7 +14,7 @@ type Props = {
 
 export const FollowList = ({ screenName, type }: Props) => {
   const client = useAtomValue(clientAtom);
-  const [users, setUsers] = useState<EgeriaUser[]>([]);
+  const [users, setUsers] = useState<CatalystFollowListItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [nextPage, setNextPage] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,10 +25,18 @@ export const FollowList = ({ screenName, type }: Props) => {
 
       setIsLoading(true);
       try {
-        const res =
+        const { data: res } =
           type === "followings"
-            ? await client.catalyst.followings(screenName, { page })
-            : await client.catalyst.followers(screenName, { page });
+            ? await client.catalyst.v1.relationships.by.username.username.followings.get({
+                path: { username: screenName },
+                query: { page },
+                throwOnError: true,
+              })
+            : await client.catalyst.v1.relationships.by.username.username.followers.get({
+                path: { username: screenName },
+                query: { page },
+                throwOnError: true,
+              });
 
         setUsers((prev) => (page === 1 ? res.items : [...prev, ...res.items]));
         setCurrentPage(res.page.current);
@@ -50,8 +58,8 @@ export const FollowList = ({ screenName, type }: Props) => {
     }
   }, [fetchPage, nextPage]);
 
-  const renderItem = useCallback<ListRenderItem<EgeriaUser>>(({ item }) => {
-    return <UserCard user={item} />;
+  const renderItem = useCallback<ListRenderItem<CatalystFollowListItem>>(({ item }) => {
+    return <UserCard user={{ ...item, profileEmoji: item.profileEmoji ?? null }} />;
   }, []);
 
   const renderFooter = useCallback(() => {

@@ -6,7 +6,7 @@ import {
   CatalystText,
 } from "@/components/design-system";
 import { accountAtom } from "@/models/atoms/account";
-import type { CatalystAlbumDisplayMode } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystAlbumDisplayMode } from "@/models/sdk-types";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -30,7 +30,10 @@ export default function AlbumEditScreen() {
 
     const fetchAlbum = async () => {
       try {
-        const album = await account.credential.client.catalyst.getAlbum(id);
+        const { data: album } = await account.credential.client.catalyst.v1.album.by.id.id.get({
+          path: { id },
+          throwOnError: true,
+        });
         setTitle(album.name);
         setDescription(album.description);
         setDisplayMode(album.mode);
@@ -56,11 +59,15 @@ export default function AlbumEditScreen() {
     setIsSubmitting(true);
 
     try {
-      await account.credential.client.catalyst.editAlbum(id, {
-        title: title.trim(),
-        description: description.trim(),
-        isPublic,
-        mode: displayMode,
+      await account.credential.client.catalyst.v1.album.by.id.id.patch({
+        path: { id },
+        body: {
+          title: title.trim(),
+          description: description.trim(),
+          isPublic,
+          mode: displayMode,
+        },
+        throwOnError: true,
       });
 
       Toast.show({ type: "success", text1: "アルバムを更新しました" });
@@ -85,7 +92,10 @@ export default function AlbumEditScreen() {
           setIsSubmitting(true);
 
           try {
-            await account.credential.client.catalyst.deleteAlbum(id);
+            await account.credential.client.catalyst.v1.album.by.id.id.delete({
+              path: { id },
+              throwOnError: true,
+            });
             Toast.show({ type: "success", text1: "アルバムを削除しました" });
             router.dismiss(2);
           } catch (error) {

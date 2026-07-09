@@ -1,4 +1,4 @@
-import type { CatalystReaction } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction } from "@/models/sdk-types";
 import { atom } from "jotai";
 import { atomFamily } from "jotai-family";
 

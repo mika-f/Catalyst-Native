@@ -1,6 +1,6 @@
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { merge } from "@/lib/merge";
-import type { CatalystStatus, CatalystStatusV1_1 } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystStatus, CatalystStatusV1_1 } from "@/models/sdk-types";
 import { FlashList, FlashListRef, ListRenderItem } from "@shopify/flash-list";
 import React, { useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, RefreshControl, StyleProp, View, ViewStyle } from "react-native";

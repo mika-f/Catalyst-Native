@@ -8,7 +8,7 @@ import {
 import type {
   CatalystCustomReaction,
   CatalystCustomReactionList,
-} from "@natsuneko-laboratory/catalyst-sdk";
+} from "@/models/sdk-types";
 import { useAtomValue } from "jotai";
 import {
   forwardRef,
@@ -67,13 +67,15 @@ export const EmojiPickerSheet = forwardRef<EmojiPickerSheetRef, Props>(
         try {
           const [customReactions, userReactionList] = await Promise.all([
             account?.credential.client
-              ? account.credential.client.catalyst
-                  .customReactions()
+              ? account.credential.client.catalyst.v1.reactions
+                  .get({ throwOnError: true })
+                  .then(({ data }) => data)
                   .catch(() => [] as CatalystCustomReaction[])
               : Promise.resolve([] as CatalystCustomReaction[]),
             account?.credential.client
-              ? account.credential.client.catalyst
-                  .getCustomUserReactions()
+              ? account.credential.client.catalyst.v1.customReactions
+                  .get({ throwOnError: true })
+                  .then(({ data }) => data)
                   .catch(() => null as CatalystCustomReactionList | null)
               : Promise.resolve(null as CatalystCustomReactionList | null),
           ]);

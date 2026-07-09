@@ -2,7 +2,7 @@ import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { rel } from "@/lib/dayjs";
 import { clientAtom } from "@/models/atoms/credential";
 import { Markdown } from "@/components/ui/markdown";
-import type { Notification, NotificationGroup } from "@natsuneko-laboratory/catalyst-sdk";
+import type { Notification, NotificationGroup } from "@/models/sdk-types";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -10,6 +10,7 @@ import { Ref, memo, useCallback, useImperativeHandle, useRef, useState } from "r
 import { ActivityIndicator, Pressable, RefreshControl, Text, View } from "react-native";
 
 const MESSAGE_TITLE = "natsuneko-laboratory:kiana:message";
+const ISSUER_CATALYST_USER_MESSAGE = "natsuneko-laboratory:catalyst-message";
 
 type NotificationGroupWithDate = NotificationGroup & { createdAt?: string };
 
@@ -80,11 +81,15 @@ export const UserMessageList = ({ ref }: Props) => {
     async (since: string | null, until: string | null) => {
       if (!client) return [];
 
-      const result = await client.steambird.notifications(client.steambird.ISSUER_CATALYST_USER_MESSAGE, {
-        ...(since ? { since } : {}),
-        ...(until ? { until } : {}),
+      const { data } = await client.steambird.v1.notifications.get({
+        query: {
+          issuer: ISSUER_CATALYST_USER_MESSAGE,
+          ...(since ? { since } : {}),
+          ...(until ? { until } : {}),
+        },
+        throwOnError: true,
       });
-      return result.filter((n) => n.title === MESSAGE_TITLE);
+      return data.notifications.filter((n) => n.title === MESSAGE_TITLE);
     },
     [client],
   );
@@ -92,7 +97,10 @@ export const UserMessageList = ({ ref }: Props) => {
   const markAllAsRead = useCallback(async () => {
     if (!client) return;
     try {
-      await client.steambird.readAll(client.steambird.ISSUER_CATALYST_USER_MESSAGE);
+      await client.steambird.v1.notifications.all.create({
+        query: { issuer: ISSUER_CATALYST_USER_MESSAGE },
+        throwOnError: true,
+      });
     } catch {
       // 既読処理の失敗は無視
     }

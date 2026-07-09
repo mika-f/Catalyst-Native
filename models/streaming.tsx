@@ -1,7 +1,7 @@
 import { getReactionKey } from "@/lib/reactions";
 import { accountAtom } from "@/models/atoms/account";
 import { streamingEnabledAtom } from "@/models/atoms/streaming";
-import type { CatalystReaction } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction } from "@/models/sdk-types";
 import { useAtomValue } from "jotai";
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 

@@ -1,6 +1,6 @@
 import { API_KEY } from "@/constants/apikey";
 import * as CredentialStore from "@/models/credential-store";
-import type { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import type { EgeriaUser } from "@/models/sdk-types";
 import { PKCE } from "@natsuneko-laboratory/catalyst-sdk";
 import * as WebBrowser from "expo-web-browser";
 import { v4 } from "uuid";
@@ -20,7 +20,9 @@ export const tryRestore = async (): Promise<AuthResult> => {
 
   if (credential.accessToken && credential.refreshToken) {
     try {
-      const me = await credential.client.egeria.me();
+      const { data: me } = await credential.client.egeria.v1.me.get({
+        throwOnError: true,
+      });
 
       if (me?.user) {
         return { credential, isLoggedIn: true, user: me.user };
@@ -28,7 +30,9 @@ export const tryRestore = async (): Promise<AuthResult> => {
     } catch {
       try {
         const newTokens = await credential.client.refresh();
-        const me = await credential.client.egeria.me();
+        const { data: me } = await credential.client.egeria.v1.me.get({
+          throwOnError: true,
+        });
 
         if (me?.user) {
           await CredentialStore.saveCredential({
@@ -54,7 +58,11 @@ export const tryRestore = async (): Promise<AuthResult> => {
 
   // トークンが無い or 復元失敗 → 未ログイン状態で返す
   await logout();
-  return { credential: CredentialStore.EMPTY_CREDENTIAL, isLoggedIn: false, user: undefined };
+  return {
+    credential: CredentialStore.EMPTY_CREDENTIAL,
+    isLoggedIn: false,
+    user: undefined,
+  };
 };
 
 /**
@@ -93,7 +101,7 @@ export const login = async (): Promise<AuthResult> => {
       const newCredential = await CredentialStore.getCredential();
 
       try {
-        const me = await newCredential.client.egeria.me();
+        const { data: me } = await newCredential.client.egeria.v1.me.get();
 
         if (me?.user) {
           return {
@@ -112,7 +120,11 @@ export const login = async (): Promise<AuthResult> => {
     }
   }
 
-  return { credential: CredentialStore.EMPTY_CREDENTIAL, isLoggedIn: false, user: undefined };
+  return {
+    credential: CredentialStore.EMPTY_CREDENTIAL,
+    isLoggedIn: false,
+    user: undefined,
+  };
 };
 
 export const logout = async (): Promise<void> => {

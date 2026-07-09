@@ -1,4 +1,4 @@
-import type { CatalystReaction } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction } from "@/models/sdk-types";
 
 const CUSTOM_REACTION_KEY_PREFIX = "custom:";
 

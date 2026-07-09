@@ -1,6 +1,6 @@
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystFleetRing } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystFleetRing } from "@/models/sdk-types";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
@@ -22,9 +22,9 @@ export const FleetRing = ({ onRingPress, onUsernamesChange, refreshKey }: Props)
 
   useEffect(() => {
     if (!client) return;
-    client.catalyst
-      .fleets()
-      .then((data) => {
+    client.catalyst.v1.fleet.ring
+      .get({ throwOnError: true })
+      .then(({ data }) => {
         setRings(data);
         onUsernamesChange?.(data.map((r) => r.user.screenName));
       })

@@ -3,7 +3,7 @@ import type {
   CatalystStatus,
   Notification,
   NotificationGroup,
-} from "@natsuneko-laboratory/catalyst-sdk";
+} from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { memo } from "react";

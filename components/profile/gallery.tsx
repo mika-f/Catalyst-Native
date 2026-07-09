@@ -2,7 +2,7 @@ import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { getCdnUrl } from "@/lib/media";
 import { merge } from "@/lib/merge";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystStatus, EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystStatus, EgeriaUser } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -93,8 +93,12 @@ export const UserGallery = memo(
       setIsLoading(true);
       isLoadingRef.current = true;
       try {
-        const result = await client.catalyst.userGalleryTimeline(user.screenName, {});
-        setItems((prev) => merge(prev, result, sets, (item) => item.id));
+        const { data } = await client.catalyst.v1.timeline.user.by.username.username.gallery.get({
+          path: { username: user.screenName },
+          query: {},
+          throwOnError: true,
+        });
+        setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
       } finally {
         setIsLoading(false);
         isLoadingRef.current = false;
@@ -110,11 +114,13 @@ export const UserGallery = memo(
       setIsLoading(true);
       isLoadingRef.current = true;
       try {
-        const result = await client.catalyst.userGalleryTimeline(user.screenName, {
-          until: lastItem.id,
+        const { data } = await client.catalyst.v1.timeline.user.by.username.username.gallery.get({
+          path: { username: user.screenName },
+          query: { until: lastItem.id },
+          throwOnError: true,
         });
-        if (result.length > 0) {
-          setItems((prev) => merge(prev, result, sets, (item) => item.id));
+        if (data.statuses.length > 0) {
+          setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
         }
       } finally {
         setIsLoading(false);

@@ -10,7 +10,7 @@ import type {
   CatalystRelationships,
   EgeriaUser,
   ProfileTag,
-} from "@natsuneko-laboratory/catalyst-sdk";
+} from "@/models/sdk-types";
 import { useScrollToTop } from "expo-router/react-navigation";
 import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -112,8 +112,9 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
       account?.user.screenName === screenName ? account.user : null;
 
     if (accountUser) {
-      const tags = await client.catalyst
-        .getProfileTagsByUser(accountUser.id)
+      const tags = await client.catalyst.v1.profileTags.by.user.id
+        .get({ path: { id: accountUser.id }, throwOnError: true })
+        .then((r) => r.data.tags)
         .catch(() => []);
 
       setInitialTags(tags);
@@ -126,16 +127,24 @@ export function ProfilePage({ screenName, showBackButton = true }: Props) {
 
     try {
       const [userResult, relationships] = await Promise.all([
-        client.egeria.userByUsername(screenName),
-        client.catalyst.relationships(screenName).catch(() => null),
+        client.egeria.v1.user.by.username.username.get({
+          path: { username: screenName },
+          throwOnError: true,
+        }),
+        client.catalyst.v1.relationships.id
+          .get({ path: { id: screenName }, throwOnError: true })
+          .then((r) => r.data)
+          .catch(() => null),
       ]);
 
       if (userResult) {
-        const tags = await client.catalyst
-          .getProfileTagsByUser(userResult.user.id)
+        const userData = userResult.data.user;
+        const tags = await client.catalyst.v1.profileTags.by.user.id
+          .get({ path: { id: userData.id }, throwOnError: true })
+          .then((r) => r.data.tags)
           .catch(() => []);
 
-        setUser(userResult.user);
+        setUser({ ...userData, profileEmoji: userData.profileEmoji ?? null });
         setInitialTags(tags);
       }
 

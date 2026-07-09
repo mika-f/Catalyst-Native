@@ -37,13 +37,16 @@ export default function AccountSettingsPage() {
     setErrorMessage(null);
 
     try {
-      await account.credential.client.egeria.update({
-        screenName: trimmed,
-        displayName: user.displayName,
-        profile: user.profile ?? undefined,
+      await account.credential.client.egeria.v1.me.patch({
+        body: {
+          screenName: trimmed,
+          displayName: user.displayName,
+          profile: user.profile ?? undefined,
+        },
+        throwOnError: true,
       });
 
-      const me = await account.credential.client.egeria.me();
+      const { data: me } = await account.credential.client.egeria.v1.me.get({ throwOnError: true });
       if (me?.user) {
         setAccount({ ...account, user: me.user });
         setScreenName(me.user.screenName);

@@ -1,6 +1,6 @@
 import { API_KEY } from "@/constants/apikey";
-import { ApiError, CatalystTS } from "@natsuneko-laboratory/catalyst-sdk";
-import type { RequestInterceptor } from "@natsuneko-laboratory/catalyst-sdk";
+import { CatalystTS } from "@natsuneko-laboratory/catalyst-sdk";
+import type { Interceptor } from "@natsuneko-laboratory/catalyst-sdk";
 import * as SecureStore from "expo-secure-store";
 import { getDefaultStore } from "jotai";
 import { accountAtom } from "@/models/atoms/account";
@@ -30,21 +30,20 @@ export const getCredential = async (): Promise<Credential> => {
   const refreshToken = await SecureStore.getItemAsync(KEYCHAIN_KEY_REFRESH_TOKEN);
 
   if (accessToken && refreshToken) {
+    // CatalystTS は 401 を検知すると内部で自動的にトークンをリフレッシュして
+    // リクエストをリトライする。ここでは、リフレッシュ後のトークンを
+    // SecureStore と accountAtom に反映するだけでよい。
     let client: CatalystTS;
-    let isRefreshing = false;
+    let lastPersistedAccessToken = accessToken;
 
-    const refreshInterceptor: RequestInterceptor = {
-      async adapt(request) {
-        return request;
-      },
-      async retry(_request, error) {
-        if (isRefreshing) return false;
-        if (!(error instanceof ApiError) || error.statusCode !== 401) return false;
+    const persistTokensInterceptor: Interceptor = {
+      onResponse: async (response) => {
+        const newAccessToken = client.accessToken;
+        const newRefreshToken = client.refreshToken;
 
-        isRefreshing = true;
-        try {
-          const newTokens = await client.refresh();
-          await saveCredential({ accessToken: newTokens.accessToken, refreshToken: newTokens.refreshToken });
+        if (newAccessToken && newRefreshToken && newAccessToken !== lastPersistedAccessToken) {
+          lastPersistedAccessToken = newAccessToken;
+          await saveCredential({ accessToken: newAccessToken, refreshToken: newRefreshToken });
 
           const store = getDefaultStore();
           const account = store.get(accountAtom);
@@ -53,18 +52,14 @@ export const getCredential = async (): Promise<Credential> => {
               ...account,
               credential: {
                 ...account.credential,
-                accessToken: newTokens.accessToken,
-                refreshToken: newTokens.refreshToken,
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken,
               },
             });
           }
-
-          return true;
-        } catch {
-          return false;
-        } finally {
-          isRefreshing = false;
         }
+
+        return response;
       },
     };
 
@@ -73,7 +68,7 @@ export const getCredential = async (): Promise<Credential> => {
       refreshToken,
       clientId: API_KEY.clientId ?? "",
       clientSecret: API_KEY.clientSecret ?? "",
-      interceptors: [refreshInterceptor],
+      interceptors: [persistTokensInterceptor],
     });
 
     return {

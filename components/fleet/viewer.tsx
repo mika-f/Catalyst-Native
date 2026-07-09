@@ -1,7 +1,7 @@
 import { FleetContent, FleetContentData } from "@/components/fleet/content";
 import { getCdnUrl, getIdenticonUrl } from "@/lib/media";
 import { clientAtom } from "@/models/atoms/credential";
-import { CatalystFleet } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystFleet } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -142,9 +142,9 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
     if (!visible || !activeUsername || !client) return;
     setIsLoading(true);
     setCurrentIndex(0);
-    client.catalyst
-      .fleetByUsername(activeUsername)
-      .then((data) => {
+    client.catalyst.v1.fleet.by.user.username
+      .get({ path: { username: activeUsername }, throwOnError: true })
+      .then(({ data }) => {
         setFleets(data);
         setIsLoading(false);
       })
@@ -162,7 +162,9 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
     if (!visible || isLoading || fleets.length === 0 || !client) return;
     const fleet = fleets[currentIndex];
     if (fleet) {
-      client.catalyst.viewFleet(fleet.id).catch(() => {});
+      client.catalyst.v1.fleet.id.view
+        .create({ path: { id: fleet.id }, throwOnError: true })
+        .catch(() => {});
     }
   }, [visible, isLoading, currentIndex, fleets, client]);
 

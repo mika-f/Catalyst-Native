@@ -1,7 +1,12 @@
-import { CatalystAvatar, CatalystListItem, CatalystListItemContent, CatalystText } from "@/components/design-system";
-import { getCdnUrl } from "@/lib/media";
+import {
+  CatalystAvatar,
+  CatalystListItem,
+  CatalystListItemContent,
+  CatalystText,
+} from "@/components/design-system";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
-import { EgeriaUser } from "@natsuneko-laboratory/catalyst-sdk";
+import { getCdnUrl } from "@/lib/media";
+import type { EgeriaUser } from "@/models/sdk-types";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { View } from "react-native";
@@ -17,14 +22,20 @@ export const UserCard = ({ user }: Props) => {
   const router = useRouter();
 
   return (
-    <CatalystListItem
-      onPress={() => router.push(`/user/${user.screenName}`)}
-    >
+    <CatalystListItem onPress={() => router.push(`/user/${user.screenName}`)}>
       <CatalystAvatar
         alt={user.displayName}
         fallback={user.displayName}
         size="lg"
-        source={user.profile ? getCdnUrl({ src: user.profile.iconUrl, variant: "icon", width: 96 }) : null}
+        source={
+          user.profile
+            ? getCdnUrl({
+                src: user.profile.iconUrl,
+                variant: "icon",
+                width: 96,
+              })
+            : null
+        }
       />
 
       <CatalystListItemContent>
@@ -44,7 +55,10 @@ export const UserCard = ({ user }: Props) => {
         )}
       </CatalystListItemContent>
 
-      <UniChevronRight size={14} className="text-light-icon dark:text-dark-icon" />
+      <UniChevronRight
+        size={14}
+        className="text-light-icon dark:text-dark-icon"
+      />
     </CatalystListItem>
   );
 };

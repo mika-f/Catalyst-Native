@@ -1,7 +1,7 @@
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { cn } from "@/lib/utils";
 import { clientAtom } from "@/models/atoms/credential";
-import type { Notification } from "@natsuneko-laboratory/catalyst-sdk";
+import type { Notification } from "@/models/sdk-types";
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
@@ -12,6 +12,7 @@ import { ReactionNotification } from "./reaction";
 
 const REACTION_TITLE = "natsuneko-laboratory:reaction:increment";
 const FOLLOW_TITLE = "natsuneko-laboratory:follow:increment";
+const ISSUER_CATALYST_SYSTEM_MESSAGE = "natsuneko-laboratory:catalyst";
 
 const ItemSeparator = () => {
   const theme = useColorScheme();
@@ -44,11 +45,15 @@ export const SystemNotificationList = ({ ref }: Props) => {
     async (since: string | null, until: string | null) => {
       if (!client) return [];
 
-      const result = await client.steambird.notifications(client.steambird.ISSUER_CATALYST_SYSTEM_MESSAGE, {
-        ...(since ? { since } : {}),
-        ...(until ? { until } : {}),
+      const { data } = await client.steambird.v1.notifications.get({
+        query: {
+          issuer: ISSUER_CATALYST_SYSTEM_MESSAGE,
+          ...(since ? { since } : {}),
+          ...(until ? { until } : {}),
+        },
+        throwOnError: true,
       });
-      return result.filter((n) => n.title === REACTION_TITLE || n.title === FOLLOW_TITLE);
+      return data.notifications.filter((n) => n.title === REACTION_TITLE || n.title === FOLLOW_TITLE);
     },
     [client],
   );
@@ -56,7 +61,10 @@ export const SystemNotificationList = ({ ref }: Props) => {
   const markAllAsRead = useCallback(async () => {
     if (!client) return;
     try {
-      await client.steambird.readAll(client.steambird.ISSUER_CATALYST_SYSTEM_MESSAGE);
+      await client.steambird.v1.notifications.all.create({
+        query: { issuer: ISSUER_CATALYST_SYSTEM_MESSAGE },
+        throwOnError: true,
+      });
       if (Platform.OS === "ios") {
         PushNotificationIOS.setApplicationIconBadgeNumber(0);
       }

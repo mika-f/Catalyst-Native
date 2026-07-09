@@ -10,7 +10,7 @@ import BottomSheet, {
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetItem } from "@/components/bottom-sheet/item";
-import type { Media } from "@natsuneko-laboratory/catalyst-sdk";
+import type { Media } from "@/models/sdk-types";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { File, Paths } from "expo-file-system";

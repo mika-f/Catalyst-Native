@@ -25,7 +25,7 @@ import {
   type ReactionStreamingEvent,
   useStreamingReactions,
 } from "@/models/streaming";
-import type { CatalystReaction, CatalystStatus, CatalystStatusPrivacy } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystReaction, CatalystStatusV1_1 } from "@/models/sdk-types";
 import * as Clipboard from "expo-clipboard";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -133,7 +133,7 @@ export default function StatusDetailsPage() {
   const client = useAtomValue(clientAtom);
   const { subscribe, unsubscribe } = useStreamingReactions();
 
-  const [status, setStatus] = useState<CatalystStatus | null>(null);
+  const [status, setStatus] = useState<CatalystStatusV1_1 | null>(null);
   const [metadata, setMetadata] = useState<EpicleseMetadata>({});
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [reactions, setReactions] = useState<Record<string, CatalystReaction>>({});
@@ -149,7 +149,7 @@ export default function StatusDetailsPage() {
 
   const isMyself = account?.user?.id === status?.user?.id;
   const isLoggedIn = account !== null;
-  const privacy = (status as (CatalystStatus & { privacy?: CatalystStatusPrivacy }) | null)?.privacy;
+  const privacy = status?.privacy;
   const statusUrl = `https://catalyst.natsuneko.com/status/${id}`;
 
   useEffect(() => {
@@ -158,18 +158,26 @@ export default function StatusDetailsPage() {
     const fetchData = async () => {
       try {
         const [statusRes, metadataRes, reactionsRes] = await Promise.all([
-          client.catalyst.getStatus(id),
+          client.catalyst.v11.status.id.get({ path: { id }, throwOnError: true }).then(({ data }) => data.status),
           fetch(`https://api.natsuneko.com/epiclese/v1/tag/by/status/${id}`)
             .then((r) => r.json() as Promise<EpicleseMetadata>)
             .catch(() => ({})),
-          client.catalyst.reactions(id).catch(() => ({})),
+          client.catalyst.v1.status.id.reactions
+            .get({ path: { id }, throwOnError: true })
+            .then(({ data }) => data.reactions)
+            .catch(() => ({})),
         ]);
         setStatus(statusRes);
         setMetadata(metadataRes ?? {});
         setReactions(reactionsRes);
 
         if (account?.credential.client) {
-          const [favRes] = await Promise.all([account.credential.client.catalyst.isFavorited(id).catch(() => false)]);
+          const [favRes] = await Promise.all([
+            account.credential.client.catalyst.v1.status.id.favorite
+              .get({ path: { id }, throwOnError: true })
+              .then(({ data }) => data)
+              .catch(() => false),
+          ]);
           setIsFavorited(favRes as boolean);
         }
       } catch {
@@ -215,9 +223,15 @@ export default function StatusDetailsPage() {
       const rollbackLocalMutation = registerLocalReactionMutation(id, "reaction:increment", symbol, customReactionId);
       try {
         if (customReactionId) {
-          await account.credential.client.catalyst.reactWithCustomReaction(id, customReactionId);
+          await account.credential.client.catalyst.v1.status.id.reactions.custom.customReactionId.create({
+            path: { id, customReactionId },
+            throwOnError: true,
+          });
         } else {
-          await account.credential.client.catalyst.react(id, symbol);
+          await account.credential.client.catalyst.v1.status.id.reactions.symbol.create({
+            path: { id, symbol },
+            throwOnError: true,
+          });
         }
       } catch {
         rollbackLocalMutation();
@@ -240,9 +254,15 @@ export default function StatusDetailsPage() {
       const rollbackLocalMutation = registerLocalReactionMutation(id, "reaction:decrement", symbol, customReactionId);
       try {
         if (customReactionId) {
-          await account.credential.client.catalyst.unreactWithCustomReaction(id, customReactionId);
+          await account.credential.client.catalyst.v1.status.id.reactions.custom.customReactionId.delete({
+            path: { id, customReactionId },
+            throwOnError: true,
+          });
         } else {
-          await account.credential.client.catalyst.unreact(id, symbol);
+          await account.credential.client.catalyst.v1.status.id.reactions.symbol.delete({
+            path: { id, symbol },
+            throwOnError: true,
+          });
         }
       } catch {
         rollbackLocalMutation();
@@ -256,7 +276,7 @@ export default function StatusDetailsPage() {
   const handleDeleteStatus = useCallback(async () => {
     if (!account?.credential.client || !id) return;
     try {
-      await account.credential.client.catalyst.deleteStatus(id);
+      await account.credential.client.catalyst.v1.status.id.delete({ path: { id }, throwOnError: true });
       router.back();
     } catch {
       Alert.alert("エラー", "削除に失敗しました");
@@ -267,7 +287,11 @@ export default function StatusDetailsPage() {
     if (!account?.credential.client || !id || !editingCaption) return;
     setIsEditingSaving(true);
     try {
-      await account.credential.client.catalyst.editStatus(id, editingCaption);
+      await account.credential.client.catalyst.v1.status.id.patch({
+        path: { id },
+        body: { description: editingCaption },
+        throwOnError: true,
+      });
       setStatus((prev) => (prev ? { ...prev, body: editingCaption } : prev));
       setIsEditSheetVisible(false);
     } catch {

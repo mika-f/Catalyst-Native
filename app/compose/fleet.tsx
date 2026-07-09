@@ -561,7 +561,7 @@ export default function FleetComposerScreen() {
     setIsSubmitting(true);
     try {
       const client = account.credential.client;
-      const uploadUrls = await client.media.upload();
+      const { data: uploadUrls } = await client.media.v2.upload.create({ throwOnError: true });
       const file = new FileSystem.File(image.uri);
       const ab = await file.arrayBuffer();
       await fetch(uploadUrls.signedUrl, { method: "PUT", body: ab, headers: { "Content-Type": "image/jpeg" } });
@@ -597,22 +597,25 @@ export default function FleetComposerScreen() {
         };
       });
 
-      await client.catalyst.createFleet({
-        backgroundColor,
-        media: {
-          url: uploadUrls.url,
-          width: image.width,
-          height: image.height,
-          bytes: image.fileSize ?? 0,
-          placement: {
-            posX: containerWidth.value > 0 ? imgTranslateX.value / containerWidth.value + 0.5 : 0.5,
-            posY: containerHeight.value > 0 ? imgTranslateY.value / containerHeight.value + 0.5 : 0.5,
-            scale: imgScale.value,
-            rotation: 0,
+      await client.catalyst.v1.fleet.create({
+        body: {
+          backgroundColor,
+          media: {
+            url: uploadUrls.url,
+            width: image.width,
+            height: image.height,
+            bytes: image.fileSize ?? 0,
+            placement: {
+              posX: containerWidth.value > 0 ? imgTranslateX.value / containerWidth.value + 0.5 : 0.5,
+              posY: containerHeight.value > 0 ? imgTranslateY.value / containerHeight.value + 0.5 : 0.5,
+              scale: imgScale.value,
+              rotation: 0,
+            },
           },
+          texts: textPayload,
+          stickers: stickerPayload,
         },
-        texts: textPayload,
-        stickers: stickerPayload,
+        throwOnError: true,
       });
 
       router.dismiss();

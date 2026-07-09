@@ -14,12 +14,16 @@ export default function SearchPage() {
         return [];
       }
 
-      return await client.catalyst.searchTimeline({
-        q: hashtag,
-        exact: true,
-        since: since ?? undefined,
-        until: until ?? undefined,
+      const { data } = await client.catalyst.v1.timeline.search.get({
+        query: {
+          q: hashtag,
+          exact: true,
+          since: since ?? undefined,
+          until: until ?? undefined,
+        },
+        throwOnError: true,
       });
+      return data.statuses;
     },
     [client, hashtag],
   );

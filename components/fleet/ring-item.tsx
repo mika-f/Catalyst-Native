@@ -1,6 +1,6 @@
 import { getCdnUrl, getIdenticonUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
-import { CatalystFleetRing } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystFleetRing } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { Pressable, Text, View } from "react-native";
 import { withUniwind } from "uniwind";

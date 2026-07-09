@@ -17,7 +17,7 @@ import {
   BottomSheetTextInput,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import type { CatalystContest } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest } from "@/models/sdk-types";
 import dayjs from "dayjs";
 import { Image } from "expo-image";
 import { useAtomValue } from "jotai";
@@ -54,8 +54,11 @@ export const ContestSelectorSheet = ({ onSelect, ref }: Props) => {
 
   useAsyncEffect(async () => {
     if (client) {
-      const result = await client.catalyst.searchContests(query || undefined, "opening");
-      setContests(result);
+      const { data } = await client.catalyst.v1.contest.search.get({
+        query: { q: query || undefined, state: "opening" },
+        throwOnError: true,
+      });
+      setContests(data.contests);
     }
   }, [client, query]);
 

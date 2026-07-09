@@ -21,7 +21,7 @@ import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { abs } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { clientAtom } from "@/models/atoms/credential";
-import type { CatalystContest, CatalystStatus } from "@natsuneko-laboratory/catalyst-sdk";
+import type { CatalystContest, CatalystStatus } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -434,12 +434,19 @@ export default function ContestDetailPage() {
   useAsyncOneTimeEffect(async () => {
     if (!client || !slug) return;
     try {
-      const res = await client.catalyst.getContestBySlug(slug);
+      const { data: contestData } = await client.catalyst.v1.contest.by.slug.slug.get({
+        path: { slug },
+        throwOnError: true,
+      });
+      const res = contestData.contest;
       setContest(res);
 
       if (res.state === "voting" && res.voting?.isEnable) {
         try {
-          const rights = await client.catalyst.getContestVotes(slug);
+          const { data: rights } = await client.catalyst.v1.contest.by.slug.slug.vote.get({
+            path: { slug },
+            throwOnError: true,
+          });
           setVoteRights(rights);
         } catch {
           // 投票権情報の取得失敗はコンテスト表示自体には影響しない
@@ -454,7 +461,10 @@ export default function ContestDetailPage() {
     async (statusId: string) => {
       if (!client || !slug) return;
       try {
-        await client.catalyst.addContestVote(slug, statusId);
+        await client.catalyst.v1.contest.by.slug.slug.vote.status.create({
+          path: { slug, status: statusId },
+          throwOnError: true,
+        });
         setVoteRights((prev) =>
           prev
             ? {
@@ -474,7 +484,10 @@ export default function ContestDetailPage() {
     async (statusId: string) => {
       if (!client || !slug) return;
       try {
-        await client.catalyst.removeContestVote(slug, statusId);
+        await client.catalyst.v1.contest.by.slug.slug.vote.status.delete({
+          path: { slug, status: statusId },
+          throwOnError: true,
+        });
         setVoteRights((prev) =>
           prev
             ? {
@@ -492,14 +505,12 @@ export default function ContestDetailPage() {
 
   const fetcher = useCallback(
     async (since: string | null, until: string | null) => {
-      return (
-        (
-          await client?.catalyst.timelineByContestSlug(slug, {
-            since: since ?? undefined,
-            until: until ?? undefined,
-          })
-        ) ?? []
-      );
+      const result = await client?.catalyst.v1.timeline.contest.by.slug.slug.get({
+        path: { slug },
+        query: { since: since ?? undefined, until: until ?? undefined },
+        throwOnError: true,
+      });
+      return result?.data.statuses ?? [];
     },
     [client, slug],
   );
