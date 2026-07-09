@@ -9,6 +9,7 @@ import { useAtomValue } from "jotai";
 import { MessageSquare } from "lucide-react-native";
 import React, { memo, useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, Text, useWindowDimensions, View } from "react-native";
+import { ProfileTimelinePlaceholder } from "./placeholder";
 
 const COLUMNS = 3;
 const GAP = 1;
@@ -77,15 +78,17 @@ export const UserTimeline = memo(
     const cellSize = (screenWidth - GAP * (COLUMNS - 1)) / COLUMNS;
     const [items, setItems] = useState<CatalystStatus[]>([]);
     const sets = useRef<Set<string>>(new Set());
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const isLoadingRef = useRef(false);
 
     const fetchItems = useCallback(async () => {
       if (!user) {
+        setIsInitialLoading(false);
         return;
       }
 
-      setIsLoading(true);
+      setIsInitialLoading(true);
       isLoadingRef.current = true;
       try {
         const { data } = await client.catalyst.v1.timeline.user.by.username.username.get({
@@ -95,20 +98,20 @@ export const UserTimeline = memo(
         });
         setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
       } finally {
-        setIsLoading(false);
+        setIsInitialLoading(false);
         isLoadingRef.current = false;
       }
     }, [client, user]);
 
     const loadMore = useCallback(async () => {
-      if (!user || isLoadingRef.current) {
+      if (!user || isLoadingRef.current || isInitialLoading) {
         return;
       }
 
       const lastItem = items[items.length - 1];
       if (!lastItem) return;
 
-      setIsLoading(true);
+      setIsLoadingMore(true);
       isLoadingRef.current = true;
       try {
         const { data } = await client.catalyst.v1.timeline.user.by.username.username.get({
@@ -119,10 +122,10 @@ export const UserTimeline = memo(
 
         setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
       } finally {
-        setIsLoading(false);
+        setIsLoadingMore(false);
         isLoadingRef.current = false;
       }
-    }, [user, items, client]);
+    }, [user, items, client, isInitialLoading]);
 
     useImperativeHandle(ref, () => ({ loadMore }), [loadMore]);
 
@@ -131,6 +134,10 @@ export const UserTimeline = memo(
     const rows: CatalystStatus[][] = [];
     for (let i = 0; i < items.length; i += COLUMNS) {
       rows.push(items.slice(i, i + COLUMNS));
+    }
+
+    if (isInitialLoading && items.length === 0) {
+      return <ProfileTimelinePlaceholder />;
     }
 
     return (
@@ -144,7 +151,7 @@ export const UserTimeline = memo(
             ))}
           </View>
         ))}
-        {isLoading && (
+        {isLoadingMore && (
           <View className="py-4">
             <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>

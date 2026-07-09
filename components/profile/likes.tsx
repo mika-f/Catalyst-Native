@@ -8,6 +8,7 @@ import { HeartOff, Lock } from "lucide-react-native";
 import React, { memo, useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { withUniwind } from "uniwind";
+import { TimelinePlaceholder } from "../timeline/placeholder";
 import { TimelineStatus } from "../timeline/status";
 import { UserTimelineHandle } from "./timeline";
 
@@ -43,31 +44,32 @@ export const UserLikes = memo(
   React.forwardRef<UserTimelineHandle>((_props, ref) => {
     const client = useAtomValue(clientAtom);
     const [items, setItems] = useState<CatalystStatusV1_1[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [hasFetched, setHasFetched] = useState(false);
     const isLoadingRef = useRef(false);
     const sets = useRef(new Set<string>());
 
     const fetchItems = useCallback(async () => {
-      setIsLoading(true);
+      setIsInitialLoading(true);
       isLoadingRef.current = true;
       try {
         const { data } = await client.catalyst.v1.timeline.favorite.get({ query: {}, throwOnError: true });
         setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
       } finally {
-        setIsLoading(false);
+        setIsInitialLoading(false);
         isLoadingRef.current = false;
         setHasFetched(true);
       }
     }, [client]);
 
     const loadMore = useCallback(async () => {
-      if (isLoadingRef.current) return;
+      if (isLoadingRef.current || isInitialLoading) return;
 
       const lastItem = items[items.length - 1];
       if (!lastItem) return;
 
-      setIsLoading(true);
+      setIsLoadingMore(true);
       isLoadingRef.current = true;
       try {
         const { data } = await client.catalyst.v1.timeline.favorite.get({
@@ -79,10 +81,10 @@ export const UserLikes = memo(
           setItems((prev) => merge(prev, data.statuses, sets, (item) => item.id));
         }
       } finally {
-        setIsLoading(false);
+        setIsLoadingMore(false);
         isLoadingRef.current = false;
       }
-    }, [items, client]);
+    }, [items, client, isInitialLoading]);
 
     useImperativeHandle(ref, () => ({ loadMore }), [loadMore]);
 
@@ -91,7 +93,9 @@ export const UserLikes = memo(
     return (
       <View>
         <PrivacyNotice />
-        {hasFetched && items.length === 0 ? (
+        {isInitialLoading && items.length === 0 ? (
+          <TimelinePlaceholder count={4} />
+        ) : hasFetched && items.length === 0 ? (
           <EmptyState />
         ) : (
           items.map((item, index) => (
@@ -101,7 +105,7 @@ export const UserLikes = memo(
             </View>
           ))
         )}
-        {isLoading && (
+        {isLoadingMore && (
           <View className="py-4">
             <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
           </View>

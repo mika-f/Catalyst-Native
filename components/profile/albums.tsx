@@ -7,8 +7,8 @@ import { FlashList, ListRenderItem } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import { Images } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
 import { withUniwind } from "uniwind";
+import { ProfileAlbumsPlaceholder } from "./placeholder";
 
 import "@/global.css";
 
@@ -29,12 +29,15 @@ type Props = {
 export const UserAlbums = ({ user }: Props) => {
   const client = useAtomValue(clientAtom);
   const [albums, setAlbums] = useState<CatalystAlbumOrSmartAlbum[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const fetchAlbums = useCallback(async () => {
-    if (!client) return;
+    if (!client) {
+      setIsInitialLoading(false);
+      return;
+    }
 
-    setIsLoading(true);
+    setIsInitialLoading(true);
     try {
       const { data } = await client.catalyst.v1.album.by.user.username.get({
         path: { username: user.screenName },
@@ -43,7 +46,7 @@ export const UserAlbums = ({ user }: Props) => {
       });
       setAlbums(data.albums);
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
     }
   }, [client, user]);
 
@@ -53,12 +56,8 @@ export const UserAlbums = ({ user }: Props) => {
     return <AlbumCard album={item} />;
   }, []);
 
-  if (isLoading && albums.length === 0) {
-    return (
-      <View className="py-4">
-        <ActivityIndicator colorClassName="accent-light-tint dark:accent-dark-tint" />
-      </View>
-    );
+  if (isInitialLoading && albums.length === 0) {
+    return <ProfileAlbumsPlaceholder />;
   }
 
   return (
