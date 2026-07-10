@@ -9,12 +9,14 @@ import {
   timelineImageQualityAtom,
   timelineWifiUpgradeAtom,
 } from "@/models/atoms/image-quality";
+import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
 import { streamingEnabledAtom } from "@/models/atoms/streaming";
 import * as Credential from "@/models/credential";
 import {
   loadTimelineImageQuality,
   loadWifiUpgrade,
 } from "@/models/image-quality-settings";
+import { loadHideSensitiveContent } from "@/models/sensitive-content-settings";
 import { StreamingProvider } from "@/models/streaming";
 import { loadStreamingEnabled } from "@/models/streaming-settings";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -76,6 +78,7 @@ export default Sentry.wrap(function RootLayout() {
   const setAccount = useSetAtom(accountAtom);
   const setTimelineImageQuality = useSetAtom(timelineImageQualityAtom);
   const setTimelineWifiUpgrade = useSetAtom(timelineWifiUpgradeAtom);
+  const setHideSensitiveContent = useSetAtom(hideSensitiveContentAtom);
   const setStreamingEnabled = useSetAtom(streamingEnabledAtom);
   const [loaded, error] = useFonts({
     "Noto Sans JP Regular": require("@/assets/fonts/NotoSansJP-Regular.ttf"),
@@ -88,13 +91,20 @@ export default Sentry.wrap(function RootLayout() {
     Promise.all([
       loadTimelineImageQuality(),
       loadWifiUpgrade(),
+      loadHideSensitiveContent(),
       loadStreamingEnabled(),
-    ]).then(([quality, wifiUpgrade, streamingEnabled]) => {
+    ]).then(([quality, wifiUpgrade, hideSensitiveContent, streamingEnabled]) => {
       setTimelineImageQuality(quality);
       setTimelineWifiUpgrade(wifiUpgrade);
+      setHideSensitiveContent(hideSensitiveContent);
       setStreamingEnabled(streamingEnabled);
     });
-  }, [setStreamingEnabled, setTimelineImageQuality, setTimelineWifiUpgrade]);
+  }, [
+    setHideSensitiveContent,
+    setStreamingEnabled,
+    setTimelineImageQuality,
+    setTimelineWifiUpgrade,
+  ]);
 
   useAsyncOneTimeEffect(async () => {
     try {

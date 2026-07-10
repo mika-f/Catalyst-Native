@@ -2,6 +2,7 @@ import { FleetContent, FleetContentData } from "@/components/fleet/content";
 import { getCdnUrl, getIdenticonUrl } from "@/lib/media";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
+import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
 import type { CatalystFleet } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -129,6 +130,7 @@ const ProgressBar = ({ state, paused, onComplete }: ProgressBarProps) => {
 export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead }: Props) => {
   const client = useAtomValue(clientAtom);
   const account = useAtomValue(accountAtom);
+  const hideSensitiveContent = useAtomValue(hideSensitiveContentAtom);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [activeUsername, setActiveUsername] = useState<string | null>(null);
@@ -136,20 +138,31 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isMediaLoaded, setIsMediaLoaded] = useState(false);
+  const activeUsernameRef = useRef(activeUsername);
+  const usernamesRef = useRef(usernames);
+  const fleetsRef = useRef(fleets);
 
   // 外部から username が変わったら activeUsername を同期
   useEffect(() => {
     if (visible && username) {
+      // Fleet viewer の表示対象を外部選択に同期するため、ここで state に反映する。
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveUsername(username);
     }
   }, [visible, username]);
 
   useEffect(() => {
     if (!visible || !activeUsername || !client) return;
+    // Fleet 取得開始時にビューアーのローカル表示状態を初期化する。
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(true);
     setCurrentIndex(0);
     client.catalyst.v1.fleet.by.user.username
-      .get({ path: { username: activeUsername }, throwOnError: true })
+      .get({
+        path: { username: activeUsername },
+        query: hideSensitiveContent ? { exclude_sensitive: true } : undefined,
+        throwOnError: true,
+      })
       .then(({ data }) => {
         setFleets(data);
         setIsLoading(false);
@@ -158,9 +171,11 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
         setIsLoading(false);
         onClose();
       });
-  }, [visible, activeUsername, client]);
+  }, [visible, activeUsername, client, hideSensitiveContent, onClose]);
 
   useEffect(() => {
+    // Fleet の切り替え時にメディア読み込み状態をリセットする。
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMediaLoaded(false);
   }, [currentIndex]);
 
@@ -174,12 +189,17 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
     }
   }, [visible, isLoading, currentIndex, fleets, client]);
 
-  const activeUsernameRef = useRef(activeUsername);
-  activeUsernameRef.current = activeUsername;
-  const usernamesRef = useRef(usernames);
-  usernamesRef.current = usernames;
-  const fleetsRef = useRef(fleets);
-  fleetsRef.current = fleets;
+  useEffect(() => {
+    activeUsernameRef.current = activeUsername;
+  }, [activeUsername]);
+
+  useEffect(() => {
+    usernamesRef.current = usernames;
+  }, [usernames]);
+
+  useEffect(() => {
+    fleetsRef.current = fleets;
+  }, [fleets]);
 
   // ユーザー操作で進行/後退した際にインクリメントし、古い自動進行を無視する
   const navEpochRef = useRef(0);

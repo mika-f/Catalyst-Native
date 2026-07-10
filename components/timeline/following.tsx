@@ -2,6 +2,7 @@ import { CurrentContestSpotlight } from "@/components/contest/spotlight";
 import { FleetRing } from "@/components/fleet/ring";
 import { FleetViewer } from "@/components/fleet/viewer";
 import { clientAtom } from "@/models/atoms/credential";
+import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
 import { useAtomValue } from "jotai";
 import { Ref, useCallback, useState } from "react";
 import { View } from "react-native";
@@ -13,6 +14,7 @@ type Props = {
 
 export const FollowingTimeline = ({ ref }: Props) => {
   const client = useAtomValue(clientAtom);
+  const hideSensitiveContent = useAtomValue(hideSensitiveContentAtom);
   const [viewerUsername, setViewerUsername] = useState<string | null>(null);
   const [fleetUsernames, setFleetUsernames] = useState<string[]>([]);
   const [ringRefreshKey, setRingRefreshKey] = useState(0);
@@ -22,13 +24,17 @@ export const FollowingTimeline = ({ ref }: Props) => {
       return (
         (
           await client?.catalyst.v11.timeline.home.get({
-            query: { since: since ?? undefined, until: until ?? undefined },
+            query: {
+              since: since ?? undefined,
+              until: until ?? undefined,
+              ...(hideSensitiveContent ? { exclude_sensitive: true } : {}),
+            },
             throwOnError: true,
           })
         )?.data ?? []
       );
     },
-    [client],
+    [client, hideSensitiveContent],
   );
 
   const handleRingPress = useCallback((username: string) => {
@@ -68,7 +74,13 @@ export const FollowingTimeline = ({ ref }: Props) => {
 
   return (
     <>
-      <TimelineBase ref={ref} fetcher={fetcher} ListHeaderComponent={Header} onRefresh={handleTimelineRefresh} />
+      <TimelineBase
+        key={hideSensitiveContent ? "hide-sensitive" : "show-sensitive"}
+        ref={ref}
+        fetcher={fetcher}
+        ListHeaderComponent={Header}
+        onRefresh={handleTimelineRefresh}
+      />
       <FleetViewer
         username={viewerUsername}
         usernames={fleetUsernames}

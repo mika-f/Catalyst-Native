@@ -1,5 +1,6 @@
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
+import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
 import type { CatalystFleetRing } from "@/models/sdk-types";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -17,19 +18,23 @@ type Props = {
 export const FleetRing = ({ onRingPress, onUsernamesChange, refreshKey }: Props) => {
   const client = useAtomValue(clientAtom);
   const account = useAtomValue(accountAtom);
+  const hideSensitiveContent = useAtomValue(hideSensitiveContentAtom);
   const router = useRouter();
   const [rings, setRings] = useState<CatalystFleetRing[]>([]);
 
   useEffect(() => {
     if (!client) return;
     client.catalyst.v1.fleet.ring
-      .get({ throwOnError: true })
+      .get({
+        query: hideSensitiveContent ? { exclude_sensitive: true } : undefined,
+        throwOnError: true,
+      })
       .then(({ data }) => {
         setRings(data);
         onUsernamesChange?.(data.map((r) => r.user.screenName));
       })
       .catch(() => {});
-  }, [client, refreshKey, onUsernamesChange]);
+  }, [client, hideSensitiveContent, refreshKey, onUsernamesChange]);
 
   if (!account && rings.length === 0) return null;
 
