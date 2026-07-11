@@ -1,15 +1,16 @@
 import { FleetContent, FleetContentData } from "@/components/fleet/content";
+import { cn } from "@/lib/utils";
 import { getCdnUrl, getIdenticonUrl } from "@/lib/media";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
-import type { CatalystFleet } from "@/models/sdk-types";
+import type { CatalystCustomReaction, CatalystFleet } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
-import { Ellipsis } from "lucide-react-native";
+import { Ellipsis, MessageCircleHeart, SmilePlus } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import Animated, {
   cancelAnimation,
   runOnJS,
@@ -23,6 +24,8 @@ import { withUniwind } from "uniwind";
 
 const UniImage = withUniwind(Image);
 const UniEllipsis = withUniwind(Ellipsis);
+const UniSmilePlus = withUniwind(SmilePlus);
+const UniMessageCircleHeart = withUniwind(MessageCircleHeart);
 
 const FLEET_DURATION = 1000 * 6; // 6 seconds
 
@@ -138,6 +141,9 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isMediaLoaded, setIsMediaLoaded] = useState(false);
+  const [isReactionPanelOpen, setIsReactionPanelOpen] = useState(false);
+  const [reactionSymbols, setReactionSymbols] = useState<CatalystCustomReaction[] | null>(null);
+  const [isReacting, setIsReacting] = useState(false);
   const activeUsernameRef = useRef(activeUsername);
   const usernamesRef = useRef(usernames);
   const fleetsRef = useRef(fleets);
@@ -174,10 +180,20 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
   }, [visible, activeUsername, client, hideSensitiveContent, onClose]);
 
   useEffect(() => {
-    // Fleet の切り替え時にメディア読み込み状態をリセットする。
+    // Fleet の切り替え時にメディア読み込み状態とリアクションパネルをリセットする。
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMediaLoaded(false);
+    setIsReactionPanelOpen(false);
   }, [currentIndex]);
+
+  // リアクションパネルを開いた際、マスターリアクション一覧を初回のみ取得する
+  useEffect(() => {
+    if (!isReactionPanelOpen || reactionSymbols !== null || !client) return;
+    client.catalyst.v1.reactions
+      .get({ throwOnError: true })
+      .then(({ data }) => setReactionSymbols(data))
+      .catch(() => setReactionSymbols([]));
+  }, [isReactionPanelOpen, reactionSymbols, client]);
 
   useEffect(() => {
     if (!visible || isLoading || fleets.length === 0 || !client) return;
@@ -265,6 +281,48 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
   const contentData = currentFleet ? toFleetContentData(currentFleet) : null;
   const isMyFleet = !!currentFleet && currentFleet.user.id === account?.user?.id;
 
+  const handleToggleReactionPanel = useCallback(() => {
+    setIsReactionPanelOpen((prev) => !prev);
+  }, []);
+
+  const handleReact = useCallback(
+    async (symbol: string) => {
+      if (!client || !currentFleet || isReacting) return;
+      const fleetId = currentFleet.id;
+      const isRemoving = currentFleet.selfReaction?.symbol === symbol;
+
+      setIsReacting(true);
+      try {
+        if (isRemoving) {
+          await client.catalyst.v1.fleet.id.reactions.symbol.delete({
+            path: { id: fleetId, symbol },
+            throwOnError: true,
+          });
+          setFleets((prev) => prev.map((f) => (f.id === fleetId ? { ...f, selfReaction: null } : f)));
+        } else {
+          const { data } = await client.catalyst.v1.fleet.id.reactions.symbol.create({
+            path: { id: fleetId, symbol },
+            throwOnError: true,
+          });
+          setFleets((prev) => prev.map((f) => (f.id === fleetId ? { ...f, selfReaction: data.value } : f)));
+        }
+        setIsReactionPanelOpen(false);
+      } catch {
+        Alert.alert("エラー", "リアクションの操作に失敗しました");
+      } finally {
+        setIsReacting(false);
+      }
+    },
+    [client, currentFleet, isReacting],
+  );
+
+  const handleOpenReactionsList = useCallback(() => {
+    if (!currentFleet) return;
+    const fleetId = currentFleet.id;
+    onClose();
+    router.push(`/fleet/${fleetId}/reactions`);
+  }, [currentFleet, onClose, router]);
+
   const handleReport = useCallback(() => {
     if (!currentFleet) return;
     const fleetId = currentFleet.id;
@@ -285,7 +343,7 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
     ? getCdnUrl({ src: currentFleet.user.profile.iconUrl, variant: "icon", width: 64 })
     : getIdenticonUrl(currentFleet?.user.id);
 
-  const isPaused = !!(currentFleet?.media && !isMediaLoaded);
+  const isPaused = !!(currentFleet?.media && !isMediaLoaded) || isReactionPanelOpen;
 
   const getProgressBarState = (index: number): ProgressBarState => {
     if (index < currentIndex) return "past";
@@ -347,11 +405,34 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
         {!isLoading && currentFleet && account && !isMyFleet && (
           <Pressable
             onPress={handleReport}
-            className="absolute right-14 z-20 w-8 h-8 justify-center items-center"
+            className="absolute right-24 z-20 w-8 h-8 justify-center items-center"
             style={{ top: insets.top + 48 }}
             hitSlop={8}
           >
             <UniEllipsis size={20} className="text-white" />
+          </Pressable>
+        )}
+
+        {/* Reaction trigger button */}
+        {!isLoading && currentFleet && account && (
+          <Pressable
+            onPress={isMyFleet ? handleOpenReactionsList : handleToggleReactionPanel}
+            disabled={!isMyFleet && isReacting}
+            className={cn(
+              "absolute right-14 z-20 w-8 h-8 justify-center items-center rounded-full",
+              !isMyFleet && currentFleet.selfReaction && "bg-white/25",
+              !isMyFleet && isReacting && "opacity-60",
+            )}
+            style={{ top: insets.top + 48 }}
+            hitSlop={8}
+          >
+            {isMyFleet ? (
+              <UniMessageCircleHeart size={20} className="text-white" />
+            ) : currentFleet.selfReaction ? (
+              <UniImage source={{ uri: currentFleet.selfReaction.url }} className="w-5 h-5" contentFit="contain" />
+            ) : (
+              <UniSmilePlus size={20} className="text-white" />
+            )}
           </Pressable>
         )}
 
@@ -364,6 +445,39 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
         >
           <Text className="text-white text-lg font-semibold">✕</Text>
         </Pressable>
+
+        {/* Reaction panel: 右上のトリガーボタンの下から右揃えで展開する（画面幅を超える場合は横スクロール） */}
+        {isReactionPanelOpen && (
+          <View className="absolute left-4 right-4 z-20 items-end" style={{ top: insets.top + 88 }} pointerEvents="box-none">
+            {reactionSymbols === null ? (
+              <View className="rounded-full bg-black/60 px-4 py-3">
+                <ActivityIndicator colorClassName="accent-white" size="small" />
+              </View>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="max-w-full rounded-full bg-black/60"
+                contentContainerClassName="flex-row items-center gap-1 px-2 py-2"
+              >
+                {reactionSymbols.map((r) => (
+                  <Pressable
+                    key={r.symbol}
+                    onPress={() => handleReact(r.symbol)}
+                    disabled={isReacting}
+                    hitSlop={4}
+                    className={cn(
+                      "w-10 h-10 items-center justify-center rounded-full",
+                      currentFleet?.selfReaction?.symbol === r.symbol && "bg-white/25",
+                    )}
+                  >
+                    <UniImage source={{ uri: r.url }} className="w-7 h-7" contentFit="contain" />
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        )}
       </View>
     </Modal>
   );

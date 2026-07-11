@@ -7,11 +7,13 @@ import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
 import React, { Ref, useCallback, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, Platform, RefreshControl, Text, View, useColorScheme } from "react-native";
+import { FleetReactionNotification } from "./fleet-reaction";
 import { FollowNotification } from "./follow";
 import { SystemNotificationPlaceholder } from "./placeholder";
 import { ReactionNotification } from "./reaction";
 
 const REACTION_TITLE = "natsuneko-laboratory:reaction:increment";
+const FLEET_REACTION_TITLE = "natsuneko-laboratory:fleet:reaction:increment";
 const FOLLOW_TITLE = "natsuneko-laboratory:follow:increment";
 const ISSUER_CATALYST_SYSTEM_MESSAGE = "natsuneko-laboratory:catalyst";
 
@@ -55,7 +57,9 @@ export const SystemNotificationList = ({ ref }: Props) => {
         },
         throwOnError: true,
       });
-      return data.notifications.filter((n) => n.title === REACTION_TITLE || n.title === FOLLOW_TITLE);
+      return data.notifications.filter(
+        (n) => n.title === REACTION_TITLE || n.title === FLEET_REACTION_TITLE || n.title === FOLLOW_TITLE,
+      );
     },
     [client],
   );
@@ -139,6 +143,9 @@ export const SystemNotificationList = ({ ref }: Props) => {
   const renderItem = useCallback(({ item }: { item: Notification }) => {
     if (item.title === REACTION_TITLE) {
       return <ReactionNotification notification={item} />;
+    }
+    if (item.title === FLEET_REACTION_TITLE) {
+      return <FleetReactionNotification notification={item} />;
     }
     if (item.title === FOLLOW_TITLE) {
       return <FollowNotification notification={item} />;

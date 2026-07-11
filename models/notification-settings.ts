@@ -25,6 +25,12 @@ export const PUSH_NOTIFICATION_TYPES: PushNotificationType[] = [
     description: "投稿にリアクションが付いたとき",
   },
   {
+    key: "fleetReaction",
+    rawValue: "natsuneko-laboratory:fleet:reaction:increment",
+    displayName: "Fleetのリアクション",
+    description: "Fleet にリアクションが付いたとき",
+  },
+  {
     key: "follow",
     rawValue: "natsuneko-laboratory:follow:increment",
     displayName: "フォロー",

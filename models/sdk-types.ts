@@ -42,6 +42,8 @@ export type CatalystFollowListItem = ApiData<
 
 export type CatalystFleet = ApiData<Client["catalyst"]["v1"]["fleet"]["id"]["get"]>;
 export type CatalystFleetRing = ApiData<Client["catalyst"]["v1"]["fleet"]["ring"]["get"]>[number];
+// GET /catalyst/v1/fleet/{id}/reactions — Fleet に付与されたリアクションの一覧（投稿者本人のみ取得可能）
+export type CatalystFleetReaction = ApiData<Client["catalyst"]["v1"]["fleet"]["id"]["reactions"]["get"]>[number];
 
 export type ProfileTag = ApiData<Client["catalyst"]["v1"]["profileTags"]["by"]["user"]["id"]["get"]>["tags"][number];
 export type ProfileTagSuggestion = ApiData<Client["catalyst"]["v1"]["profileTags"]["suggestions"]["get"]>["tags"][number];
