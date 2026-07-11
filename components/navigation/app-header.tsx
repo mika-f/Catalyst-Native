@@ -33,7 +33,7 @@ export const CatalystAppHeader = ({
 
   return (
     <View
-      className="border-b border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-background"
+      className="border-b border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-background border-b-transparent"
       style={{ paddingTop: insets.top }}
     >
       <View className="h-[52px] flex-row items-center px-3">
@@ -47,8 +47,15 @@ export const CatalystAppHeader = ({
                 hitSlop={8}
                 onPress={onBack}
               >
-                <UniChevronLeft className="text-light-tint dark:text-dark-tint" size={24} />
-                <CatalystText className="shrink text-light-tint dark:text-dark-tint" numberOfLines={1} variant="label">
+                <UniChevronLeft
+                  className="text-light-tint dark:text-dark-tint"
+                  size={24}
+                />
+                <CatalystText
+                  className="shrink text-light-tint dark:text-dark-tint"
+                  numberOfLines={1}
+                  variant="label"
+                >
                   {backLabel}
                 </CatalystText>
               </Pressable>
@@ -57,7 +64,11 @@ export const CatalystAppHeader = ({
 
         <View className="min-w-0 flex-1 items-center justify-center px-2">
           {typeof title === "string" ? (
-            <CatalystText className="text-center" numberOfLines={1} variant="subtitle">
+            <CatalystText
+              className="text-center"
+              numberOfLines={1}
+              variant="subtitle"
+            >
               {title}
             </CatalystText>
           ) : (
@@ -65,19 +76,32 @@ export const CatalystAppHeader = ({
           )}
         </View>
 
-        <View className="w-[112px] flex-row items-center justify-end">{right}</View>
+        <View className="w-[112px] flex-row items-center justify-end">
+          {right}
+        </View>
       </View>
     </View>
   );
 };
 
-export const renderCatalystStackHeader = ({ back, navigation, options, route }: NativeStackHeaderProps) => {
+export const renderCatalystStackHeader = ({
+  back,
+  navigation,
+  options,
+  route,
+}: NativeStackHeaderProps) => {
   const canGoBack = !!back;
   const headerItemProps: HeaderItemProps = { canGoBack };
-  const title = typeof options.headerTitle === "string" ? options.headerTitle : (options.title ?? route.name);
+  const title =
+    typeof options.headerTitle === "string"
+      ? options.headerTitle
+      : (options.title ?? route.name);
   const titleNode =
     typeof options.headerTitle === "function"
-      ? options.headerTitle({ children: title, tintColor: options.headerTintColor })
+      ? options.headerTitle({
+          children: title,
+          tintColor: options.headerTintColor,
+        })
       : title;
 
   return (
