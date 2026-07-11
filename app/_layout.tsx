@@ -2,6 +2,7 @@
 import "react-native-get-random-values";
 
 // imports
+import { headerSurfaceOptions } from "@/components/navigation/app-header";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { accountAtom } from "@/models/atoms/account";
@@ -133,7 +134,7 @@ export default Sentry.wrap(function RootLayout() {
             value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
           >
             <StreamingProvider>
-              <Stack>
+              <Stack screenOptions={headerSurfaceOptions}>
                 <Stack.Screen
                   name="(drawer)"
                   options={{ headerShown: false, gestureEnabled: false }}
@@ -264,6 +265,10 @@ export default Sentry.wrap(function RootLayout() {
                     title: "報告",
                     headerBackTitle: "キャンセル",
                   }}
+                />
+                <Stack.Screen
+                  name="fleet/[id]/reactions"
+                  options={{ title: "リアクション", headerBackTitle: "戻る" }}
                 />
                 <Stack.Screen
                   name="profile/edit"

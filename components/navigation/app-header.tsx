@@ -1,0 +1,106 @@
+import { CatalystText } from "@/components/design-system";
+import type { NativeStackHeaderProps } from "expo-router/build/react-navigation/native-stack/types";
+import { ChevronLeft } from "lucide-react-native";
+import React from "react";
+import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { withUniwind } from "uniwind";
+
+const UniChevronLeft = withUniwind(ChevronLeft);
+
+type HeaderItemProps = {
+  canGoBack?: boolean;
+};
+
+type CatalystAppHeaderProps = {
+  backLabel?: string;
+  canGoBack?: boolean;
+  left?: React.ReactNode;
+  onBack?: () => void;
+  right?: React.ReactNode;
+  title?: React.ReactNode;
+};
+
+export const CatalystAppHeader = ({
+  backLabel = "戻る",
+  canGoBack = false,
+  left,
+  onBack,
+  right,
+  title,
+}: CatalystAppHeaderProps) => {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View
+      className="border-b border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-background"
+      style={{ paddingTop: insets.top }}
+    >
+      <View className="h-[52px] flex-row items-center px-3">
+        <View className="w-[112px] items-start justify-center">
+          {left ??
+            (canGoBack ? (
+              <Pressable
+                accessibilityLabel={backLabel}
+                accessibilityRole="button"
+                className="min-h-9 max-w-[108px] flex-row items-center rounded-lg pr-3 active:bg-light-surface-muted dark:active:bg-dark-surface-muted"
+                hitSlop={8}
+                onPress={onBack}
+              >
+                <UniChevronLeft className="text-light-tint dark:text-dark-tint" size={24} />
+                <CatalystText className="shrink text-light-tint dark:text-dark-tint" numberOfLines={1} variant="label">
+                  {backLabel}
+                </CatalystText>
+              </Pressable>
+            ) : null)}
+        </View>
+
+        <View className="min-w-0 flex-1 items-center justify-center px-2">
+          {typeof title === "string" ? (
+            <CatalystText className="text-center" numberOfLines={1} variant="subtitle">
+              {title}
+            </CatalystText>
+          ) : (
+            title
+          )}
+        </View>
+
+        <View className="w-[112px] flex-row items-center justify-end">{right}</View>
+      </View>
+    </View>
+  );
+};
+
+export const renderCatalystStackHeader = ({ back, navigation, options, route }: NativeStackHeaderProps) => {
+  const canGoBack = !!back;
+  const headerItemProps: HeaderItemProps = { canGoBack };
+  const title = typeof options.headerTitle === "string" ? options.headerTitle : (options.title ?? route.name);
+  const titleNode =
+    typeof options.headerTitle === "function"
+      ? options.headerTitle({ children: title, tintColor: options.headerTintColor })
+      : title;
+
+  return (
+    <CatalystAppHeader
+      backLabel={options.headerBackTitle ?? back?.title ?? "戻る"}
+      canGoBack={canGoBack}
+      left={options.headerLeft?.({
+        ...headerItemProps,
+        href: back?.href,
+        label: options.headerBackTitle ?? back?.title,
+      })}
+      onBack={navigation.goBack}
+      right={options.headerRight?.(headerItemProps)}
+      title={titleNode}
+    />
+  );
+};
+
+export const headerSurfaceOptions = {
+  header: renderCatalystStackHeader,
+  headerShadowVisible: false,
+  headerStyle: {
+    backgroundColor: "transparent",
+  },
+  headerTintColor: undefined,
+};
