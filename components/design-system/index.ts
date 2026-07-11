@@ -1,3 +1,4 @@
+export { CatalystActionSheetItem, type CatalystActionSheetItemProps } from "./action-sheet-item";
 export { CatalystAvatar, type CatalystAvatarProps } from "./avatar";
 export { CatalystBadge, CatalystBadgeText, type CatalystBadgeProps, type CatalystBadgeTextProps } from "./badge";
 export { CatalystButton, CatalystButtonIcon, CatalystButtonText, type CatalystButtonIconProps, type CatalystButtonProps, type CatalystButtonTextProps } from "./button";

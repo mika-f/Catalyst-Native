@@ -1,14 +1,18 @@
-import { BottomSheetItem } from "@/components/bottom-sheet/item";
-import { BottomSheetModal, BottomSheetModalHandle } from "@/components/bottom-sheet/sheet";
-import { CatalystText } from "@/components/design-system";
+import { CatalystActionSheetItem, CatalystDivider, CatalystText } from "@/components/design-system";
 import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { clientAtom } from "@/models/atoms/credential";
 import { CatalystRelationships, EgeriaUser } from "@/models/sdk-types";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+  type BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { ArrowLeft, Ellipsis, Flag, ShareIcon, ShieldBan } from "lucide-react-native";
 import { useCallback, useRef } from "react";
-import { Animated, Platform, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Platform, Share, StyleSheet, TouchableOpacity, View, useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
@@ -38,7 +42,8 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
     extrapolate: "clamp",
   });
   const handleBack = useCallback(() => router.back(), [router]);
-  const sheet = useRef<BottomSheetModalHandle>(null);
+  const sheet = useRef<BottomSheetModal>(null);
+  const theme = useColorScheme() ?? "light";
   const url = `https://catalyst.natsuneko.com/@${user?.screenName}`;
   const handleSheetOpen = useCallback(() => sheet.current?.present(), []);
   const handleShareUser = useCallback(() => {
@@ -71,6 +76,10 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
     if (!user) return;
     router.push(`/report/${user.id}?type=user`);
   }, [user, router]);
+  const renderSheetBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />,
+    [],
+  );
 
   return (
     <View
@@ -106,52 +115,71 @@ export const ProfileOverlay = ({ user, relationships, scrollY, showBackButton = 
           </View>
         </TouchableOpacity>
       </View>
-      <BottomSheetModal ref={sheet}>
-        <BottomSheetItem
-          prefixIcon={UniShare}
-          title={
-            <View className="flex-row items-center">
-              <Text className="shrink text-light-text dark:text-dark-text" numberOfLines={1} ellipsizeMode="tail">
-                @{user?.screenName}
-              </Text>
-              <Text className="shrink-0 text-light-text dark:text-dark-text">さんを共有する</Text>
-            </View>
-          }
-          onPress={handleShareUser}
-          highlight
-        />
-        {!relationships?.isMyself && (
-          <BottomSheetItem
-            prefixIcon={UniShieldBan}
+      <BottomSheetModal
+        ref={sheet}
+        enableDynamicSizing
+        enablePanDownToClose
+        backdropComponent={renderSheetBackdrop}
+        backgroundStyle={{ backgroundColor: theme === "dark" ? "#1C1C1E" : "#FFFFFF" }}
+        handleIndicatorStyle={{ backgroundColor: theme === "dark" ? "#48484A" : "#C7C7CC" }}
+      >
+        <BottomSheetView style={{ paddingBottom: insets.bottom * 2 }}>
+          <CatalystActionSheetItem
+            icon={UniShare}
+            tone="accent"
             title={
               <View className="flex-row items-center">
-                <Text className="shrink text-light-error dark:text-dark-error" numberOfLines={1} ellipsizeMode="tail">
+                <CatalystText variant="subtitle" tone="accent" numberOfLines={1} ellipsizeMode="tail" className="shrink text-[15px] font-semibold">
                   @{user?.screenName}
-                </Text>
-                <Text className="shrink-0 text-light-error dark:text-dark-error">
-                  {`さんをブロック${relationships?.isBlocking ? "解除" : ""}`}
-                </Text>
+                </CatalystText>
+                <CatalystText variant="subtitle" tone="accent" className="shrink-0 text-[15px] font-semibold">
+                  さんを共有する
+                </CatalystText>
               </View>
             }
-            onPress={handleToggleBlock}
-            destructive
+            onPress={handleShareUser}
           />
-        )}
-        {!relationships?.isMyself && (
-          <BottomSheetItem
-            prefixIcon={UniFlag}
-            title={
-              <View className="flex-row items-center">
-                <Text className="shrink text-light-error dark:text-dark-error" numberOfLines={1} ellipsizeMode="tail">
-                  @{user?.screenName}
-                </Text>
-                <Text className="shrink-0 text-light-error dark:text-dark-error">さんを報告</Text>
-              </View>
-            }
-            onPress={handleReportUser}
-            destructive
-          />
-        )}
+          {!relationships?.isMyself && (
+            <>
+              <CatalystDivider className="ml-14 w-auto" />
+              <CatalystActionSheetItem
+                icon={UniShieldBan}
+                tone="destructive"
+                title={
+                  <View className="flex-row items-center">
+                    <CatalystText variant="subtitle" tone="danger" numberOfLines={1} ellipsizeMode="tail" className="shrink text-[15px] font-semibold">
+                      @{user?.screenName}
+                    </CatalystText>
+                    <CatalystText variant="subtitle" tone="danger" className="shrink-0 text-[15px] font-semibold">
+                      {`さんをブロック${relationships?.isBlocking ? "解除" : ""}`}
+                    </CatalystText>
+                  </View>
+                }
+                onPress={handleToggleBlock}
+              />
+            </>
+          )}
+          {!relationships?.isMyself && (
+            <>
+              <CatalystDivider className="ml-14 w-auto" />
+              <CatalystActionSheetItem
+                icon={UniFlag}
+                tone="destructive"
+                title={
+                  <View className="flex-row items-center">
+                    <CatalystText variant="subtitle" tone="danger" numberOfLines={1} ellipsizeMode="tail" className="shrink text-[15px] font-semibold">
+                      @{user?.screenName}
+                    </CatalystText>
+                    <CatalystText variant="subtitle" tone="danger" className="shrink-0 text-[15px] font-semibold">
+                      さんを報告
+                    </CatalystText>
+                  </View>
+                }
+                onPress={handleReportUser}
+              />
+            </>
+          )}
+        </BottomSheetView>
       </BottomSheetModal>
     </View>
   );

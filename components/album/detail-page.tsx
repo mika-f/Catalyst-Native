@@ -1,6 +1,5 @@
-import { BottomSheetItem } from "@/components/bottom-sheet/item";
-import { BottomSheetModal, type BottomSheetModalHandle } from "@/components/bottom-sheet/sheet";
 import {
+  CatalystActionSheetItem,
   CatalystAvatar,
   CatalystBadge,
   CatalystBadgeText,
@@ -41,10 +40,18 @@ import {
   Share,
   type TextLayoutEventData,
   View,
+  useColorScheme,
   useWindowDimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+  type BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
 import "@/global.css";
 import { clientAtom } from "@/models/atoms/credential";
 
@@ -476,7 +483,9 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isNotFound, setIsNotFound] = useState(false);
   const router = useRouter();
-  const menuSheetRef = useRef<BottomSheetModalHandle>(null);
+  const menuSheetRef = useRef<BottomSheetModal>(null);
+  const theme = useColorScheme() ?? "light";
+  const insets = useSafeAreaInsets();
 
   const canEdit = albumInfo?.user && account?.user ? albumInfo.user.id === account.user.id : false;
 
@@ -513,6 +522,11 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
     menuSheetRef.current?.dismiss();
     router.push(`/report/${id}?type=${albumType}`);
   }, [router, id, albumType]);
+
+  const renderMenuBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />,
+    [],
+  );
 
   useEffect(() => {
     if (!id) return;
@@ -645,13 +659,27 @@ export const AlbumDetailPage = ({ id, albumType }: Props) => {
           <AlbumVisualContent mode={albumInfo!.mode} fetcher={fetcher} />
         )}
       </View>
-      <BottomSheetModal ref={menuSheetRef}>
-        <BottomSheetItem prefixIcon={UniSend} title="共有する" onPress={handleShare} highlight />
-        <BottomSheetItem prefixIcon={UniCopy} title="URL をコピー" onPress={handleCopyUrl} />
-        <BottomSheetItem prefixIcon={UniExternalLink} title="ブラウザで開く" onPress={handleOpenBrowser} />
-        {!canEdit && account && (
-          <BottomSheetItem prefixIcon={UniFlag} title="報告する" onPress={handleReport} destructive />
-        )}
+      <BottomSheetModal
+        ref={menuSheetRef}
+        enableDynamicSizing
+        enablePanDownToClose
+        backdropComponent={renderMenuBackdrop}
+        backgroundStyle={{ backgroundColor: theme === "dark" ? "#1C1C1E" : "#FFFFFF" }}
+        handleIndicatorStyle={{ backgroundColor: theme === "dark" ? "#48484A" : "#C7C7CC" }}
+      >
+        <BottomSheetView style={{ paddingBottom: insets.bottom * 2 }}>
+          <CatalystActionSheetItem icon={UniSend} title="共有する" onPress={handleShare} tone="accent" />
+          <CatalystDivider className="ml-14 w-auto" />
+          <CatalystActionSheetItem icon={UniCopy} title="URL をコピー" onPress={handleCopyUrl} />
+          <CatalystDivider className="ml-14 w-auto" />
+          <CatalystActionSheetItem icon={UniExternalLink} title="ブラウザで開く" onPress={handleOpenBrowser} />
+          {!canEdit && account && (
+            <>
+              <CatalystDivider className="ml-14 w-auto" />
+              <CatalystActionSheetItem icon={UniFlag} title="報告する" onPress={handleReport} tone="destructive" />
+            </>
+          )}
+        </BottomSheetView>
       </BottomSheetModal>
     </>
   );
