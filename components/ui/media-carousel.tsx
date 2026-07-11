@@ -1,3 +1,4 @@
+import { CatalystActionSheetItem, CatalystDivider } from "@/components/design-system";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { timelineImageQualityAtom, timelineWifiUpgradeAtom } from "@/models/atoms/image-quality";
@@ -9,7 +10,6 @@ import BottomSheet, {
   BottomSheetView,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import { BottomSheetItem } from "@/components/bottom-sheet/item";
 import type { Media } from "@/models/sdk-types";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -496,10 +496,20 @@ export const MediaCarousel = memo(({ medias, onIndexChange }: Props) => {
               backgroundColor: theme === "dark" ? "#48484A" : "#C7C7CC",
             }}
           >
-            <BottomSheetView style={{ paddingBottom: 32, gap: 8 }}>
-              <BottomSheetItem title="画像を共有" prefixIcon={UniShare2} onPress={doShareImage} />
-              <BottomSheetItem title="現在の画質で保存" prefixIcon={UniDownload} onPress={() => doSaveImage("current")} />
-              <BottomSheetItem title="最大画質で保存" prefixIcon={UniImageDown} onPress={() => doSaveImage("original")} />
+            <BottomSheetView style={{ paddingBottom: 32 }}>
+              <CatalystActionSheetItem icon={UniShare2} title="画像を共有" onPress={doShareImage} tone="accent" />
+              <CatalystDivider className="ml-14 w-auto" />
+              <CatalystActionSheetItem
+                icon={UniDownload}
+                title="現在の画質で保存"
+                onPress={() => doSaveImage("current")}
+              />
+              <CatalystDivider className="ml-14 w-auto" />
+              <CatalystActionSheetItem
+                icon={UniImageDown}
+                title="最大画質で保存"
+                onPress={() => doSaveImage("original")}
+              />
             </BottomSheetView>
           </BottomSheet>
         </GestureHandlerRootView>

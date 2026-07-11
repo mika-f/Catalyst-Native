@@ -1,6 +1,8 @@
 import { AlbumSelectionModal } from "@/components/album/selection-modal";
 import {
+  CatalystActionSheetItem,
   CatalystAvatar,
+  CatalystDivider,
   CatalystEmptyState,
   CatalystIconButton,
   CatalystText,
@@ -56,12 +58,17 @@ import {
   Text,
   TextInput,
   View,
+  useColorScheme,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
-import { BottomSheetItem } from "@/components/bottom-sheet/item";
-import { BottomSheetModal, BottomSheetModalHandle } from "@/components/bottom-sheet/sheet";
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+  type BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
 import "@/global.css";
 import { buildShareText } from "@/lib/share";
 
@@ -146,7 +153,9 @@ export default function StatusDetailsPage() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isNotFound, setIsNotFound] = useState(false);
   const emojiPickerRef = useRef<EmojiPickerSheetRef>(null);
-  const menuSheetRef = useRef<BottomSheetModalHandle>(null);
+  const menuSheetRef = useRef<BottomSheetModal>(null);
+  const theme = useColorScheme() ?? "light";
+  const insets = useSafeAreaInsets();
 
   const isMyself = account?.user?.id === status?.user?.id;
   const isLoggedIn = account !== null;
@@ -364,6 +373,11 @@ export default function StatusDetailsPage() {
       handleMenuAction(action);
     },
     [handleMenuAction],
+  );
+
+  const renderMenuBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />,
+    [],
   );
 
   const user = status?.user;
@@ -650,73 +664,84 @@ export default function StatusDetailsPage() {
       <EmojiPickerSheet ref={emojiPickerRef} onReact={handleReact} />
 
       {/* Action menu */}
-      <BottomSheetModal ref={menuSheetRef}>
-        {isLoggedIn && (
-          <View>
-            <BottomSheetItem
-              prefixIcon={UniBookmark}
-              title="アルバムへ追加"
-              onPress={() => handleMenuItemPress("addToAlbum")}
-              highlight
-            />
-            <BottomSheetItem
-              prefixIcon={UniBookmarkMinus}
-              title="アルバムから削除"
-              onPress={() => handleMenuItemPress("removeFromAlbum")}
-              highlight
-            />
-
-            <View className="border-b my-2 border-light-divider dark:border-dark-divider" />
-          </View>
-        )}
-        {isMyself && (
-          <View>
-            <BottomSheetItem prefixIcon={UniPencil} title="編集する" onPress={() => handleMenuItemPress("edit")} />
-            <BottomSheetItem
-              prefixIcon={UniTrash2}
-              title="削除する"
-              onPress={() => handleMenuItemPress("delete")}
-              destructive
-            />
-          </View>
-        )}
-        {!isMyself && isLoggedIn && (
-          <View>
-            <BottomSheetItem
-              prefixIcon={UniFlag}
+      <BottomSheetModal
+        ref={menuSheetRef}
+        enableDynamicSizing
+        enablePanDownToClose
+        backdropComponent={renderMenuBackdrop}
+        backgroundStyle={{ backgroundColor: theme === "dark" ? "#1C1C1E" : "#FFFFFF" }}
+        handleIndicatorStyle={{ backgroundColor: theme === "dark" ? "#48484A" : "#C7C7CC" }}
+      >
+        <BottomSheetView style={{ paddingBottom: insets.bottom * 2 }}>
+          {isLoggedIn && (
+            <View>
+              <CatalystActionSheetItem
+                icon={UniBookmark}
+                title="アルバムへ追加"
+                onPress={() => handleMenuItemPress("addToAlbum")}
+                tone="accent"
+              />
+              <CatalystDivider className="ml-14 w-auto" />
+              <CatalystActionSheetItem
+                icon={UniBookmarkMinus}
+                title="アルバムから削除"
+                onPress={() => handleMenuItemPress("removeFromAlbum")}
+                tone="accent"
+              />
+              <CatalystDivider className="my-2" />
+            </View>
+          )}
+          {isMyself && (
+            <View>
+              <CatalystActionSheetItem icon={UniPencil} title="編集する" onPress={() => handleMenuItemPress("edit")} />
+              <CatalystDivider className="ml-14 w-auto" />
+              <CatalystActionSheetItem
+                icon={UniTrash2}
+                title="削除する"
+                onPress={() => handleMenuItemPress("delete")}
+                tone="destructive"
+              />
+            </View>
+          )}
+          {!isMyself && isLoggedIn && (
+            <CatalystActionSheetItem
+              icon={UniFlag}
               title="報告する"
               onPress={() => handleMenuItemPress("report")}
-              destructive
+              tone="destructive"
+            />
+          )}
+          <View>
+            {isLoggedIn && <CatalystDivider className="my-2" />}
+            <CatalystActionSheetItem
+              icon={UniExternalLink}
+              title="ブラウザで開く"
+              onPress={() => handleMenuItemPress("openInBrowser")}
+              tone="accent"
+            />
+            <CatalystDivider className="ml-14 w-auto" />
+            <CatalystActionSheetItem
+              icon={UniClipboardIcon}
+              title="URL をコピー"
+              onPress={() => handleMenuItemPress("copyUrl")}
+              tone="accent"
+            />
+            <CatalystDivider className="ml-14 w-auto" />
+            <CatalystActionSheetItem
+              icon={UniClipboardIcon}
+              title="投稿をコピー"
+              onPress={() => handleMenuItemPress("copyPost")}
+              tone="accent"
+            />
+            <CatalystDivider className="ml-14 w-auto" />
+            <CatalystActionSheetItem
+              icon={UniSend}
+              title="共有する"
+              onPress={() => handleMenuItemPress("share")}
+              tone="accent"
             />
           </View>
-        )}
-        <View>
-          {(isLoggedIn || isMyself) && <View className="border-b my-2 border-light-divider dark:border-dark-divider" />}
-          <BottomSheetItem
-            prefixIcon={UniExternalLink}
-            title="ブラウザで開く"
-            onPress={() => handleMenuItemPress("openInBrowser")}
-            highlight
-          />
-          <BottomSheetItem
-            prefixIcon={UniClipboardIcon}
-            title="URL をコピー"
-            onPress={() => handleMenuItemPress("copyUrl")}
-            highlight
-          />
-          <BottomSheetItem
-            prefixIcon={UniClipboardIcon}
-            title="投稿をコピー"
-            onPress={() => handleMenuItemPress("copyPost")}
-            highlight
-          />
-          <BottomSheetItem
-            prefixIcon={UniSend}
-            title="共有する"
-            onPress={() => handleMenuItemPress("share")}
-            highlight
-          />
-        </View>
+        </BottomSheetView>
       </BottomSheetModal>
     </>
   );
