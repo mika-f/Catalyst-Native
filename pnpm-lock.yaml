@@ -31,6 +31,12 @@ importers:
       '@natsuneko-laboratory/catalyst-sdk':
         specifier: 1.0.0-alpha.10
         version: 1.0.0-alpha.10
+      '@natsuneko-laboratory/fleet-renderer-core':
+        specifier: link:../fleet-renderer/packages/core
+        version: link:../fleet-renderer/packages/core
+      '@natsuneko-laboratory/fleet-renderer-react-native':
+        specifier: link:../fleet-renderer/packages/react-native
+        version: link:../fleet-renderer/packages/react-native
       '@natsuneko-laboratory/react-native-twitter-text':
         specifier: ^0.1.0
         version: 0.1.0(react-native@0.86.0(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)

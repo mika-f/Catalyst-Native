@@ -223,6 +223,8 @@ SOFTWARE.
 ` },
   "@natsuneko-laboratory/catalyst-sdk@1.0.0-alpha.10": { id: "@natsuneko-laboratory/catalyst-sdk@1.0.0-alpha.10", name: "@natsuneko-laboratory/catalyst-sdk", content: `undefined` },
   "js-sha256@0.11.1": { id: "js-sha256@0.11.1", name: "js-sha256", content: `undefined` },
+  "@natsuneko-laboratory/fleet-renderer-core@0.1.0": { id: "@natsuneko-laboratory/fleet-renderer-core@0.1.0", name: "@natsuneko-laboratory/fleet-renderer-core", content: `undefined` },
+  "@natsuneko-laboratory/fleet-renderer-react-native@0.1.0": { id: "@natsuneko-laboratory/fleet-renderer-react-native@0.1.0", name: "@natsuneko-laboratory/fleet-renderer-react-native", content: `undefined` },
   "@natsuneko-laboratory/react-native-twitter-text@0.1.0": { id: "@natsuneko-laboratory/react-native-twitter-text@0.1.0", name: "@natsuneko-laboratory/react-native-twitter-text", content: `MIT License
 
 Copyright (c) 2026 Kanon Mochizuki
