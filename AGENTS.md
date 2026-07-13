@@ -51,19 +51,16 @@ Catalyst React Native では、カラーパレットを @global.css に定義し
 ### SDK
 
 このアプリは `@natsuneko-laboratory/catalyst-sdk` に依存しており、これは [CatalystSDK](https://github.com/mika-f/CatalystSDK) を指します。
-また、`package.json` でローカルパッケージとしてリンクされています: `"@natsuneko-laboratory/catalyst-sdk": "link:../CatalystSDK/packages/nodejs"`。
 SDK は `CatalystTS`（API クライアント）、`PKCE`、および `CatalystStatus`、`EgeriaUser` などの型を提供します。
 
 ### Fleet レンダリングエンジン
 
-Fleet（24時間で消える、テキスト・画像・ステッカーをレイヤー合成できる投稿機能）のレイアウト計算は、[fleet-renderer](https://github.com/mika-f/fleet-renderer)（`../fleet-renderer`）という共有パッケージに切り出されています。React (`catalyst.natsuneko.com`)・React Native（このアプリ）・Server（`api.natsuneko.com` の satori ベースの PNG レンダラー）の3箇所で同じレイアウト数学（`{posX, posY, scale, rotation}` の正規化座標変換、コンテナクエリ単位、フォントマッピング、はみ出し防止クランプなど）を共有するための OSS 化を見据えたパッケージです。
+Fleet（24時間で消える、テキスト・画像・ステッカーをレイヤー合成できる投稿機能）のレイアウト計算は、[fleet-renderer](https://github.com/mika-f/fleet-renderer) という共有パッケージに切り出されています。React (`catalyst.natsuneko.com`)・React Native（このアプリ）・Server（`api.natsuneko.com` の satori ベースの PNG レンダラー）の3箇所で同じレイアウト数学（`{posX, posY, scale, rotation}` の正規化座標変換、コンテナクエリ単位、フォントマッピング、はみ出し防止クランプなど）を共有するための OSS 化を見据えたパッケージです。
 
 - `@natsuneko-laboratory/fleet-renderer-core`: プラットフォーム非依存の型・定数・`resolveFleetLayout` レイアウトエンジン
 - `@natsuneko-laboratory/fleet-renderer-react-native`: `FleetCanvas` コンポーネントと `useFleetContainer` フック
 
-このアプリでは `package.json` で `link:../fleet-renderer/packages/*` としてローカルパッケージ参照しています。CDN URL 変換やステッカー画像URLの規約（`static.natsuneko.com/images/reactions/{symbol}.png`）などの Catalyst 固有ロジックはコアパッケージに含めず、[components/fleet/content.tsx](../components/fleet/content.tsx) の `resolveMediaUri`/`resolveStickerImageUrl` 経由でアプリ側から注入しています。
-
-teyvat 側（Web/Server）への移行手順は fleet-renderer リポジトリの `docs/adopting-in-teyvat.md` を参照してください。
+CDN URL 変換やステッカー画像URLの規約（`static.natsuneko.com/images/reactions/{symbol}.png`）などの Catalyst 固有ロジックはコアパッケージに含めず、[components/fleet/content.tsx](../components/fleet/content.tsx) の `resolveMediaUri`/`resolveStickerImageUrl` 経由でアプリ側から注入しています。
 
 ### ステート管理
 
