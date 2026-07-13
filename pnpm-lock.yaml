@@ -31,6 +31,12 @@ importers:
       '@natsuneko-laboratory/catalyst-sdk':
         specifier: 1.0.0-alpha.10
         version: 1.0.0-alpha.10
+      '@natsuneko-laboratory/fleet-renderer-core':
+        specifier: ^0.1.0
+        version: 0.1.0
+      '@natsuneko-laboratory/fleet-renderer-react-native':
+        specifier: ^0.1.0
+        version: 0.1.0(react-native@0.86.0(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
       '@natsuneko-laboratory/react-native-twitter-text':
         specifier: ^0.1.0
         version: 0.1.0(react-native@0.86.0(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
@@ -1614,6 +1620,15 @@ packages:
 
   '@natsuneko-laboratory/catalyst-sdk@1.0.0-alpha.10':
     resolution: {integrity: sha512-/94Jb46KNMENWosqmQt5JgrimxBoEiQ9lGjCMPB6GM2rHOaW/4ODwgFWyFutuhYFmHqYboXBwgFHaYM0luDwEQ==}
+
+  '@natsuneko-laboratory/fleet-renderer-core@0.1.0':
+    resolution: {integrity: sha512-Ee3oWN8tb0UC6yS+XI3U//2wr3Eev/fTg4pxI0kp/PjxntSqO8vb94vAG2BIBxjM7S2n9v26zy7pnbGEyanbWw==}
+
+  '@natsuneko-laboratory/fleet-renderer-react-native@0.1.0':
+    resolution: {integrity: sha512-J2LzBJOldrleL2jE3ThyBw9CLgWdyyuEr22peL+36nzigAGFhuW4cnnp94Rvp+6udwAUjo8R3xXjVBPHBAkz8w==}
+    peerDependencies:
+      react: '>=18'
+      react-native: '>=0.73'
 
   '@natsuneko-laboratory/react-native-twitter-text@0.1.0':
     resolution: {integrity: sha512-umRAhpgBRqqBVWmyRCpaZta0fU1Jgy8xxc9oiaBb4ZnA2JuiNYY9HmVW9b2LdscmeVKneW4xW8fXiWmxo3NGLw==}
@@ -9199,6 +9214,14 @@ snapshots:
   '@natsuneko-laboratory/catalyst-sdk@1.0.0-alpha.10':
     dependencies:
       js-sha256: 0.11.1
+
+  '@natsuneko-laboratory/fleet-renderer-core@0.1.0': {}
+
+  '@natsuneko-laboratory/fleet-renderer-react-native@0.1.0(react-native@0.86.0(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)':
+    dependencies:
+      '@natsuneko-laboratory/fleet-renderer-core': 0.1.0
+      react: 19.2.3
+      react-native: 0.86.0(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1)
 
   '@natsuneko-laboratory/react-native-twitter-text@0.1.0(react-native@0.86.0(patch_hash=1c922f4ad30ff71666e9f58636360251e4b56c5268b7504befade52e48eb7a04)(@babel/core@7.29.7)(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)':
     dependencies:

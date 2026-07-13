@@ -1,18 +1,27 @@
 /* eslint-disable react-hooks/immutability, react-hooks/refs, react-hooks/set-state-in-effect */
-import {
-  CatalystButton,
-  CatalystButtonText,
-  CatalystText,
-  CatalystTextField,
-} from "@/components/design-system";
+import { CatalystButton, CatalystButtonText, CatalystText, CatalystTextField } from "@/components/design-system";
 import { EmojiPickerView } from "@/components/emoji-verse";
 import { getFilteredCategories, useDefaultCategories } from "@/components/emoji-verse/emoji-data";
 import type { EmojiCategory, EmojiItem } from "@/components/emoji-verse/types";
 import { emojiToCodepoints } from "@/components/emoji-verse/unicode";
-import { useContainerUnits } from "@/hooks/use-container-units";
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import {
+  FLEET_ASPECT_RATIO,
+  FLEET_DEFAULT_BACKGROUND_COLORS,
+  FLEET_MAX_STICKERS,
+  FLEET_MAX_TEXTS,
+  FLEET_MEDIA_SCALE_MAX,
+  FLEET_MEDIA_SCALE_MIN,
+  FLEET_ROTATION_UI_MAX,
+  FLEET_ROTATION_UI_MIN,
+  FLEET_TEXT_MAX_LENGTH,
+  FLEET_TEXT_STICKER_SCALE_MAX,
+  FLEET_TEXT_STICKER_SCALE_MIN,
+  pixelOffsetToPlacement,
+  useFleetContainer,
+} from "@natsuneko-laboratory/fleet-renderer-react-native";
 import Slider from "@react-native-community/slider";
 import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
@@ -45,13 +54,6 @@ const UniPlus = withUniwind(Plus);
 const UniPencil = withUniwind(Pencil);
 const UniTrash2 = withUniwind(Trash2);
 const UniTriangleAlert = withUniwind(TriangleAlert);
-
-const BG_COLORS = ["#000000", "#1a1a2e", "#0d3b66", "#1b4332", "#7b2d8b", "#c0392b", "#e67e22", "#ffffff"];
-
-const SCALE_MIN = 0.05;
-const SCALE_MAX = 5.0;
-const MAX_TEXTS = 20;
-const MAX_STICKERS = 20;
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -114,12 +116,14 @@ const DraggableText = forwardRef<DraggableTextHandle, DraggableTextProps>(functi
   const rotation = useSharedValue(0);
 
   useImperativeHandle(ref, () => ({
-    getPlacement: () => ({
-      posX: containerWidth.value > 0 ? translateX.value / containerWidth.value + 0.5 : 0.5,
-      posY: containerHeight.value > 0 ? translateY.value / containerHeight.value + 0.5 : 0.5,
-      scale: scale.value,
-      rotation: rotation.value,
-    }),
+    getPlacement: () =>
+      pixelOffsetToPlacement(
+        translateX.value,
+        translateY.value,
+        { width: containerWidth.value, height: containerHeight.value },
+        scale.value,
+        rotation.value,
+      ),
     setScale: (v: number) => {
       scale.value = v;
     },
@@ -145,7 +149,10 @@ const DraggableText = forwardRef<DraggableTextHandle, DraggableTextProps>(functi
       savedScale.value = scale.value;
     })
     .onUpdate((e) => {
-      scale.value = Math.min(SCALE_MAX, Math.max(SCALE_MIN, savedScale.value * e.scale));
+      scale.value = Math.min(
+        FLEET_TEXT_STICKER_SCALE_MAX,
+        Math.max(FLEET_TEXT_STICKER_SCALE_MIN, savedScale.value * e.scale),
+      );
     });
 
   const composed = Gesture.Simultaneous(
@@ -227,12 +234,14 @@ const DraggableSticker = forwardRef<DraggableStickerHandle, DraggableStickerProp
   const rotation = useSharedValue(0);
 
   useImperativeHandle(ref, () => ({
-    getPlacement: () => ({
-      posX: containerWidth.value > 0 ? translateX.value / containerWidth.value + 0.5 : 0.5,
-      posY: containerHeight.value > 0 ? translateY.value / containerHeight.value + 0.5 : 0.5,
-      scale: scale.value,
-      rotation: rotation.value,
-    }),
+    getPlacement: () =>
+      pixelOffsetToPlacement(
+        translateX.value,
+        translateY.value,
+        { width: containerWidth.value, height: containerHeight.value },
+        scale.value,
+        rotation.value,
+      ),
     setScale: (v: number) => {
       scale.value = v;
     },
@@ -258,7 +267,10 @@ const DraggableSticker = forwardRef<DraggableStickerHandle, DraggableStickerProp
       savedScale.value = scale.value;
     })
     .onUpdate((e) => {
-      scale.value = Math.min(SCALE_MAX, Math.max(SCALE_MIN, savedScale.value * e.scale));
+      scale.value = Math.min(
+        FLEET_TEXT_STICKER_SCALE_MAX,
+        Math.max(FLEET_TEXT_STICKER_SCALE_MIN, savedScale.value * e.scale),
+      );
     });
 
   const composed = Gesture.Simultaneous(
@@ -337,7 +349,7 @@ export default function FleetComposerScreen() {
   const imgPanRef = useRef<GestureType>(undefined!);
   const imgPinchRef = useRef<GestureType>(undefined!);
 
-  const { onLayout, cqw } = useContainerUnits();
+  const { onLayout, cqw } = useFleetContainer();
 
   const containerWidth = useSharedValue(0);
   const containerHeight = useSharedValue(0);
@@ -424,7 +436,7 @@ export default function FleetComposerScreen() {
       imgSavedScale.value = imgScale.value;
     })
     .onUpdate((e) => {
-      imgScale.value = Math.min(SCALE_MAX, Math.max(SCALE_MIN, imgSavedScale.value * e.scale));
+      imgScale.value = Math.min(FLEET_MEDIA_SCALE_MAX, Math.max(FLEET_MEDIA_SCALE_MIN, imgSavedScale.value * e.scale));
     });
 
   const imgGesture = Gesture.Simultaneous(imgPan, imgPinch);
@@ -609,12 +621,13 @@ export default function FleetComposerScreen() {
             width: image.width,
             height: image.height,
             bytes: image.fileSize ?? 0,
-            placement: {
-              posX: containerWidth.value > 0 ? imgTranslateX.value / containerWidth.value + 0.5 : 0.5,
-              posY: containerHeight.value > 0 ? imgTranslateY.value / containerHeight.value + 0.5 : 0.5,
-              scale: imgScale.value,
-              rotation: 0,
-            },
+            placement: pixelOffsetToPlacement(
+              imgTranslateX.value,
+              imgTranslateY.value,
+              { width: containerWidth.value, height: containerHeight.value },
+              imgScale.value,
+              0,
+            ),
           },
           texts: textPayload,
           stickers: stickerPayload,
@@ -677,7 +690,7 @@ export default function FleetComposerScreen() {
         <View className="flex-1 items-center justify-center px-4" style={{ paddingBottom: sheetContentHeight }}>
           <View
             className="w-full overflow-hidden rounded-2xl"
-            style={{ aspectRatio: 9 / 16, backgroundColor }}
+            style={{ aspectRatio: FLEET_ASPECT_RATIO, backgroundColor }}
             onLayout={handlePreviewLayout}
           >
             {image ? (
@@ -757,7 +770,7 @@ export default function FleetComposerScreen() {
                 背景色
               </CatalystText>
               <View className="flex-1 flex-row gap-2">
-                {BG_COLORS.map((color) => (
+                {FLEET_DEFAULT_BACKGROUND_COLORS.map((color) => (
                   <Pressable
                     key={color}
                     onPress={() => setBackgroundColor(color)}
@@ -782,9 +795,7 @@ export default function FleetComposerScreen() {
                   className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 active:opacity-80 dark:bg-dark-surface-muted"
                 >
                   <UniImageIcon size={16} className="text-light-text dark:text-dark-text" />
-                  <CatalystText variant="label">
-                    {image ? "画像を変更" : "画像を選択"}
-                  </CatalystText>
+                  <CatalystText variant="label">{image ? "画像を変更" : "画像を選択"}</CatalystText>
                 </Pressable>
 
                 <Pressable
@@ -811,7 +822,7 @@ export default function FleetComposerScreen() {
                   </CatalystText>
                 </Pressable>
 
-                {texts.length < MAX_TEXTS ? (
+                {texts.length < FLEET_MAX_TEXTS ? (
                   <Pressable
                     onPress={openAddText}
                     className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 active:opacity-80 dark:bg-dark-surface-muted"
@@ -819,32 +830,32 @@ export default function FleetComposerScreen() {
                     <UniType size={16} className="text-light-text dark:text-dark-text" />
                     <UniPlus size={14} className="text-light-text dark:text-dark-text" />
                     <CatalystText variant="label">
-                      テキスト追加 ({texts.length}/{MAX_TEXTS})
+                      テキスト追加 ({texts.length}/{FLEET_MAX_TEXTS})
                     </CatalystText>
                   </Pressable>
                 ) : (
                   <View className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 opacity-40 dark:bg-dark-surface-muted">
                     <UniType size={16} className="text-light-text dark:text-dark-text" />
                     <CatalystText variant="label">
-                      テキスト ({texts.length}/{MAX_TEXTS})
+                      テキスト ({texts.length}/{FLEET_MAX_TEXTS})
                     </CatalystText>
                   </View>
                 )}
 
-                {stickers.length < MAX_STICKERS ? (
+                {stickers.length < FLEET_MAX_STICKERS ? (
                   <Pressable
                     onPress={openAddSticker}
                     className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 active:opacity-80 dark:bg-dark-surface-muted"
                   >
                     <UniPlus size={14} className="text-light-text dark:text-dark-text" />
                     <CatalystText variant="label">
-                      ステッカー追加 ({stickers.length}/{MAX_STICKERS})
+                      ステッカー追加 ({stickers.length}/{FLEET_MAX_STICKERS})
                     </CatalystText>
                   </Pressable>
                 ) : (
                   <View className="flex-row items-center gap-1.5 rounded-full bg-light-surface-muted px-3 py-2 opacity-40 dark:bg-dark-surface-muted">
                     <CatalystText variant="label">
-                      ステッカー ({stickers.length}/{MAX_STICKERS})
+                      ステッカー ({stickers.length}/{FLEET_MAX_STICKERS})
                     </CatalystText>
                   </View>
                 )}
@@ -935,12 +946,12 @@ export default function FleetComposerScreen() {
                 onChangeText={(v) => setEditingText((prev) => prev && { ...prev, body: v })}
                 placeholder="テキストを入力..."
                 multiline
-                maxLength={500}
+                maxLength={FLEET_TEXT_MAX_LENGTH}
                 autoFocus
                 className="rounded-lg bg-light-surface p-3 dark:bg-dark-surface"
               />
               <CatalystText variant="caption" tone="muted" className="text-right">
-                {(editingText?.body ?? "").length} / 500
+                {(editingText?.body ?? "").length} / {FLEET_TEXT_MAX_LENGTH}
               </CatalystText>
 
               {/* Scale slider */}
@@ -950,8 +961,8 @@ export default function FleetComposerScreen() {
                 </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
-                  minimumValue={SCALE_MIN}
-                  maximumValue={SCALE_MAX}
+                  minimumValue={FLEET_TEXT_STICKER_SCALE_MIN}
+                  maximumValue={FLEET_TEXT_STICKER_SCALE_MAX}
                   value={editingText?.scale ?? 1}
                   onValueChange={(v) => {
                     setEditingText((prev) => prev && { ...prev, scale: v });
@@ -973,8 +984,8 @@ export default function FleetComposerScreen() {
                 </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
-                  minimumValue={-180}
-                  maximumValue={180}
+                  minimumValue={FLEET_ROTATION_UI_MIN}
+                  maximumValue={FLEET_ROTATION_UI_MAX}
                   value={editingText?.rotation ?? 0}
                   onValueChange={(v) => {
                     setEditingText((prev) => prev && { ...prev, rotation: v });
@@ -994,9 +1005,7 @@ export default function FleetComposerScreen() {
                 disabled={!editingText?.body.trim()}
                 tone={editingText?.body.trim() ? "primary" : "secondary"}
               >
-                <CatalystButtonText>
-                  {editingText?.id === null ? "追加" : "更新"}
-                </CatalystButtonText>
+                <CatalystButtonText>{editingText?.id === null ? "追加" : "更新"}</CatalystButtonText>
               </CatalystButton>
             </View>
           </KeyboardAvoidingView>
@@ -1040,8 +1049,8 @@ export default function FleetComposerScreen() {
                 </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
-                  minimumValue={SCALE_MIN}
-                  maximumValue={SCALE_MAX}
+                  minimumValue={FLEET_TEXT_STICKER_SCALE_MIN}
+                  maximumValue={FLEET_TEXT_STICKER_SCALE_MAX}
                   value={editingSticker?.scale ?? 1}
                   onValueChange={(v) => {
                     setEditingSticker((prev) => prev && { ...prev, scale: v });
@@ -1062,8 +1071,8 @@ export default function FleetComposerScreen() {
                 </CatalystText>
                 <Slider
                   style={{ flex: 1 }}
-                  minimumValue={-180}
-                  maximumValue={180}
+                  minimumValue={FLEET_ROTATION_UI_MIN}
+                  maximumValue={FLEET_ROTATION_UI_MAX}
                   value={editingSticker?.rotation ?? 0}
                   onValueChange={(v) => {
                     setEditingSticker((prev) => prev && { ...prev, rotation: v });
@@ -1083,9 +1092,7 @@ export default function FleetComposerScreen() {
                 disabled={!editingSticker?.emoji}
                 tone={editingSticker?.emoji ? "primary" : "secondary"}
               >
-                <CatalystButtonText>
-                  {editingSticker?.id === null ? "追加" : "更新"}
-                </CatalystButtonText>
+                <CatalystButtonText>{editingSticker?.id === null ? "追加" : "更新"}</CatalystButtonText>
               </CatalystButton>
             </View>
           </KeyboardAvoidingView>
