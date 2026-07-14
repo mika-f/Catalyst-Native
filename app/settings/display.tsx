@@ -5,6 +5,8 @@ import {
   CatalystSwitch,
   CatalystText,
 } from "@/components/design-system";
+import { timelineImageQualityAtom, timelineWifiUpgradeAtom } from "@/models/atoms/image-quality";
+import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
 import {
   type BrowserDefinition,
   type BrowserKey,
@@ -12,8 +14,6 @@ import {
   loadSelectedBrowser,
   saveSelectedBrowser,
 } from "@/models/browser-settings";
-import { timelineImageQualityAtom, timelineWifiUpgradeAtom } from "@/models/atoms/image-quality";
-import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
 import {
   type TimelineImageQuality,
   loadTimelineImageQuality,
@@ -25,10 +25,10 @@ import {
   loadHideSensitiveContent,
   saveHideSensitiveContent,
 } from "@/models/sensitive-content-settings";
-import { Check } from "lucide-react-native";
 import { useAtom } from "jotai";
+import { Check } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { withUniwind } from "uniwind";
 
 const CheckIcon = withUniwind(Check);
@@ -107,7 +107,7 @@ export default function DisplaySettingsPage() {
   }
 
   return (
-    <View className="flex-1 bg-light-surface-muted dark:bg-dark-background">
+    <ScrollView className="flex-1 bg-light-surface-muted dark:bg-dark-background">
       <View className="pt-2">
         <CatalystText variant="caption" tone="subtle" className="px-5 pb-2">
           デフォルトブラウザー
@@ -215,6 +215,6 @@ export default function DisplaySettingsPage() {
           />
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
