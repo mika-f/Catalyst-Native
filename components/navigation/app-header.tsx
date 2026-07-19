@@ -1,4 +1,6 @@
 import { CatalystText } from "@/components/design-system";
+import { cn } from "@/lib/utils";
+import { useTheme } from "expo-router";
 import type { NativeStackHeaderProps } from "expo-router/build/react-navigation/native-stack/types";
 import { ChevronLeft } from "lucide-react-native";
 import React from "react";
@@ -30,6 +32,8 @@ export const CatalystAppHeader = ({
   title,
 }: CatalystAppHeaderProps) => {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+  const isDarkMode = theme.dark;
 
   return (
     <View
@@ -43,7 +47,11 @@ export const CatalystAppHeader = ({
               <Pressable
                 accessibilityLabel={backLabel}
                 accessibilityRole="button"
-                className="min-h-9 max-w-[108px] flex-row items-center rounded-lg pr-3 active:bg-light-surface-muted dark:active:bg-dark-surface-muted"
+                className={cn(
+                  "min-h-9 max-w-[108px] flex-row items-center rounded-lg pr-3",
+                  isDarkMode && "active:bg-dark-surface-muted",
+                  !isDarkMode && "active:bg-light-surface-muted"
+                )}
                 hitSlop={8}
                 onPress={onBack}
               >
@@ -99,9 +107,9 @@ export const renderCatalystStackHeader = ({
   const titleNode =
     typeof options.headerTitle === "function"
       ? options.headerTitle({
-          children: title,
-          tintColor: options.headerTintColor,
-        })
+        children: title,
+        tintColor: options.headerTintColor,
+      })
       : title;
 
   return (
