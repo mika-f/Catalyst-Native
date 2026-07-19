@@ -1,5 +1,6 @@
 import { CatalystText } from "@/components/design-system";
 import { cn } from "@/lib/utils";
+import { useTheme } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Animated, Pressable, View, useWindowDimensions } from "react-native";
 
@@ -13,6 +14,8 @@ export const ProfileTabs = ({ activeIndex, tabs, onClickTab }: Props) => {
   const { width: screenWidth } = useWindowDimensions();
   const [indicator] = useState(() => new Animated.Value(0));
   const tabWidth = screenWidth / tabs.length;
+  const theme = useTheme();
+  const isDarkMode = theme.dark;
 
   const handleTabClick = useCallback(
     (i: number) => {
@@ -38,7 +41,11 @@ export const ProfileTabs = ({ activeIndex, tabs, onClickTab }: Props) => {
 
         return (
           <Pressable
-            className="items-center justify-center py-3.5 active:bg-light-surface-muted dark:active:bg-dark-surface-muted"
+            className={cn(
+              "items-center justify-center py-3.5",
+              isDarkMode && "active:bg-dark-surface-muted",
+              !isDarkMode && "active:bg-light-surface-muted"
+            )}
             key={tab.route}
             style={{ width: tabWidth }}
             onPress={() => handleTabClick(i)}
