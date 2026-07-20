@@ -1,9 +1,14 @@
 /** @type {import('jest').Config} */
 module.exports = {
   preset: "jest-expo",
-  // jest-expo のデフォルトに @natsuneko-laboratory (ESM 配布) などを追加したもの
+  // react-native-worklets (react-native-reanimated 4 の依存) はネイティブバインディング無しでは
+  // import できないため、jest では .native 拡張子の解決をスキップして JS 実装側を使わせる
+  resolver: "react-native-worklets/jest/resolver.js",
+  // node_modules 配下には ESM-only なパッケージ (unified/remark/rehype エコシステム,
+  // @natsuneko-laboratory 系, uniwind など) が多く、許可リスト方式では網羅しきれない。
+  // そのため既定の「node_modules は変換しない」を外し、babel プラグインとして
+  // 直接 require される 2 パッケージだけを除外リストにする
   transformIgnorePatterns: [
-    "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|@natsuneko-laboratory|uniwind|lucide-react-native))",
     "/node_modules/react-native-reanimated/plugin/",
     "/node_modules/@react-native/babel-preset/",
   ],

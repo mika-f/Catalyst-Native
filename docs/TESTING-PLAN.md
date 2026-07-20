@@ -87,18 +87,28 @@
 
 テスト基盤として `__mocks__/@natsuneko-laboratory/catalyst-sdk.js`（`CatalystTS` / `PKCE` の手動モック。コンストラクタに渡されたオプションとインスタンスを記録し、レスポンスインターセプターを手動で発火できる）と `test/helpers/secure-store.ts`（`resetSecureStoreMock()`）を追加。`credential.test.ts` では `@/models/credential-store` 自体を丸ごとモックし、認証フローのオーケストレーションのみを対象にすることで `credential-store.ts` の実装詳細から独立させた。
 
-## Phase 3: コンポーネントテスト（RNTL）
+## Phase 3: コンポーネントテスト（RNTL） 【完了(一部)】
 
-ロジックを内包するコンポーネントに絞る。
+ロジックを内包するコンポーネントに絞る。21 件のテストを追加（合計 119 件, 18 suites）。
 
-- **`components/status/text.tsx` `StatusText` — 最優先**
+- **`components/status/text.tsx` `StatusText` — 最優先** ✅ `text.test.tsx`
   - twitter-text のエンティティ抽出 → HTML 文字列組み立て → remark / rehype → RN 要素という多段変換
-  - URL / ハッシュタグ / メンション / 日本語混在 / 絵文字 / 改行の描画を検証
-  - `sb.push(`<a href="${url}">...`)` と生 HTML を文字列連結しているため、**`"` や `<script>` を含む投稿本文を RehypeSanitize が確実に無害化すること**のテストは必須（セキュリティ観点）
-- `components/timeline/base.tsx`: ページネーション・pull-to-refresh 時の状態遷移（SDK モック）
-- `components/design-system/` 配下: Button / Badge / TextField 等の状態別スナップショット（light / dark 両テーマ）
-  - UniWind のテーマ関連バグ対策ルール（`.claude/rules/color-theme.md`）が存在する程度にはテーマ切替は壊れやすく、退行検知の価値が高い
-- Fleet 表示のレイアウト数学は [fleet-renderer](https://github.com/mika-f/fleet-renderer) 側でテストするのが筋。アプリ側は `components/fleet/content.tsx` の `resolveMediaUri` / `resolveStickerImageUrl` の注入ロジックのみテストする
+  - URL / ハッシュタグ / メンション / 日本語混在 / 改行の描画を検証
+  - `sb.push(`<a href="${url}">...`)` と生 HTML を文字列連結しているため、`"` や `<script>` を含む投稿本文を RehypeSanitize が確実に無害化することをテスト。**props 注入がないこと**（`onmouseover` 等の不正な属性が RN 要素の props に漏れ出さないこと）を描画ツリー全体を走査して検証するのが実際に効くセキュリティテスト
+- `components/timeline/base.tsx` ✅ `base.test.tsx`: 初回ロード、pull-to-refresh の先頭マージ、無限スクロール(`onEndReached`)の末尾マージ、フェッチャーが空配列 / 既知の ID のみを返した場合に `hasMore` が false になり以降のリクエストが止まること（無限ループ防止）、`scrollToTop` ハンドル
+- `components/fleet/content.tsx` ✅ `content.test.tsx`: `resolveMediaUri`（`getCdnUrl` 経由で medium variant を解決）/ `resolveStickerImageUrl`（`imageUrl` 優先、無ければ絵文字から CDN 規約 URL を組み立て、どちらも無ければ `undefined`）
+- `components/design-system/` 配下（Button / Badge / TextField 等の状態別スナップショット）は未着手。Jest 環境では UniWind の Metro babel 変換が適用されず `className` は文字列のまま素通りするため（実機の色解決を検証できない）、費用対効果が低いと判断し見送り。UniWind パッケージ自体が専用の jest 設定（`jest.config.native.js`）を持っているため、本格的にやるならそちらの仕組みを調査してから着手する
+
+### テスト基盤として追加した主な回避策
+
+いずれも Jest 実行時特有の問題で、本番コードは変更していない。
+
+- **`react-native-reanimated` 4 / `react-native-worklets`**: ネイティブバインディング必須で import 時にクラッシュする。`jest.config.js` に `resolver: "react-native-worklets/jest/resolver.js"`（公式提供のリゾルバ、`.native` 拡張子解決をスキップして JS 実装を使わせる）を設定
+- **`transformIgnorePatterns` を許可リスト方式から除外リスト方式に変更**: unified/remark/rehype エコシステムなど ESM-only なパッケージが多く、個別に許可リストへ追加し続けるのは非現実的。babel プラグインとして直接 require される `react-native-reanimated/plugin` と `@react-native/babel-preset` の 2 つだけを除外し、残りは全て変換する方式に統一
+- **`@natsuneko-laboratory/react-native-twitter-text`**: エンティティ抽出が TurboModule（ネイティブ実装）。`__mocks__/@natsuneko-laboratory/react-native-twitter-text.js` で、同じアルゴリズムの純 JS 実装である `twitter-text`（既存の依存関係）を使った代替実装を提供
+- **`@/components/design-system` バレル / `expo-router`**: どちらも import すると `expo-glass-effect`（iOS ネイティブビュー）等の重いコンポーネントまで芋づる式に読み込まれる。テストファイル内で `jest.mock(...)` により必要な値・コンポーネントだけの軽量なモックに差し替える
+- **`@shopify/flash-list` / `expo-image`**: 実際の仮想化リストやネイティブ画像コンポーネントは検証せず、props を記録するだけのモックに差し替えて「渡された callback を直接呼ぶ」ことで状態遷移を駆動する。FlashList 自体の描画・仮想化は Phase 4 の E2E で担保する
+- RNTL v14 の `getByText` は関数マッチャーを受け付けず `string | RegExp` のみ。複数テキストノードにまたがる内容を確認する場合は正規表現を使う
 
 ## Phase 4: E2E スモーク（Maestro 推奨）
 
