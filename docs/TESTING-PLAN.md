@@ -36,17 +36,24 @@
 - サンプルテスト: `lib/merge.test.ts` / `lib/media.test.ts`（Phase 1 の先行分）、
   `components/design-system/text.test.tsx`（RNTL パイプラインのスモーク）
 
-## Phase 1: 純粋ロジックの unit テスト（ROI 最高）
+## Phase 1: 純粋ロジックの unit テスト（ROI 最高） 【完了】
 
 外部依存なしで即テストできる関数群。カバレッジ目標 90%。
 
-| 対象 | 理由・観点 |
-|---|---|
-| `lib/media.ts` `getCdnUrl` | 分岐が最多。CDN ホスト 3 系統 × variant マッピング × aspect（縦長 / 横長 / 正方形で fit / crop が変わる）× citlali の `?format=auto`。URL 生成ミスは全画面の画像表示に波及する |
-| `lib/merge.ts` | タイムラインのページネーション重複排除の心臓部。重複 ID、`into: "first" / "last"`、空配列 |
-| `components/emoji-verse/unicode.ts` / `frequency-manager.ts` / `emoji-data.ts` | サロゲートペア・skin tone 等の Unicode 処理はエッジケースの宝庫 |
-| `lib/reactions.ts` / `lib/share.ts` / `lib/utils.ts` | 小さいのでまとめて |
-| `models/` の各 settings（`notification-settings` / `image-quality-settings` / `sensitive-content-settings` など） | デフォルト値・シリアライズ往復（保存 → 読込で同値に戻るか）。AsyncStorage はモック |
+| 対象 | 理由・観点 | 状態 |
+|---|---|---|
+| `lib/media.ts` `getCdnUrl` | 分岐が最多。CDN ホスト 3 系統 × variant マッピング × aspect（縦長 / 横長 / 正方形で fit / crop が変わる）× citlali の `?format=auto`。URL 生成ミスは全画面の画像表示に波及する | ✅ `lib/media.test.ts`（100%） |
+| `lib/merge.ts` | タイムラインのページネーション重複排除の心臓部。重複 ID、`into: "first" / "last"`、空配列 | ✅ `lib/merge.test.ts`（100%） |
+| `components/emoji-verse/unicode.ts` | サロゲートペア・ZWJ・skin tone 等の Unicode 処理はエッジケースの宝庫 | ✅ `unicode.test.ts`（94%） |
+| `components/emoji-verse/frequency-manager.ts` | 絵文字の最近使った履歴（重複排除・先頭移動・上限 30 件での切り捨て）。`expo-secure-store` はモック | ✅ `frequency-manager.test.ts`（95%） |
+| `components/emoji-verse/emoji-data.ts` | Unicode CLDR データのパース・カテゴリ分類 | 未着手（`useAssets` / `expo-file-system` への依存が強く、Phase 3 のコンポーネントテストと合わせて検討） |
+| `lib/reactions.ts` / `lib/share.ts` / `lib/utils.ts` | 小さいのでまとめて | ✅ 全てテスト済み（`share.ts` は twitter-text の重み付き文字数カウントに基づく切り詰めを重点的にカバー） |
+| `models/` の各 settings（`notification-settings` / `image-quality-settings` / `sensitive-content-settings` / `streaming-settings` / `browser-settings`） | デフォルト値・シリアライズ往復（保存 → 読込で同値に戻るか）。`AsyncStorage` はモック | ✅ 永続化まわりの関数のみテスト。`notification-settings.ts` の Firebase Messaging 連携部分（`getAuthorizationStatus` 等）は Phase 2 以降で扱う。`browser-settings.ts` の `openUrlWithBrowser` は各ブラウザーのスキーム変換ロジックまで検証 |
+
+テスト用の共通基盤として追加したもの:
+- `__mocks__/@react-native-async-storage/async-storage.js` / `__mocks__/expo-secure-store.js`: in-memory の手動モック。`jest.mock(...)` で明示的に opt-in して使う
+- `test/helpers/async-storage.ts`: `resetAsyncStorageMock()` — モジュールスコープで共有される in-memory ストアをテスト間でリセットする共通ヘルパー
+- 注意: `jest.mock(...)` の呼び出しは import 文より後に書くこと。babel-jest が実行時には import より前にホイストするため動作は問題ないが、先に書くと `import/first` の eslint warning が出る
 
 ## Phase 2: 認証まわり（壊れると一番痛い）
 
