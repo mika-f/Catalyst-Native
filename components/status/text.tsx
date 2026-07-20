@@ -121,7 +121,6 @@ export const StatusText = React.memo(
             a: ({ href, children }: { href: string; children: React.ReactNode }) => {
               if (href.startsWith("/")) {
                 return (
-                  // @ts-expect-error
                   <UniLink className={linkClassName} href={href}>
                     {children}
                   </UniLink>
