@@ -2,6 +2,8 @@ import { AlbumSelectionModal } from "@/components/album/selection-modal";
 import {
   CatalystActionSheetItem,
   CatalystAvatar,
+  CatalystBadge,
+  CatalystBadgeText,
   CatalystDivider,
   CatalystEmptyState,
   CatalystIconButton,
@@ -23,6 +25,12 @@ import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { openUrlWithBrowser } from "@/models/browser-settings";
+import {
+  EPICLESE_ITEM_TYPE_LABELS,
+  getEpicleseItemUrl,
+  type EpicleseMetadata,
+  type EpicleseReference,
+} from "@/models/epiclese";
 import {
   applyReactionStreamingEvent,
   registerLocalReactionMutation,
@@ -47,7 +55,7 @@ import {
   Send,
   Trash2,
 } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Modal,
@@ -71,34 +79,6 @@ import {
 } from "@gorhom/bottom-sheet";
 import "@/global.css";
 import { buildShareText } from "@/lib/share";
-
-type EpicleseWorld = {
-  name: string;
-  platformIdentifier: string;
-};
-
-type EpicleseUser = {
-  id: string;
-  screenName: string;
-  displayName: string;
-};
-
-type EpicleseAdditionalData2 = {
-  [key: string]: {
-    ref?: string;
-  };
-};
-
-type EpicleseMediaMetadata = {
-  platform: string | null;
-  world: EpicleseWorld | null;
-  users: EpicleseUser[];
-  reference: unknown[];
-  additionalData?: Record<string, string>;
-  additionalData2?: EpicleseAdditionalData2;
-};
-
-type EpicleseMetadata = Record<string, EpicleseMediaMetadata>;
 
 type MenuAction =
   | "addToAlbum"
@@ -156,6 +136,14 @@ export default function StatusDetailsPage() {
   const menuSheetRef = useRef<BottomSheetModal>(null);
   const theme = useColorScheme() ?? "light";
   const insets = useSafeAreaInsets();
+
+  const mediaPins = useMemo(() => {
+    const pins: Record<string, EpicleseReference[]> = {};
+    for (const [mediaId, meta] of Object.entries(metadata)) {
+      if (meta.reference.length > 0) pins[mediaId] = meta.reference;
+    }
+    return pins;
+  }, [metadata]);
 
   const isMyself = account?.user?.id === status?.user?.id;
   const isLoggedIn = account !== null;
@@ -449,7 +437,7 @@ export default function StatusDetailsPage() {
             </View>
 
             {status.medias.length > 0 ? (
-              <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} />
+              <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} pins={mediaPins} />
             ) : null}
 
             <View className="px-5 py-4">
@@ -496,8 +484,14 @@ export default function StatusDetailsPage() {
               meta.platform ||
               meta.world ||
               meta.users.length > 0 ||
+              meta.reference.length > 0 ||
               Object.keys(meta.additionalData ?? {}).length > 0;
             if (!hasContent) return null;
+
+            // 同一アイテムが同じ写真に複数回ピン留めされている場合は重複排除して表示する
+            const uniqueItems = meta.reference.filter(
+              (item, i, arr) => arr.findIndex((w) => w.reference === item.reference) === i,
+            );
 
             return (
               <View className="mt-3 bg-light-background px-5 py-4 dark:bg-dark-surface">
@@ -541,6 +535,45 @@ export default function StatusDetailsPage() {
                     <CatalystText variant="caption" className="flex-1">
                       {meta.users.map((u) => u.displayName).join(", ")}
                     </CatalystText>
+                  </View>
+                ) : null}
+                {uniqueItems.length > 0 ? (
+                  <View className="flex-row border-b border-light-divider py-2 dark:border-dark-divider">
+                    <CatalystText variant="caption" tone="muted" className="w-32">
+                      着用アイテム
+                    </CatalystText>
+                    <View className="flex-1 gap-1.5">
+                      {uniqueItems.map((item) => (
+                        <View key={item.reference} className="flex-row flex-wrap items-center gap-1.5">
+                          <CatalystBadge tone="neutral">
+                            <CatalystBadgeText>{EPICLESE_ITEM_TYPE_LABELS[item.type] ?? item.type}</CatalystBadgeText>
+                          </CatalystBadge>
+                          <Pressable
+                            accessibilityRole="link"
+                            className="min-w-0 shrink active:opacity-75"
+                            onPress={() => openUrlWithBrowser(getEpicleseItemUrl(item.reference))}
+                          >
+                            <CatalystText variant="caption" tone="tint" numberOfLines={1}>
+                              {item.name}
+                            </CatalystText>
+                          </Pressable>
+                          <CatalystText variant="caption" tone="muted" numberOfLines={1} className="min-w-0 shrink">
+                            by {item.author.name}
+                          </CatalystText>
+                          {item.externalUrl ? (
+                            <Pressable
+                              accessibilityRole="link"
+                              accessibilityLabel="販売ページを見る"
+                              hitSlop={6}
+                              className="active:opacity-75"
+                              onPress={() => item.externalUrl && openUrlWithBrowser(item.externalUrl)}
+                            >
+                              <UniExternalLink size={14} className="text-light-text-muted dark:text-dark-text-muted" />
+                            </Pressable>
+                          ) : null}
+                        </View>
+                      ))}
+                    </View>
                   </View>
                 ) : null}
                 {Object.entries(meta.additionalData ?? {}).map(([key, value]) => {
