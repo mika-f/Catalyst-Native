@@ -1,4 +1,4 @@
-import { useAssets } from "expo-asset";
+import { type Asset, useAssets } from "expo-asset";
 import { readAsStringAsync } from "expo-file-system/legacy";
 import { useEffect, useState } from "react";
 import type { EmojiCategory, EmojiCategoryType, EmojiItem } from "./types";
@@ -49,6 +49,8 @@ function parseEmojiTestData(content: string): Map<string, ParsedEmoji[]> {
 }
 
 let cachedCategories: EmojiCategory[] | null = null;
+// 複数の EmojiPickerSheet が同時にマウントされてもパースを一度だけにするための共有 Promise
+let pendingLoad: Promise<EmojiCategory[]> | null = null;
 
 function buildCategories(content: string): EmojiCategory[] {
   const parsedData = parseEmojiTestData(content);
@@ -80,39 +82,69 @@ function buildCategories(content: string): EmojiCategory[] {
   );
 }
 
+function loadCategories(asset: Asset): Promise<EmojiCategory[]> {
+  if (!pendingLoad) {
+    pendingLoad = (async () => {
+      if (!asset.localUri) {
+        await asset.downloadAsync();
+      }
+      const content = await readAsStringAsync(asset.localUri!);
+      cachedCategories = buildCategories(content);
+      return cachedCategories;
+    })();
+
+    // 失敗時は Promise を破棄して次回の呼び出しで再試行できるようにする
+    pendingLoad.catch(() => {
+      pendingLoad = null;
+    });
+  }
+
+  return pendingLoad;
+}
+
 export function useDefaultCategories(): {
   categories: EmojiCategory[];
   isLoading: boolean;
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const [assets] = useAssets([require("@/assets/images/emoji-test.txt")]);
+  const [assets, assetError] = useAssets([require("@/assets/images/emoji-test.txt")]);
   const [categories, setCategories] = useState<EmojiCategory[]>(
     cachedCategories ?? [],
   );
   const [isLoading, setIsLoading] = useState(cachedCategories === null);
 
   useEffect(() => {
-    if (cachedCategories) return;
+    if (assetError) {
+      console.error("Failed to load emoji asset:", assetError);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoading(false);
+      return;
+    }
+
     if (!assets || assets.length === 0) return;
 
-    const asset = assets[0];
-    const load = async () => {
-      try {
-        if (!asset.localUri) {
-          await asset.downloadAsync();
+    // ロードは共有 Promise に集約されているため、別のインスタンスが
+    // すでにロード済み・ロード中でもここで必ず isLoading が解除される
+    let cancelled = false;
+    loadCategories(assets[0])
+      .then((loaded) => {
+        if (!cancelled) {
+          setCategories(loaded);
         }
-        const content = await readAsStringAsync(asset.localUri!);
-        cachedCategories = buildCategories(content);
-        setCategories(cachedCategories);
-      } catch (e) {
+      })
+      .catch((e) => {
         console.error("Failed to load emoji data:", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      });
 
-    load();
-  }, [assets]);
+    return () => {
+      cancelled = true;
+    };
+  }, [assets, assetError]);
 
   return { categories, isLoading };
 }
