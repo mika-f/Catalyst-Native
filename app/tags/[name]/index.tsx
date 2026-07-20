@@ -108,12 +108,14 @@ export default function ProfileTagPage() {
   );
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- タグ変更時に状態をリセットして再フェッチする意図的なパターン */
     setLoading(true);
     setMeta(null);
     setUsers([]);
     setCursor(null);
     setNotFound(false);
     setError(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
     fetchPage(null).finally(() => setLoading(false));
   }, [fetchPage]);
 
