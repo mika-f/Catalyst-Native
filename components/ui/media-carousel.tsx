@@ -1,6 +1,8 @@
 import { CatalystActionSheetItem, CatalystDivider } from "@/components/design-system";
+import { MediaPinOverlay } from "@/components/status/media-pin-overlay";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import type { EpicleseReference } from "@/models/epiclese";
 import { timelineImageQualityAtom, timelineWifiUpgradeAtom } from "@/models/atoms/image-quality";
 import NetInfo from "@react-native-community/netinfo";
 import { useAtomValue } from "jotai";
@@ -45,14 +47,17 @@ const SPRING_CONFIG = {
 type Props = {
   medias: Media[];
   onIndexChange?: (index: number) => void;
+  /** media.id → 写真上のピン（座標付きメタデータ）。渡された場合のみオーバーレイを表示する */
+  pins?: Record<string, EpicleseReference[] | undefined>;
 };
 
-export const MediaCarousel = memo(({ medias, onIndexChange }: Props) => {
+export const MediaCarousel = memo(({ medias, onIndexChange, pins }: Props) => {
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = useWindowDimensions();
   const MAX_HEIGHT = SCREEN_HEIGHT / 2;
   const theme = useColorScheme() ?? "light";
   const [presentedMediaIndex, setPresentedMediaIndex] = useState<number | null>(null);
   const [isBlurRemoved, setIsBlurRemoved] = useState(false);
+  const [arePinsVisible, setArePinsVisible] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [modalIndex, setModalIndex] = useState(0);
@@ -164,6 +169,7 @@ export const MediaCarousel = memo(({ medias, onIndexChange }: Props) => {
     // FlashList can recycle timeline cells, so reset carousel state when a different post's media set is mounted.
     setPresentedMediaIndex(null);
     setIsBlurRemoved(false);
+    setArePinsVisible(true);
     setCurrentIndex(0);
     setIsZoomed(false);
     setModalIndex(0);
@@ -347,6 +353,30 @@ export const MediaCarousel = memo(({ medias, onIndexChange }: Props) => {
             ))}
           </Animated.View>
         </GestureDetector>
+
+        {/* Photo pin overlay (座標付きメタデータ) — 現在表示中の media のピンのみ重ねる */}
+        {(() => {
+          if (!pins || (hasSensitiveContent && !isBlurRemoved)) return null;
+          const currentMedia = medias[currentIndex];
+          const references = currentMedia ? pins[currentMedia.id] : undefined;
+          if (!currentMedia || !references || references.length === 0) return null;
+
+          return (
+            <View
+              style={{ position: "absolute", top: 0, left: 0, width: SCREEN_WIDTH, height: actualHeight }}
+              pointerEvents="box-none"
+            >
+              <MediaPinOverlay
+                media={currentMedia}
+                references={references}
+                width={SCREEN_WIDTH}
+                height={actualHeight}
+                visible={arePinsVisible}
+                onToggleVisible={() => setArePinsVisible((v) => !v)}
+              />
+            </View>
+          );
+        })()}
 
         {/* Sensitive content overlay */}
         {hasSensitiveContent && !isBlurRemoved && (
