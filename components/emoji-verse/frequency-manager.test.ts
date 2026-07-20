@@ -1,24 +1,11 @@
-import AsyncStorage from "expo-secure-store";
+import { resetSecureStoreMock } from "@/test/helpers/secure-store";
 import { getRecentItems, recordUnicodeUsage, recordUrlUsage } from "./frequency-manager";
 
 jest.mock("expo-secure-store");
 
-type MockedSecureStore = {
-  __INTERNAL_MOCK_STORE__: () => Record<string, string>;
-};
-
-// __mocks__/expo-secure-store.js の in-memory ストアはモジュール内で共有されるため、
-// テスト間で状態が漏れないようにリセットする
-const resetStore = () => {
-  const store = (AsyncStorage as unknown as MockedSecureStore).__INTERNAL_MOCK_STORE__();
-  for (const key of Object.keys(store)) {
-    delete store[key];
-  }
-};
-
 describe("emoji frequency manager", () => {
   beforeEach(() => {
-    resetStore();
+    resetSecureStoreMock();
   });
 
   it("初期状態では空配列を返す", async () => {

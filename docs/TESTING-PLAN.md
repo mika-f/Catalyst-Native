@@ -55,26 +55,37 @@
 - `test/helpers/async-storage.ts`: `resetAsyncStorageMock()` — モジュールスコープで共有される in-memory ストアをテスト間でリセットする共通ヘルパー
 - 注意: `jest.mock(...)` の呼び出しは import 文より後に書くこと。babel-jest が実行時には import より前にホイストするため動作は問題ないが、先に書くと `import/first` の eslint warning が出る
 
-## Phase 2: 認証まわり（壊れると一番痛い）
+## Phase 2: 認証まわり（壊れると一番痛い） 【完了】
 
-対象: `models/credential.ts` / `models/credential-store.ts`。
-`expo-secure-store`・SDK client・`expo-web-browser` をモックして検証する。
+対象: `models/credential.ts` / `models/credential-store.ts`。カバレッジ 100%（stmts / branch / funcs / lines）。
 
-### `tryRestore`
+### `credential-store.ts`（`credential-store.test.ts`）
 
+- `getCredential`: トークン未保存時は `EMPTY_CREDENTIAL`、片方だけ保存されていても復元しない、保存済みトークンで `CatalystTS` を正しいオプションで構築する
+- **自動リフレッシュの反映**: `CatalystTS` は 401 を検知すると内部で自動的にトークンをリフレッシュする実装になっており、`getCredential` はレスポンスインターセプター（`onResponse`）経由でその新トークンを SecureStore と `accountAtom`（jotai）へ反映する。この一連の流れをモックした `CatalystTS` のインスタンス経由で検証（アクセストークンが変化しない場合は再永続化しないことも含む）
+- `saveCredential` / `clear`: SecureStore への保存・削除
+
+### `credential.ts`（`credential.test.ts`）
+
+**`tryRestore`**
 1. 有効トークン → ログイン成功
 2. アクセストークン失効 → **refresh 成功パス**（新トークンが SecureStore に保存されること）
 3. refresh も失敗 → `logout()` されて未ログイン状態で返る
 4. トークンなし → 未ログイン状態で返る
+5. me 取得 / refresh 後の me 取得が 200 を返しても `user` が空（不正なレスポンス）→ 未ログインで終わる
 
-### `login`
-
+**`login`**
 1. 正常フロー（code 交換 → トークン保存 → ユーザー取得）
 2. **`state` 不一致で拒否されること**（CSRF 防御の要）
 3. ブラウザキャンセル（`result.type !== "success"`）
 4. `code` 欠落
+5. トークン交換後の me 取得が失敗 / user 空 → 未ログインで終わる（例外を握りつぶして返す既存の仕様どおり）
+
+**`logout`**: `CredentialStore.clear` を呼ぶ
 
 失敗時に必ず `EMPTY_CREDENTIAL` に落ちる保証は、「ユーザーがログイン不能になる」不具合の最終防衛線。
+
+テスト基盤として `__mocks__/@natsuneko-laboratory/catalyst-sdk.js`（`CatalystTS` / `PKCE` の手動モック。コンストラクタに渡されたオプションとインスタンスを記録し、レスポンスインターセプターを手動で発火できる）と `test/helpers/secure-store.ts`（`resetSecureStoreMock()`）を追加。`credential.test.ts` では `@/models/credential-store` 自体を丸ごとモックし、認証フローのオーケストレーションのみを対象にすることで `credential-store.ts` の実装詳細から独立させた。
 
 ## Phase 3: コンポーネントテスト（RNTL）
 
