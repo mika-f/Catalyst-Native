@@ -69,6 +69,12 @@ Sentry.init({
 
 SplashScreen.preventAutoHideAsync();
 
+SplashScreen.setOptions({
+  duration: 250,
+  fade: true,
+});
+
+
 export const unstable_settings = {
   anchor: "(drawer)",
 };
