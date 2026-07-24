@@ -1,4 +1,4 @@
-import { emojis } from "@/lib/emojis";
+import { emojis } from "@/lib/generated/emojis";
 import { Image } from "expo-image";
 import {
   Clock,

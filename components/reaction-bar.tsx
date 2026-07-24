@@ -1,10 +1,9 @@
-import { emojis } from "@/lib/emojis";
+import { emojis } from "@/lib/generated/emojis";
 import { getCustomReactionId } from "@/lib/reactions";
 import { cn } from "@/lib/utils";
 import type { CatalystReaction } from "@/models/sdk-types";
 import { Image } from "expo-image";
 import { Plus } from "lucide-react-native";
-import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { withUniwind } from "uniwind";
 

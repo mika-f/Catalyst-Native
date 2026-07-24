@@ -1,5 +1,5 @@
 import { CatalystDivider, CatalystListItem, CatalystListItemContent, CatalystText } from "@/components/design-system";
-import { licenses } from "@/lib/licenses";
+import { licenses } from "@/lib/generated/licenses";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";

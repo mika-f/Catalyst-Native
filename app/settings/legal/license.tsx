@@ -1,5 +1,5 @@
 import { CatalystText } from "@/components/design-system";
-import { licenses } from "@/lib/licenses";
+import { licenses } from "@/lib/generated/licenses";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

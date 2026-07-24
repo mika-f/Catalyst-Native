@@ -21,4 +21,4 @@ for (const license of Object.keys(licenses)) {
 
 source.push("};");
 
-fs.writeFileSync("./lib/licenses.ts", source.join("\n"));
+fs.writeFileSync("./lib/generated/licenses.ts", source.join("\n"));
