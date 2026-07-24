@@ -9,6 +9,6 @@ module.exports = {
     extend: {
     },
   },
-  presets: [require("nativewind/preset")],
+  presets: [],
   plugins: [],
 };
