@@ -1,5 +1,4 @@
 import { AlbumSelectionModal } from "@/components/album/selection-modal";
-import { ContestBanner } from "@/components/contest/banner";
 import {
   CatalystActionSheetItem,
   CatalystAvatar,
@@ -32,13 +31,13 @@ import {
   type EpicleseMetadata,
   type EpicleseReference,
 } from "@/models/epiclese";
+import type { CatalystContest, CatalystReaction, CatalystStatusV1_1 } from "@/models/sdk-types";
 import {
   applyReactionStreamingEvent,
   registerLocalReactionMutation,
-  type ReactionStreamingEvent,
   useStreamingReactions,
+  type ReactionStreamingEvent,
 } from "@/models/streaming";
-import type { CatalystContest, CatalystReaction, CatalystStatusV1_1 } from "@/models/sdk-types";
 import * as Clipboard from "expo-clipboard";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -72,14 +71,15 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
+import { ContestBanner } from "@/components/contest/banner";
+import "@/global.css";
+import { buildShareText } from "@/lib/share";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import "@/global.css";
-import { buildShareText } from "@/lib/share";
 
 type MenuAction =
   | "addToAlbum"
@@ -133,7 +133,7 @@ export default function StatusDetailsPage() {
   const { subscribe, unsubscribe } = useStreamingReactions();
 
   const [status, setStatus] = useState<CatalystStatusV1_1 | null>(null);
-  const [contest, setContest] = useState<CatalystContest | null>(null);
+  const [contest, setContest] = useState<Pick<CatalystContest, "slug" | "title" | "headerUrl"> | null>(null);
   const [metadata, setMetadata] = useState<EpicleseMetadata>({});
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [reactions, setReactions] = useState<Record<string, CatalystReaction>>({});
@@ -183,10 +183,7 @@ export default function StatusDetailsPage() {
 
         const contestSlug = getContestSlug(statusRes.contest);
         if (contestSlug) {
-          client.catalyst.v1.contest.by.slug.slug
-            .get({ path: { slug: contestSlug }, throwOnError: true })
-            .then(({ data }) => setContest(data.contest))
-            .catch(() => setContest(null));
+          setContest(statusRes.contest as Pick<CatalystContest, "slug" | "title" | "headerUrl">);
         } else {
           setContest(null);
         }
@@ -458,12 +455,6 @@ export default function StatusDetailsPage() {
               </View>
             </View>
 
-            {contest ? (
-              <View className="px-5 pb-4">
-                <ContestBanner contest={contest} />
-              </View>
-            ) : null}
-
             {status.medias.length > 0 ? (
               <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} pins={mediaPins} />
             ) : null}
@@ -501,6 +492,12 @@ export default function StatusDetailsPage() {
                 onUnreact={handleUnreact}
                 onAddReaction={isLoggedIn ? () => emojiPickerRef.current?.open() : undefined}
               />
+
+              {contest ? (
+                <View className="pt-3 py-2">
+                  <ContestBanner contest={contest} />
+                </View>
+              ) : null}
             </View>
           </View>
 
@@ -640,6 +637,7 @@ export default function StatusDetailsPage() {
               </View>
             );
           })()}
+
         </ScrollView>
       )}
 

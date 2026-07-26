@@ -1,4 +1,4 @@
-import { CatalystBadge, CatalystBadgeText, CatalystText, type CatalystBadgeTone } from "@/components/design-system";
+import { CatalystText, type CatalystBadgeTone } from "@/components/design-system";
 import type { CatalystContest } from "@/models/sdk-types";
 import { useRouter } from "expo-router";
 import { ChevronRight, Trophy } from "lucide-react-native";
@@ -27,7 +27,7 @@ const STATE_BADGE_TONE: Record<string, CatalystBadgeTone> = {
 };
 
 type Props = {
-  contest: CatalystContest;
+  contest: Pick<CatalystContest, "slug" | "title" | "headerUrl">;
 };
 
 export const ContestBanner = ({ contest }: Props) => {
@@ -49,9 +49,6 @@ export const ContestBanner = ({ contest }: Props) => {
           >
             このコンテストに参加中
           </CatalystText>
-          <CatalystBadge tone={STATE_BADGE_TONE[contest.state] ?? "neutral"} className="rounded-full">
-            <CatalystBadgeText>{STATE_LABEL[contest.state] ?? contest.state}</CatalystBadgeText>
-          </CatalystBadge>
         </View>
         <CatalystText
           variant="label"
