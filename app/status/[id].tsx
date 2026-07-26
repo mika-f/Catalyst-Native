@@ -1,4 +1,5 @@
 import { AlbumSelectionModal } from "@/components/album/selection-modal";
+import { ContestBanner } from "@/components/contest/banner";
 import {
   CatalystActionSheetItem,
   CatalystAvatar,
@@ -37,7 +38,7 @@ import {
   type ReactionStreamingEvent,
   useStreamingReactions,
 } from "@/models/streaming";
-import type { CatalystReaction, CatalystStatusV1_1 } from "@/models/sdk-types";
+import type { CatalystContest, CatalystReaction, CatalystStatusV1_1 } from "@/models/sdk-types";
 import * as Clipboard from "expo-clipboard";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -105,6 +106,16 @@ const UniSafeAreaView = withUniwind(SafeAreaView);
 const UniSend = withUniwind(Send);
 const UniTrash2 = withUniwind(Trash2);
 
+// レスポンスの status.contest は SDK 上 unknown 型のため、参加先コンテストを特定できる slug の有無だけを安全に確認する
+const getContestSlug = (contest: unknown): string | null => {
+  if (typeof contest === "string") return contest.length > 0 ? contest : null;
+  if (contest && typeof contest === "object" && "slug" in contest) {
+    const slug = (contest as { slug?: unknown }).slug;
+    return typeof slug === "string" && slug.length > 0 ? slug : null;
+  }
+  return null;
+};
+
 const METADATA_LABELS: Record<string, string> = {
   Author: "撮影者",
   LocationName: "撮影場所",
@@ -122,6 +133,7 @@ export default function StatusDetailsPage() {
   const { subscribe, unsubscribe } = useStreamingReactions();
 
   const [status, setStatus] = useState<CatalystStatusV1_1 | null>(null);
+  const [contest, setContest] = useState<CatalystContest | null>(null);
   const [metadata, setMetadata] = useState<EpicleseMetadata>({});
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [reactions, setReactions] = useState<Record<string, CatalystReaction>>({});
@@ -168,6 +180,16 @@ export default function StatusDetailsPage() {
         setStatus(statusRes);
         setMetadata(metadataRes ?? {});
         setReactions(reactionsRes);
+
+        const contestSlug = getContestSlug(statusRes.contest);
+        if (contestSlug) {
+          client.catalyst.v1.contest.by.slug.slug
+            .get({ path: { slug: contestSlug }, throwOnError: true })
+            .then(({ data }) => setContest(data.contest))
+            .catch(() => setContest(null));
+        } else {
+          setContest(null);
+        }
 
         if (account?.credential.client) {
           const [favRes] = await Promise.all([
@@ -435,6 +457,12 @@ export default function StatusDetailsPage() {
                 <StatusVisibilityBadge className="ml-2 self-center" privacy={privacy} />
               </View>
             </View>
+
+            {contest ? (
+              <View className="px-5 pb-4">
+                <ContestBanner contest={contest} />
+              </View>
+            ) : null}
 
             {status.medias.length > 0 ? (
               <MediaCarousel medias={status.medias} onIndexChange={setCurrentMediaIndex} pins={mediaPins} />
