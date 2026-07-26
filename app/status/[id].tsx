@@ -31,13 +31,13 @@ import {
   type EpicleseMetadata,
   type EpicleseReference,
 } from "@/models/epiclese";
+import type { CatalystContest, CatalystReaction, CatalystStatusV1_1 } from "@/models/sdk-types";
 import {
   applyReactionStreamingEvent,
   registerLocalReactionMutation,
-  type ReactionStreamingEvent,
   useStreamingReactions,
+  type ReactionStreamingEvent,
 } from "@/models/streaming";
-import type { CatalystReaction, CatalystStatusV1_1 } from "@/models/sdk-types";
 import * as Clipboard from "expo-clipboard";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
@@ -71,14 +71,15 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
 
+import { ContestBanner } from "@/components/contest/banner";
+import "@/global.css";
+import { buildShareText } from "@/lib/share";
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import "@/global.css";
-import { buildShareText } from "@/lib/share";
 
 type MenuAction =
   | "addToAlbum"
@@ -105,6 +106,16 @@ const UniSafeAreaView = withUniwind(SafeAreaView);
 const UniSend = withUniwind(Send);
 const UniTrash2 = withUniwind(Trash2);
 
+// レスポンスの status.contest は SDK 上 unknown 型のため、参加先コンテストを特定できる slug の有無だけを安全に確認する
+const getContestSlug = (contest: unknown): string | null => {
+  if (typeof contest === "string") return contest.length > 0 ? contest : null;
+  if (contest && typeof contest === "object" && "slug" in contest) {
+    const slug = (contest as { slug?: unknown }).slug;
+    return typeof slug === "string" && slug.length > 0 ? slug : null;
+  }
+  return null;
+};
+
 const METADATA_LABELS: Record<string, string> = {
   Author: "撮影者",
   LocationName: "撮影場所",
@@ -122,6 +133,7 @@ export default function StatusDetailsPage() {
   const { subscribe, unsubscribe } = useStreamingReactions();
 
   const [status, setStatus] = useState<CatalystStatusV1_1 | null>(null);
+  const [contest, setContest] = useState<Pick<CatalystContest, "slug" | "title" | "headerUrl"> | null>(null);
   const [metadata, setMetadata] = useState<EpicleseMetadata>({});
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [reactions, setReactions] = useState<Record<string, CatalystReaction>>({});
@@ -168,6 +180,13 @@ export default function StatusDetailsPage() {
         setStatus(statusRes);
         setMetadata(metadataRes ?? {});
         setReactions(reactionsRes);
+
+        const contestSlug = getContestSlug(statusRes.contest);
+        if (contestSlug) {
+          setContest(statusRes.contest as Pick<CatalystContest, "slug" | "title" | "headerUrl">);
+        } else {
+          setContest(null);
+        }
 
         if (account?.credential.client) {
           const [favRes] = await Promise.all([
@@ -473,6 +492,12 @@ export default function StatusDetailsPage() {
                 onUnreact={handleUnreact}
                 onAddReaction={isLoggedIn ? () => emojiPickerRef.current?.open() : undefined}
               />
+
+              {contest ? (
+                <View className="pt-3 py-2">
+                  <ContestBanner contest={contest} />
+                </View>
+              ) : null}
             </View>
           </View>
 
@@ -612,6 +637,7 @@ export default function StatusDetailsPage() {
               </View>
             );
           })()}
+
         </ScrollView>
       )}
 
