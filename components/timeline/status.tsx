@@ -200,7 +200,7 @@ export const TimelineStatus = memo(
     );
 
     return (
-      <View className="bg-light-background py-3 dark:bg-dark-background">
+      <View className="bg-light-background pt-3 dark:bg-dark-background">
         <View className="flex-row items-center gap-3 px-4">
           <Pressable
             accessibilityRole="button"
@@ -222,7 +222,11 @@ export const TimelineStatus = memo(
             />
           </Pressable>
 
-          <View className="min-w-0 flex-1">
+          <Pressable
+            accessibilityRole="button"
+            className="min-w-0 flex-1 active:opacity-90"
+            onPress={navigateToStatus}
+          >
             <View className="flex-row items-center gap-1">
               <Pressable
                 accessibilityRole="button"
@@ -240,22 +244,16 @@ export const TimelineStatus = memo(
               </Pressable>
             </View>
 
-            <Pressable
-              accessibilityRole="button"
-              className="mt-0.5 active:opacity-90"
-              onPress={navigateToStatus}
-            >
-              <View className="flex-row items-center">
-                <CatalystText variant="caption" tone="muted" numberOfLines={1}>
-                  @{user.screenName}
-                </CatalystText>
-                <CatalystText variant="caption" tone="muted">
-                  {" · "}
-                  {rel(status.createdAt)}
-                </CatalystText>
-              </View>
-            </Pressable>
-          </View>
+            <View className="mt-0.5 flex-row items-center">
+              <CatalystText variant="caption" tone="muted" numberOfLines={1}>
+                @{user.screenName}
+              </CatalystText>
+              <CatalystText variant="caption" tone="muted">
+                {" · "}
+                {rel(status.createdAt)}
+              </CatalystText>
+            </View>
+          </Pressable>
 
           <StatusVisibilityBadge
             className="ml-2 self-center"
@@ -301,6 +299,12 @@ export const TimelineStatus = memo(
             />
           </Pressable>
         ) : null}
+
+        <Pressable
+          accessibilityRole="button"
+          className="h-3"
+          onPress={navigateToStatus}
+        />
 
         <EmojiPickerSheet ref={emojiPickerRef} onReact={handleReact} />
       </View>
