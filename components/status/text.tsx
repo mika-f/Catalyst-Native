@@ -1,8 +1,10 @@
 import { catalystLinkClassName } from "@/components/design-system";
 import { cn } from "@/lib/utils";
+import { underlineLinksAtom } from "@/models/atoms/accessibility";
 import { openUrlWithBrowser } from "@/models/browser-settings";
 import { extractEntities } from "@natsuneko-laboratory/react-native-twitter-text";
 import { Link } from "expo-router";
+import { useAtomValue } from "jotai";
 import React, { Fragment, useCallback, useMemo } from "react";
 import { Text, View } from "react-native";
 import { jsx, jsxs } from "react/jsx-runtime";
@@ -36,6 +38,10 @@ export const StatusText = React.memo(
     status: string;
     textClassName?: string;
   }) => {
+    const underlineLinks = useAtomValue(underlineLinksAtom);
+    // アクセシビリティ設定が有効な場合、色だけでなく下線でもリンクを区別できるようにする
+    const resolvedLinkClassName = cn(linkClassName, underlineLinks && "underline");
+
     const handleLinkPress = useCallback((url: string) => {
       openUrlWithBrowser(url);
     }, []);
@@ -121,14 +127,14 @@ export const StatusText = React.memo(
             a: ({ href, children }: { href: string; children: React.ReactNode }) => {
               if (href.startsWith("/")) {
                 return (
-                  <UniLink className={linkClassName} href={href}>
+                  <UniLink className={resolvedLinkClassName} href={href}>
                     {children}
                   </UniLink>
                 );
               }
 
               return (
-                <Text className={linkClassName} onPress={() => handleLinkPress(href)}>
+                <Text className={resolvedLinkClassName} onPress={() => handleLinkPress(href)}>
                   {children}
                 </Text>
               );
@@ -144,7 +150,7 @@ export const StatusText = React.memo(
         });
 
       return u.processSync(html).result;
-    }, [status, handleLinkPress, linkClassName, textClassName]);
+    }, [status, handleLinkPress, resolvedLinkClassName, textClassName]);
 
     return (
       <View>

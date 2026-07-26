@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils";
+import { boostTextContrastAtom } from "@/models/atoms/accessibility";
+import { useAtomValue } from "jotai";
 import { Text as RNText } from "react-native";
 
 type CatalystTextVariant = "body" | "title" | "subtitle" | "label" | "caption" | "mono";
@@ -24,6 +26,14 @@ const toneClassName: Record<CatalystTextTone, string> = {
   success: "text-light-success dark:text-dark-success",
 };
 
+// アクセシビリティ設定「文字のコントラストを上げる」が有効なときに使う色。
+// 補助的なトーン (muted / subtle) を 1 段階濃い色に寄せて可読性を上げる
+const boostedToneClassName: Record<CatalystTextTone, string> = {
+  ...toneClassName,
+  muted: "text-light-text dark:text-dark-text",
+  subtle: "text-light-text-muted dark:text-dark-text-muted",
+};
+
 export type CatalystTextProps = React.ComponentProps<typeof RNText> & {
   variant?: CatalystTextVariant;
   tone?: CatalystTextTone;
@@ -35,5 +45,8 @@ export const CatalystText = ({
   tone = "default",
   ...props
 }: CatalystTextProps) => {
-  return <RNText className={cn(variantClassName[variant], toneClassName[tone], className)} {...props} />;
+  const boostContrast = useAtomValue(boostTextContrastAtom);
+  const tones = boostContrast ? boostedToneClassName : toneClassName;
+
+  return <RNText className={cn(variantClassName[variant], tones[tone], className)} {...props} />;
 };

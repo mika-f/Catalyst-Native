@@ -1,3 +1,4 @@
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import React, { useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -39,6 +40,7 @@ export function CatalystTabs({
   swipeRightThreshold = 70,
 }: CatalystTabsProps) {
   const [activeIndex, setActiveIndex] = useState(defaultIndex);
+  const reducedMotion = useReducedMotion();
   const { width: screenWidth } = useWindowDimensions();
   const [scrollX] = useState(() => new Animated.Value(defaultIndex * screenWidth));
   const flatListRef = useRef<FlatList<CatalystTab>>(null);
@@ -57,10 +59,10 @@ export function CatalystTabs({
     isScrollingProgrammatically.current = true;
     setActiveIndex(index);
     onTabChange?.(tabs[index]!, index);
-    flatListRef.current?.scrollToIndex({ index, animated: true });
+    flatListRef.current?.scrollToIndex({ index, animated: !reducedMotion });
     Animated.timing(scrollX, {
       toValue: index * screenWidth,
-      duration: 220,
+      duration: reducedMotion ? 0 : 220,
       useNativeDriver: false,
     }).start(() => {
       isScrollingProgrammatically.current = false;

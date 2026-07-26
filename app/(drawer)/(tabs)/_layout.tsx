@@ -1,4 +1,5 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useHaptics } from "@/hooks/use-haptics";
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import * as Haptics from "expo-haptics";
@@ -26,6 +27,7 @@ type TabItem = {
 function CustomTabBar({ state, navigation }: any) {
   const colorScheme = useColorScheme();
   const account = useAtomValue(accountAtom);
+  const haptics = useHaptics();
   const insets = useSafeAreaInsets();
 
   const tabs: TabItem[] = [
@@ -93,7 +95,7 @@ function CustomTabBar({ state, navigation }: any) {
             key={tab.key}
             onPressIn={() => {
               if (process.env.EXPO_OS === "ios") {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                haptics.impact(Haptics.ImpactFeedbackStyle.Light);
               }
             }}
             onPress={() => {

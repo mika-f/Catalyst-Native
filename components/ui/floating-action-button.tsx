@@ -1,3 +1,4 @@
+import { useHaptics } from "@/hooks/use-haptics";
 import * as Haptics from "expo-haptics";
 import { Plus } from "lucide-react-native";
 import React from "react";
@@ -11,11 +12,13 @@ type Props = {
 };
 
 export function FloatingActionButton({ onPress }: Props) {
+  const haptics = useHaptics();
+
   return (
     <Pressable
       onPressIn={() => {
         if (process.env.EXPO_OS === "ios") {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          haptics.impact(Haptics.ImpactFeedbackStyle.Light);
         }
       }}
       onPress={onPress}

@@ -1,5 +1,8 @@
 import { catalystLinkClassName } from "@/components/design-system";
+import { cn } from "@/lib/utils";
+import { underlineLinksAtom } from "@/models/atoms/accessibility";
 import { openUrlWithBrowser } from "@/models/browser-settings";
+import { useAtomValue } from "jotai";
 import React, { Fragment, useCallback, useMemo } from "react";
 import { Text, View } from "react-native";
 import { jsx, jsxs } from "react/jsx-runtime";
@@ -36,6 +39,10 @@ function makeWrapBareStrings(selectable: boolean) {
 }
 
 export const Markdown = React.memo(({ body, selectable = false }: Props) => {
+  const underlineLinks = useAtomValue(underlineLinksAtom);
+  // アクセシビリティ設定が有効な場合、色だけでなく下線でもリンクを区別できるようにする
+  const linkClassName = cn(catalystLinkClassName, underlineLinks && "underline");
+
   const handleLinkPress = useCallback((url: string) => {
     openUrlWithBrowser(url);
   }, []);
@@ -149,7 +156,7 @@ export const Markdown = React.memo(({ body, selectable = false }: Props) => {
             children: React.ReactNode;
           }) => (
             <Text
-              className={catalystLinkClassName}
+              className={linkClassName}
               onPress={() => href && handleLinkPress(href)}
             >
               {children}
@@ -185,7 +192,7 @@ export const Markdown = React.memo(({ body, selectable = false }: Props) => {
       });
 
     return u.processSync(body).result;
-  }, [body, selectable, wrapBareStrings, handleLinkPress]);
+  }, [body, selectable, wrapBareStrings, handleLinkPress, linkClassName]);
 
   return (
     <View>

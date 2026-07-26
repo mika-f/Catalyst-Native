@@ -1,7 +1,8 @@
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 import React, { useEffect } from "react";
 import { Pressable } from "react-native";
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 export type CatalystSwitchProps = Omit<
   React.ComponentProps<typeof Pressable>,

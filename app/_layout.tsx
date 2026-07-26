@@ -5,6 +5,21 @@ import "react-native-get-random-values";
 import { headerSurfaceOptions } from "@/components/navigation/app-header";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useSystemReducedMotionSync } from "@/hooks/use-reduced-motion";
+import {
+  loadBoostTextContrast,
+  loadFleetPace,
+  loadHapticsEnabled,
+  loadReduceMotionPreference,
+  loadUnderlineLinks,
+} from "@/models/accessibility-settings";
+import {
+  boostTextContrastAtom,
+  fleetPaceAtom,
+  hapticsEnabledAtom,
+  reduceMotionPreferenceAtom,
+  underlineLinksAtom,
+} from "@/models/atoms/accessibility";
 import { accountAtom } from "@/models/atoms/account";
 import {
   timelineImageQualityAtom,
@@ -87,6 +102,12 @@ export default Sentry.wrap(function RootLayout() {
   const setTimelineWifiUpgrade = useSetAtom(timelineWifiUpgradeAtom);
   const setHideSensitiveContent = useSetAtom(hideSensitiveContentAtom);
   const setStreamingEnabled = useSetAtom(streamingEnabledAtom);
+  const setReduceMotionPreference = useSetAtom(reduceMotionPreferenceAtom);
+  const setFleetPace = useSetAtom(fleetPaceAtom);
+  const setUnderlineLinks = useSetAtom(underlineLinksAtom);
+  const setBoostTextContrast = useSetAtom(boostTextContrastAtom);
+  const setHapticsEnabled = useSetAtom(hapticsEnabledAtom);
+  useSystemReducedMotionSync();
   const [loaded, error] = useFonts({
     "Noto Sans JP Regular": require("@/assets/fonts/NotoSansJP-Regular.ttf"),
     "Noto Sans JP Bold": require("@/assets/fonts/NotoSansJP-Bold.ttf"),
@@ -100,17 +121,44 @@ export default Sentry.wrap(function RootLayout() {
       loadWifiUpgrade(),
       loadHideSensitiveContent(),
       loadStreamingEnabled(),
-    ]).then(([quality, wifiUpgrade, hideSensitiveContent, streamingEnabled]) => {
-      setTimelineImageQuality(quality);
-      setTimelineWifiUpgrade(wifiUpgrade);
-      setHideSensitiveContent(hideSensitiveContent);
-      setStreamingEnabled(streamingEnabled);
-    });
+      loadReduceMotionPreference(),
+      loadFleetPace(),
+      loadUnderlineLinks(),
+      loadBoostTextContrast(),
+      loadHapticsEnabled(),
+    ]).then(
+      ([
+        quality,
+        wifiUpgrade,
+        hideSensitiveContent,
+        streamingEnabled,
+        reduceMotionPreference,
+        fleetPace,
+        underlineLinks,
+        boostTextContrast,
+        hapticsEnabled,
+      ]) => {
+        setTimelineImageQuality(quality);
+        setTimelineWifiUpgrade(wifiUpgrade);
+        setHideSensitiveContent(hideSensitiveContent);
+        setStreamingEnabled(streamingEnabled);
+        setReduceMotionPreference(reduceMotionPreference);
+        setFleetPace(fleetPace);
+        setUnderlineLinks(underlineLinks);
+        setBoostTextContrast(boostTextContrast);
+        setHapticsEnabled(hapticsEnabled);
+      },
+    );
   }, [
+    setBoostTextContrast,
+    setFleetPace,
+    setHapticsEnabled,
     setHideSensitiveContent,
+    setReduceMotionPreference,
     setStreamingEnabled,
     setTimelineImageQuality,
     setTimelineWifiUpgrade,
+    setUnderlineLinks,
   ]);
 
   useAsyncOneTimeEffect(async () => {

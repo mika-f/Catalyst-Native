@@ -1,6 +1,9 @@
 import { FleetContent, FleetContentData } from "@/components/fleet/content";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 import { getCdnUrl, getIdenticonUrl } from "@/lib/media";
+import { FLEET_PACE_DURATIONS } from "@/models/accessibility-settings";
+import { fleetPaceAtom } from "@/models/atoms/accessibility";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
 import { hideSensitiveContentAtom } from "@/models/atoms/sensitive-content";
@@ -26,8 +29,6 @@ const UniImage = withUniwind(Image);
 const UniEllipsis = withUniwind(Ellipsis);
 const UniSmilePlus = withUniwind(SmilePlus);
 const UniMessageCircleHeart = withUniwind(MessageCircleHeart);
-
-const FLEET_DURATION = 1000 * 6; // 6 seconds
 
 type Props = {
   username: string | null;
@@ -75,10 +76,12 @@ type ProgressBarState = "past" | "current" | "future";
 type ProgressBarProps = {
   state: ProgressBarState;
   paused: boolean;
+  /** 1 枚あたりの表示時間 (ミリ秒)。null のときは自動送りせず、現在位置だけを示す */
+  duration: number | null;
   onComplete: () => void;
 };
 
-const ProgressBar = ({ state, paused, onComplete }: ProgressBarProps) => {
+const ProgressBar = ({ state, paused, duration, onComplete }: ProgressBarProps) => {
   const progress = useSharedValue(state === "past" ? 1 : 0);
   const prevStateRef = useRef(state);
 
@@ -96,28 +99,36 @@ const ProgressBar = ({ state, paused, onComplete }: ProgressBarProps) => {
       return;
     }
 
+    if (duration === null) {
+      // 自動送りをしない設定。タイマーを動かさず、現在位置を塗りつぶしで示す
+      cancelAnimation(progress);
+      progress.value = 1;
+      return;
+    }
+
     if (paused) {
       cancelAnimation(progress);
       return;
     }
 
-    if (prevState !== "current") {
-      // 別の状態から "current" に遷移した場合は 0 から開始
+    if (prevState !== "current" || progress.value >= 1) {
+      // 別の状態から "current" に遷移した場合、および「自動で進めない」設定から
+      // 切り替わって進捗が振り切っている場合は 0 から開始
       cancelAnimation(progress);
       progress.value = withSequence(
         withTiming(0, { duration: 0 }),
-        withTiming(1, { duration: FLEET_DURATION }, (finished) => {
+        withTiming(1, { duration }, (finished) => {
           if (finished) runOnJS(handleComplete)();
         }),
       );
     } else {
       // pause 解除などで再開する場合は現在位置から続行
-      const remaining = FLEET_DURATION * (1 - progress.value);
+      const remaining = duration * (1 - progress.value);
       progress.value = withTiming(1, { duration: remaining }, (finished) => {
         if (finished) runOnJS(handleComplete)();
       });
     }
-  }, [state, paused, handleComplete, progress]);
+  }, [state, paused, duration, handleComplete, progress]);
 
   const filledStyle = useAnimatedStyle(() => ({ flex: progress.value }));
   const emptyStyle = useAnimatedStyle(() => ({ flex: 1 - progress.value }));
@@ -134,6 +145,8 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
   const client = useAtomValue(clientAtom);
   const account = useAtomValue(accountAtom);
   const hideSensitiveContent = useAtomValue(hideSensitiveContentAtom);
+  const fleetPace = useAtomValue(fleetPaceAtom);
+  const reducedMotion = useReducedMotion();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [activeUsername, setActiveUsername] = useState<string | null>(null);
@@ -344,6 +357,7 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
     : getIdenticonUrl(currentFleet?.user.id);
 
   const isPaused = !!(currentFleet?.media && !isMediaLoaded) || isReactionPanelOpen;
+  const fleetDuration = FLEET_PACE_DURATIONS[fleetPace];
 
   const getProgressBarState = (index: number): ProgressBarState => {
     if (index < currentIndex) return "past";
@@ -352,7 +366,13 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal
+      visible={visible}
+      transparent
+      animationType={reducedMotion ? "none" : "fade"}
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       <View className="flex-1 bg-black">
         {/* Fleet content — full screen */}
         {isLoading ? (
@@ -380,6 +400,7 @@ export const FleetViewer = ({ username, usernames, visible, onClose, onMarkRead 
                   key={i}
                   state={getProgressBarState(i)}
                   paused={i === currentIndex ? isPaused : false}
+                  duration={fleetDuration}
                   onComplete={autoAdvance}
                 />
               ))}

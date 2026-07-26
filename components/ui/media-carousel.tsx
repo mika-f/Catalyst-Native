@@ -1,5 +1,7 @@
 import { CatalystActionSheetItem, CatalystDivider } from "@/components/design-system";
 import { MediaPinOverlay } from "@/components/status/media-pin-overlay";
+import { useHaptics } from "@/hooks/use-haptics";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { getCdnUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import type { EpicleseReference } from "@/models/epiclese";
@@ -70,6 +72,8 @@ export const MediaCarousel = memo(({ medias, onIndexChange, pins }: Props) => {
 
   const imageQuality = useAtomValue(timelineImageQualityAtom);
   const wifiUpgrade = useAtomValue(timelineWifiUpgradeAtom);
+  const haptics = useHaptics();
+  const reducedMotion = useReducedMotion();
   const [isWifi, setIsWifi] = useState(false);
 
   useEffect(() => {
@@ -148,22 +152,22 @@ export const MediaCarousel = memo(({ medias, onIndexChange, pins }: Props) => {
 
         const file = await File.downloadFileAsync(url, Paths.cache, { idempotent: true });
         await MediaLibraryAsset.create(file.uri);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        haptics.notification(Haptics.NotificationFeedbackType.Success);
       } catch (e) {
         Alert.alert("エラー", `画像の保存に失敗しました。\n${e instanceof Error ? e.message : String(e)}`);
       }
     },
-    [SCREEN_WIDTH],
+    [SCREEN_WIDTH, haptics],
   );
 
   const handleImageLongPress = useCallback(() => {
     const media = medias[modalIndexRef.current];
     if (!media) return;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    haptics.impact(Haptics.ImpactFeedbackStyle.Heavy);
     actionTargetMediaRef.current = media;
     imageActionsSheetRef.current?.snapToIndex(0);
-  }, [medias]);
+  }, [haptics, medias]);
 
   useEffect(() => {
     // FlashList can recycle timeline cells, so reset carousel state when a different post's media set is mounted.
@@ -191,17 +195,17 @@ export const MediaCarousel = memo(({ medias, onIndexChange, pins }: Props) => {
     })
     .onEnd((event) => {
       if (zoomScale.value > 1.01) {
-        modalTranslateY.value = withSpring(0, SPRING_CONFIG);
+        modalTranslateY.value = reducedMotion ? 0 : withSpring(0, SPRING_CONFIG);
         return;
       }
       const shouldDismiss = Math.abs(event.translationY) > SCREEN_HEIGHT * 0.15 || Math.abs(event.velocityY) > 800;
       if (shouldDismiss) {
         const direction = event.translationY > 0 ? 1 : -1;
-        modalTranslateY.value = withTiming(direction * SCREEN_HEIGHT, { duration: 200 }, () => {
+        modalTranslateY.value = withTiming(direction * SCREEN_HEIGHT, { duration: reducedMotion ? 0 : 200 }, () => {
           runOnJS(dismissModal)();
         });
       } else {
-        modalTranslateY.value = withSpring(0, SPRING_CONFIG);
+        modalTranslateY.value = reducedMotion ? 0 : withSpring(0, SPRING_CONFIG);
       }
     });
 
@@ -273,7 +277,9 @@ export const MediaCarousel = memo(({ medias, onIndexChange, pins }: Props) => {
 
       newIndex = Math.max(0, Math.min(newIndex, len - 1));
       currentIndexSV.value = newIndex;
-      translateX.value = withSpring(-newIndex * SCREEN_WIDTH, SPRING_CONFIG);
+      translateX.value = reducedMotion
+        ? -newIndex * SCREEN_WIDTH
+        : withSpring(-newIndex * SCREEN_WIDTH, SPRING_CONFIG);
       runOnJS(setCurrentIndex)(newIndex);
       if (onIndexChange) runOnJS(onIndexChange)(newIndex);
     });
@@ -291,7 +297,7 @@ export const MediaCarousel = memo(({ medias, onIndexChange, pins }: Props) => {
 
   const navigateToIndex = (index: number) => {
     currentIndexSV.value = index;
-    translateX.value = withSpring(-index * SCREEN_WIDTH, SPRING_CONFIG);
+    translateX.value = reducedMotion ? -index * SCREEN_WIDTH : withSpring(-index * SCREEN_WIDTH, SPRING_CONFIG);
     setCurrentIndex(index);
     onIndexChange?.(index);
   };
@@ -417,7 +423,7 @@ export const MediaCarousel = memo(({ medias, onIndexChange, pins }: Props) => {
       <Modal
         visible={presentedMediaIndex !== null}
         transparent
-        animationType="fade"
+        animationType={reducedMotion ? "none" : "fade"}
         onRequestClose={() => setPresentedMediaIndex(null)}
       >
         <GestureHandlerRootView style={{ flex: 1 }}>
