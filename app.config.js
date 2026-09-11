@@ -46,13 +46,14 @@ module.exports = ({ config }) => {
     slug: "catalyst-native",
     scheme: identifier,
     version: pkg.version,
-    orientation: "portrait",
     icon: "./assets/images/icon.png",
     userInterfaceStyle: "automatic",
     ios: {
       ...config.ios,
       associatedDomains,
       bundleIdentifier: identifier,
+      googleServicesFile: "./GoogleService-Info.plist",
+      supportsTablet: true,
       config: {
         usesNonExemptEncryption: false,
       },
@@ -60,10 +61,8 @@ module.exports = ({ config }) => {
         "aps-environment": environment === "production" ? "production" : "development",
         "com.apple.developer.networking.wifi-info": true,
       },
-      googleServicesFile: "./GoogleService-Info.plist",
       infoPlist: {
         CFBundleDevelopmentRegion: "ja_JP",
-        UIBackgroundModes: ["remote-notification"],
         LSApplicationQueriesSchemes: [
           "googlechrome",
           "googlechromes",
@@ -71,6 +70,17 @@ module.exports = ({ config }) => {
           "microsoft-edge-https",
           "brave",
           "ddgQuickLink",
+        ],
+        UIBackgroundModes: ["remote-notification"],
+        UISupportedInterfaceOrientations: [
+          //
+          "UIInterfaceOrientationPortrait",
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationPortraitUpsideDown",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight",
         ],
       },
     },

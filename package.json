@@ -1,6 +1,6 @@
 {
   "name": "catalyst-native",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "main": "expo-router/entry",
   "packageManager": "pnpm@12.3.4",
