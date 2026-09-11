@@ -21,6 +21,7 @@ import { ProfileEmoji } from "@/components/user/profile-emoji";
 import { abs, rel } from "@/lib/dayjs";
 import { getCdnUrl } from "@/lib/media";
 import { getReactionKey } from "@/lib/reactions";
+import { quoteSearchQualifier } from "@/lib/search-query";
 import { cn } from "@/lib/utils";
 import { accountAtom } from "@/models/atoms/account";
 import { clientAtom } from "@/models/atoms/credential";
@@ -572,7 +573,7 @@ export default function StatusDetailsPage() {
                       className="flex-1 active:opacity-75"
                       onPress={() =>
                         router.push(
-                          `/search/${encodeURIComponent(`platform:${meta.platform} world:"${meta.world!.name}"`)}`,
+                          `/search/${encodeURIComponent(`platform:${meta.platform} world:${quoteSearchQualifier(meta.world!.name)}`)}`,
                         )
                       }
                     >
@@ -636,7 +637,7 @@ export default function StatusDetailsPage() {
                   const isWorldLink = key === "World" && ref.startsWith("wrld_");
                   const isAuthorLink = ref.startsWith("usr_");
                   const searchQuery = isWorldLink
-                    ? `platform:VRChat world:"${value}"`
+                    ? `platform:VRChat world:${quoteSearchQualifier(value)}`
                     : isAuthorLink
                       ? `takenBy:${ref}`
                       : null;
