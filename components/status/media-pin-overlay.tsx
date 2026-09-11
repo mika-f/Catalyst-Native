@@ -138,7 +138,7 @@ export const MediaPinOverlay = ({ media, references, width, height, visible, onT
                 className="active:opacity-75"
                 onPress={() => openUrlWithBrowser(getEpicleseItemUrl(selected.reference))}
               >
-                <CatalystText variant="subtitle" tone="tint">
+                <CatalystText variant="subtitle" tone="link">
                   {selected.name}
                 </CatalystText>
               </Pressable>

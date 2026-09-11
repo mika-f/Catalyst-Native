@@ -576,7 +576,7 @@ export default function StatusDetailsPage() {
                         )
                       }
                     >
-                      <CatalystText variant="caption" tone="tint">
+                      <CatalystText variant="caption" tone="link">
                         {meta.world.name}
                       </CatalystText>
                     </Pressable>
@@ -608,7 +608,7 @@ export default function StatusDetailsPage() {
                             className="min-w-0 shrink active:opacity-75"
                             onPress={() => openUrlWithBrowser(getEpicleseItemUrl(item.reference))}
                           >
-                            <CatalystText variant="caption" tone="tint" numberOfLines={1}>
+                            <CatalystText variant="caption" tone="link" numberOfLines={1}>
                               {item.name}
                             </CatalystText>
                           </Pressable>
@@ -652,7 +652,7 @@ export default function StatusDetailsPage() {
                           className="flex-1 active:opacity-75"
                           onPress={() => router.push(`/search/${encodeURIComponent(searchQuery)}`)}
                         >
-                          <CatalystText variant="caption" tone="tint">
+                          <CatalystText variant="caption" tone="link">
                             {displayValue}
                           </CatalystText>
                         </Pressable>
