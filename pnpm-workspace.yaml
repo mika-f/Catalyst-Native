@@ -20,5 +20,6 @@ minimumReleaseAgeExclude:
 patchedDependencies:
   "@expo/cli": patches/@expo__cli.patch
   "@likashefqet/react-native-image-zoom": patches/@likashefqet__react-native-image-zoom.patch
+  '@sentry/react-native@8.21.0': patches/@sentry__react-native@8.21.0.patch
   react-native: patches/react-native.patch
   react-native-image-crop-picker@0.51.1: patches/react-native-image-crop-picker@0.51.1.patch

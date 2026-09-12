@@ -148,8 +148,7 @@ module.exports = ({ config }) => {
           assets: [
             //
             "assets/images/emoji-test.txt",
-            "assets/images/ui/*.json",
-            "assets/images/ui/*.svg",
+            "assets/images/ui",
           ],
         },
       ],
@@ -162,7 +161,6 @@ module.exports = ({ config }) => {
         },
       ],
       "@react-native-firebase/messaging",
-      "@react-native-async-storage/expo-with-async-storage",
       [
         "@luccasr73/with-rn-image-crop-picker",
         {
@@ -202,6 +200,7 @@ module.exports = ({ config }) => {
       "@natsuneko-laboratory/react-native-twitter-text",
       "@sentry/react-native",
       "expo-eas-ipad-support",
+      "./plugins/with-mac-catalyst",
     ],
     extra: {
       router: {},
