@@ -31,6 +31,7 @@ function screenshotUrl(filename: string): string {
 
 export function StoreCanvas({ editable = false, format, formatKey, slide }: StoreCanvasProps) {
   const compact = formatKey === "google-play";
+  const isIpad = formatKey === "app-store-ipad";
   const canvasStyle: CanvasStyle = {
     "--accent": slide.accent,
     "--accent-soft": slide.accentSoft,
@@ -80,11 +81,20 @@ export function StoreCanvas({ editable = false, format, formatKey, slide }: Stor
         </header>
 
         <div
-          className={`absolute left-[76px] overflow-hidden rounded-t-[112px] border-[18px] border-b-0 border-[#202126] bg-[#202126] shadow-[0_36px_80px_rgba(20,23,30,0.22)] ${compact ? "top-[748px] w-[928px]" : "top-[845px] w-[1132px]"}`}
+          className={`absolute overflow-hidden border-b-0 border-[#202126] bg-[#202126] shadow-[0_36px_80px_rgba(20,23,30,0.22)] ${isIpad
+              ? "top-[845px] left-[194px] w-[1660px] rounded-t-[66px] border-[66px]"
+              : compact
+                ? "top-[748px] left-[76px] w-[928px] rounded-t-[112px] border-[18px]"
+                : "top-[845px] left-[76px] w-[1132px] rounded-t-[112px] border-[18px]"
+            }`}
         >
-          <div className="relative overflow-hidden rounded-t-[90px] bg-black">
-            <img alt="" className="block h-auto w-full" draggable="false" src={screenshotUrl(slide.screenshot)} />
-            <div className="absolute top-[20px] left-1/2 h-[38px] w-[144px] -translate-x-1/2 rounded-full bg-[#050506]" />
+          <div className={`relative overflow-hidden bg-black ${isIpad ? "rounded-t-[10px]" : "rounded-t-[90px]"}`}>
+            <img alt="" className="block h-auto w-full" draggable="false" src={screenshotUrl(slide.screenshot[formatKey])} />
+            {isIpad ? (
+              null
+            ) : (
+              <div className="absolute top-[20px] left-1/2 h-[38px] w-[144px] -translate-x-1/2 rounded-full bg-[#050506]" />
+            )}
           </div>
         </div>
 
