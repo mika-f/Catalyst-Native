@@ -145,7 +145,12 @@ module.exports = ({ config }) => {
       [
         "expo-asset",
         {
-          assets: ["assets/images/emoji-test.txt"],
+          assets: [
+            //
+            "assets/images/emoji-test.txt",
+            "assets/images/ui/*.json",
+            "assets/images/ui/*.svg",
+          ],
         },
       ],
       [
