@@ -16,7 +16,7 @@ export interface StoreSlide {
   eyebrow: string;
   headline: [string, string];
   note: string;
-  screenshot: string;
+  screenshot: { [key in FormatKey]: string };
   accent: string;
   accentSoft: string;
 }
@@ -26,6 +26,11 @@ export const formats = {
     label: "App Store · 6.5-inch",
     width: 1284,
     height: 2778,
+  },
+  "app-store-ipad": {
+    label: "App Store · iPad",
+    width: 2048,
+    height: 2732,
   },
   "google-play": {
     label: "Google Play · phone",
@@ -43,7 +48,11 @@ export const slides: StoreSlide[] = [
     eyebrow: "タイムライン",
     headline: ["好きな世界が、", "今日も流れてくる。"],
     note: "フォロー中もグローバルも、ひとつのアプリで。",
-    screenshot: "IMG_1675.PNG",
+    screenshot: {
+      "app-store": "IMG_1675.PNG",
+      "app-store-ipad": "IMG_0072.PNG",
+      "google-play": "IMG_1675.PNG",
+    },
     accent: "#f28bb2",
     accentSoft: "#fde8f0",
   },
@@ -53,7 +62,11 @@ export const slides: StoreSlide[] = [
     eyebrow: "プロフィール",
     headline: ["あなたらしさを、", "ひとつの場所に。"],
     note: "投稿もギャラリーもアルバムも。大切な記録をプロフィールに。",
-    screenshot: "IMG_1679.PNG",
+    screenshot: {
+      "app-store": "IMG_1679.PNG",
+      "app-store-ipad": "IMG_0073.PNG",
+      "google-play": "IMG_1679.PNG",
+    },
     accent: "#608bcf",
     accentSoft: "#e5edfa",
   },
@@ -63,7 +76,11 @@ export const slides: StoreSlide[] = [
     eyebrow: "ギャラリー",
     headline: ["思い出を並べる。", "また、好きになる。"],
     note: "VRで見つけた景色や作品を、美しいグリッドで振り返れます。",
-    screenshot: "IMG_1676.PNG",
+    screenshot: {
+      "app-store": "IMG_1676.PNG",
+      "app-store-ipad": "IMG_0074.PNG",
+      "google-play": "IMG_1676.PNG",
+    },
     accent: "#8b71cf",
     accentSoft: "#eee9fb",
   },
@@ -73,7 +90,11 @@ export const slides: StoreSlide[] = [
     eyebrow: "コンテスト",
     headline: ["作品を持ち寄れば、", "世界はもっと面白い。"],
     note: "コンテストを見つけて、投稿して、みんなで楽しもう。",
-    screenshot: "IMG_1677.PNG",
+    screenshot: {
+      "app-store": "IMG_1677.PNG",
+      "app-store-ipad": "IMG_0075.PNG",
+      "google-play": "IMG_1677.PNG",
+    },
     accent: "#db854d",
     accentSoft: "#faeadf",
   },
@@ -83,7 +104,11 @@ export const slides: StoreSlide[] = [
     eyebrow: "メタデータ",
     headline: ["どんなコーディネートも", "もっとわかりやすく。"],
     note: "作品にメタデータを追加して、みんなで共有しよう。",
-    screenshot: "IMG_1680.PNG",
+    screenshot: {
+      "app-store": "IMG_1680.PNG",
+      "app-store-ipad": "IMG_0076.PNG",
+      "google-play": "IMG_1680.PNG",
+    },
     accent: "#258ea8",
     accentSoft: "#e2f3f6",
   },
