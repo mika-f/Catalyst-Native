@@ -1,4 +1,5 @@
 import { isCatalystUrl } from "@/lib/app-links";
+import { isMacCatalyst } from "@/lib/device-layout";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getCustomTabsSupportingBrowsersAsync, openBrowserAsync, WebBrowserPresentationStyle } from "expo-web-browser";
 import { Linking, Platform } from "react-native";
@@ -129,6 +130,8 @@ export async function getInstalledBrowsers(): Promise<BrowserDefinition[]> {
 
   const results = await Promise.all(
     BROWSERS.map(async (browser) => {
+      // Mac Catalyst では SFSafariViewController が使えないため In-App ブラウザーは選ばせない
+      if (browser.key === "inApp" && isMacCatalyst) return null;
       if (browser.alwaysAvailable) return browser;
       if (!browser.iosScheme) return null;
 
@@ -185,6 +188,12 @@ export async function openUrlWithBrowser(url: string, browserKey?: BrowserKey): 
 
   switch (selected) {
     case "inApp": {
+      // iPhone / iPad で In-App を選んだ状態のまま Mac に引き継がれた場合のフォールバック
+      if (isMacCatalyst) {
+        await Linking.openURL(url);
+        return;
+      }
+
       await openBrowserAsync(url, {
         presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
       });

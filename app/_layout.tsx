@@ -37,6 +37,7 @@ import {
 import { loadHideSensitiveContent } from "@/models/sensitive-content-settings";
 import { StreamingProvider } from "@/models/streaming";
 import { loadStreamingEnabled } from "@/models/streaming-settings";
+import { importStorageSnapshot } from "@/models/storage-migration";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   getMessaging,
@@ -117,39 +118,45 @@ export default Sentry.wrap(function RootLayout() {
   });
 
   useEffect(() => {
-    Promise.all([
-      loadTimelineImageQuality(),
-      loadWifiUpgrade(),
-      loadHideSensitiveContent(),
-      loadStreamingEnabled(),
-      loadReduceMotionPreference(),
-      loadFleetPace(),
-      loadUnderlineLinks(),
-      loadBoostTextContrast(),
-      loadHapticsEnabled(),
-    ]).then(
-      ([
-        quality,
-        wifiUpgrade,
-        hideSensitiveContent,
-        streamingEnabled,
-        reduceMotionPreference,
-        fleetPace,
-        underlineLinks,
-        boostTextContrast,
-        hapticsEnabled,
-      ]) => {
-        setTimelineImageQuality(quality);
-        setTimelineWifiUpgrade(wifiUpgrade);
-        setHideSensitiveContent(hideSensitiveContent);
-        setStreamingEnabled(streamingEnabled);
-        setReduceMotionPreference(reduceMotionPreference);
-        setFleetPace(fleetPace);
-        setUnderlineLinks(underlineLinks);
-        setBoostTextContrast(boostTextContrast);
-        setHapticsEnabled(hapticsEnabled);
-      },
-    );
+    // AsyncStorage 3.x から退避したスナップショットを取り込んでから設定を読む
+    // (詳細は models/storage-migration.ts)
+    importStorageSnapshot()
+      .then(() =>
+        Promise.all([
+          loadTimelineImageQuality(),
+          loadWifiUpgrade(),
+          loadHideSensitiveContent(),
+          loadStreamingEnabled(),
+          loadReduceMotionPreference(),
+          loadFleetPace(),
+          loadUnderlineLinks(),
+          loadBoostTextContrast(),
+          loadHapticsEnabled(),
+        ]),
+      )
+      .then(
+        ([
+          quality,
+          wifiUpgrade,
+          hideSensitiveContent,
+          streamingEnabled,
+          reduceMotionPreference,
+          fleetPace,
+          underlineLinks,
+          boostTextContrast,
+          hapticsEnabled,
+        ]) => {
+          setTimelineImageQuality(quality);
+          setTimelineWifiUpgrade(wifiUpgrade);
+          setHideSensitiveContent(hideSensitiveContent);
+          setStreamingEnabled(streamingEnabled);
+          setReduceMotionPreference(reduceMotionPreference);
+          setFleetPace(fleetPace);
+          setUnderlineLinks(underlineLinks);
+          setBoostTextContrast(boostTextContrast);
+          setHapticsEnabled(hapticsEnabled);
+        },
+      );
   }, [
     setBoostTextContrast,
     setFleetPace,

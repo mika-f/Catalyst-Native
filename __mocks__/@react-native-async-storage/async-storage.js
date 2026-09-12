@@ -16,6 +16,22 @@ const AsyncStorageMock = {
     store = {};
     return Promise.resolve();
   }),
+  getAllKeys: jest.fn(() => Promise.resolve(Object.keys(store))),
+  multiGet: jest.fn((keys) =>
+    Promise.resolve(keys.map((key) => [key, Object.hasOwn(store, key) ? store[key] : null])),
+  ),
+  multiSet: jest.fn((pairs) => {
+    for (const [key, value] of pairs) {
+      store[key] = value;
+    }
+    return Promise.resolve();
+  }),
+  multiRemove: jest.fn((keys) => {
+    for (const key of keys) {
+      delete store[key];
+    }
+    return Promise.resolve();
+  }),
   __INTERNAL_MOCK_STORE__: () => store,
 };
 

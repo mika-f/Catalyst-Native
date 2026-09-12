@@ -62,6 +62,54 @@ Fleet（24時間で消える、テキスト・画像・ステッカーをレイ�
 
 CDN URL 変換やステッカー画像URLの規約（`static.natsuneko.com/images/reactions/{symbol}.png`）などの Catalyst 固有ロジックはコアパッケージに含めず、[components/fleet/content.tsx](../components/fleet/content.tsx) の `resolveMediaUri`/`resolveStickerImageUrl` 経由でアプリ側から注入しています。
 
+### macOS (Mac Catalyst)
+
+macOS 版は iOS のコードベースを Mac Catalyst としてビルドしたものです。`ios/` は `expo prebuild` の
+生成物で gitignore されているため、Xcode 側の設定は [plugins/with-mac-catalyst.js](plugins/with-mac-catalyst.js)
+（config plugin）に持たせています。**`ios/` を直接編集しても次の prebuild で消えます。**
+
+プラグインが行うこと:
+
+- `SUPPORTS_MACCATALYST` / `MACOSX_DEPLOYMENT_TARGET` / `DERIVE_MACCATALYST_PRODUCT_BUNDLE_IDENTIFIER` の設定
+- Mac App Store 用の entitlements (`Catalyst-macOS.entitlements`) の生成
+  - App Sandbox（Mac App Store 提出に必須）と、それに伴うネットワーク・写真・ファイルの許可
+  - Keychain Sharing（Catalyst では iOS と違い、これがないと `expo-secure-store` が一切動かない）
+  - Catalyst で使えない iOS 専用 entitlement（`networking.wifi-info` など）の除去
+- Podfile の `react_native_post_install` に `:mac_catalyst_enabled => true` を渡す
+- `LSApplicationCategoryType`（Mac App Store 提出に必須）の設定
+
+bundle identifier は iOS 版と同一 (`com.natsuneko.catalyst`) です。ユニバーサル購入になるほか、
+`GoogleService-Info.plist` の `BUNDLE_ID` と一致させる必要があるためでもあります。
+
+#### AsyncStorage は 2.x に固定
+
+**`@react-native-async-storage/async-storage` を 3.x に上げると macOS がビルドできなくなります。**
+3.x の Apple 実装は Kotlin Multiplatform (+SKIE) でビルドされた `SharedAsyncStorage.framework` に
+依存していますが、この xcframework のスライスは `ios` / `ios-simulator` / `macos` だけで、
+Mac Catalyst スライスがありません。Kotlin/Native に Mac Catalyst ターゲットが存在しないため、
+上流が KMP をやめない限り増えません。2.x はピュア Objective-C なので Catalyst で問題なく通ります。
+
+なお 2.2.0 は Expo SDK 57 が `bundledNativeModules.json` で指定しているバージョンでもあります
+(`npx expo install` が選ぶのは 2.2.0 です)。
+
+2.x と 3.x はネイティブの保存先が異なり互いに読めないため、バージョンを動かす場合は
+[models/storage-migration.ts](models/storage-migration.ts) のスナップショット受け渡しが必要です。
+リリース順序もそこに書いてあります。
+
+#### Sentry のパッチ
+
+[patches/@sentry__react-native@8.21.0.patch](patches/@sentry__react-native@8.21.0.patch) は
+Mac Catalyst で Sentry の xcframework スライス選択が誤る上流バグへの対処です。
+`FRAMEWORK_SEARCH_PATHS[sdk=maccatalyst*]` という条件が使われていますが、Xcode に `maccatalyst`
+という SDK 名は存在せず (Catalyst ビルドでも `SDK_NAME` は `macosx`)、この条件は一度も一致しません。
+結果 UIKit を含まない macOS スライスが選ばれ、`SentryScreenFramesWrapper.m` がコンパイルエラーに
+なります。パッチでは `IS_MACCATALYST` を挟んで `[sdk=macosx*]` の中で振り分けています。
+Sentry を上げるときはこのパッチの当たり具合を確認してください。
+
+Catalyst では `Platform.OS` は `"ios"` のままなので、分岐には `lib/device-layout.ts` の
+`isMacCatalyst` を使ってください。UIKit の一部（`SFSafariViewController` = `openBrowserAsync` など）が
+使えないため、該当箇所にはフォールバックが必要です。
+
 ### ステート管理
 
 グローバルステートの管理には [Jotai](https://jotai.org/) を使用しています。

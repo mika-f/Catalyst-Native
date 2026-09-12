@@ -34,7 +34,7 @@
 
 - [Node.js](https://nodejs.org/) `v24.14.0`（`.node-version` を参照。[Volta](https://volta.sh/) や [fnm](https://github.com/Schniz/fnm) などの利用を推奨）
 - [pnpm](https://pnpm.io/)
-- iOS 開発: macOS + [Xcode](https://developer.apple.com/xcode/)
+- iOS / macOS (Mac Catalyst) 開発: macOS + [Xcode](https://developer.apple.com/xcode/)
 - Android 開発: [Android Studio](https://developer.android.com/studio)（SDK / エミュレータ）
 
 実機・シミュレータのセットアップについては [Expo の環境構築ガイド](https://docs.expo.dev/get-started/set-up-your-environment/) を参照してください。
@@ -89,6 +89,9 @@ pnpm run:ios
 
 # Android エミュレータ／実機で起動
 pnpm run:android
+
+# Mac Catalyst 版を起動（別ターミナルで pnpm start が必要）
+pnpm run:macos
 ```
 
 上記コマンドは内部で `prebuilt`（絵文字・ライセンス一覧の生成）を実行したあと、`.env.local` を読み込んで `expo run:*` を起動します。
@@ -143,6 +146,60 @@ pnpm build:android:production
 # ストアへの提出
 pnpm submit:ios:production
 pnpm submit:android:production
+```
+
+### macOS (Mac Catalyst)
+
+macOS 版は iOS のコードベースを [Mac Catalyst](https://developer.apple.com/mac-catalyst/) としてビルドしたものです。
+必要な Xcode 設定（`SUPPORTS_MACCATALYST`、macOS 用 entitlements、CocoaPods の Catalyst 対応）は
+[plugins/with-mac-catalyst.js](./plugins/with-mac-catalyst.js) が `expo prebuild` 時に生成するため、
+`ios/` を手で編集する必要はありません。
+
+EAS Build は Mac Catalyst をビルドできないため、ここだけローカルの `xcodebuild` を直接使います。
+
+```bash
+# .pkg の書き出しまで
+APPLE_TEAM_ID=XXXXXXXXXX pnpm build:macos:appstore
+
+# App Store Connect へアップロード
+ASC_API_KEY_ID=... ASC_API_ISSUER_ID=... pnpm submit:macos:appstore
+```
+
+bundle identifier は iOS 版と同じ `com.natsuneko.catalyst` を使うため、App Store Connect 上では
+同一アプリに macOS プラットフォームを追加する形（ユニバーサル購入）になります。
+事前に Apple Developer 側で以下が必要です。
+
+- App ID `com.natsuneko.catalyst` で Mac Catalyst を有効化する
+- Mac App Store 用のプロビジョニングプロファイルと、`Apple Distribution` / `Mac Installer Distribution` 証明書
+- App Store Connect の App Store Connect API キー（`~/.appstoreconnect/private_keys/` に配置）
+
+> [!IMPORTANT]
+> `@react-native-async-storage/async-storage` は 2.x に固定してください。3.x にすると macOS が
+> ビルドできなくなります。理由と、バージョンを動かす場合に必要なデータ移行の手順は
+> [AGENTS.md](./AGENTS.md) と [models/storage-migration.ts](./models/storage-migration.ts) を参照してください。
+
+### macOS をローカルで動かす (`pnpm run:macos`)
+
+macOS 版には App Sandbox / Keychain Sharing の entitlements が付くため、アドホック署名では
+起動できません。ローカル実行にも Apple Developer アカウントでの署名が必須です。
+
+```bash
+# 別ターミナルで Metro を起動しておく
+pnpm start
+
+# Team ID を指定して実行 (初回ビルドは Mac Catalyst 用のプロビジョニングプロファイルを
+# 自動生成するため少し時間がかかる)
+APPLE_TEAM_ID=XXXXXXXXXX pnpm run:macos
+```
+
+初めてこのマシンでビルドする場合、Xcode に Apple ID がサインインされていないと
+`No Accounts: Add a new account in Accounts settings.` で失敗します。
+Xcode → Settings (⌘,) → Accounts タブ → 左下の「+」から Apple ID を追加してください。
+
+`APPLE_TEAM_ID` は次のコマンドで手元の証明書から確認できます。
+
+```bash
+security find-identity -v -p codesigning
 ```
 
 タグの push をトリガーとしたリリースワークフローは [.github/workflows/](./.github/workflows/) に定義されています。

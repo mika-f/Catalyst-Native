@@ -1,0 +1,25 @@
+diff --git a/RNSentry.podspec b/RNSentry.podspec
+index 4162b140ddd20375501329d8a4a41f36335e0029..e9923fcc8c1fba8ffc5d7a02777111ba99e5652c 100644
+--- a/RNSentry.podspec
++++ b/RNSentry.podspec
+@@ -143,6 +143,20 @@ Pod::Spec.new do |s|
+       acc["FRAMEWORK_SEARCH_PATHS[sdk=#{sdk}*]"] = (['$(inherited)'] + paths).join(' ')
+     end
+ 
++    # Mac Catalyst のビルドでは SDK 名が `macosx` になるため、上で生成した
++    # `[sdk=maccatalyst*]` の条件は一度も一致せず、`[sdk=macosx*]` の側 —
++    # UIKit を持たない macOS スライス — が選ばれてしまう。その結果
++    # SentryFramesTracker / SentryScreenFrames が見つからず
++    # ios/SentryScreenFramesWrapper.m がコンパイルエラーになる。
++    # Catalyst ビルドでのみ YES になる `IS_MACCATALYST` を挟んで
++    # `[sdk=macosx*]` の中で振り分ける。
++    catalyst_slice = File.join(sentry_xcframework_dir, SENTRY_XCFRAMEWORK_SLICES_BY_SDK['maccatalyst'].first)
++    macos_slice = File.join(sentry_xcframework_dir, SENTRY_XCFRAMEWORK_SLICES_BY_SDK['macosx'].first)
++    xcframework_search_paths['SENTRY_XCFRAMEWORK_DIR_YES'] = %("#{catalyst_slice}")
++    xcframework_search_paths['SENTRY_XCFRAMEWORK_DIR_NO'] = %("#{macos_slice}")
++    xcframework_search_paths['FRAMEWORK_SEARCH_PATHS[sdk=macosx*]'] =
++      '$(inherited) $(SENTRY_XCFRAMEWORK_DIR_$(IS_MACCATALYST))'
++
+     pod_target_xcconfig.merge!(xcframework_search_paths)
+     s.user_target_xcconfig = xcframework_search_paths
+   else
