@@ -3,6 +3,7 @@ import { Page, PageHeader } from "@/components/page";
 import { useAsyncOneTimeEffect } from "@/hooks/use-async-one-time-effect";
 import { useContainerWidth } from "@/layout/breakpoints";
 import * as ArrayUtils from "@/lib/array";
+import { getColumnCount } from "@/lib/column";
 import { getCdnUrl } from "@/models/cdn";
 import { CatalystStatus } from "@/models/sdk-types";
 import { Navigation } from "@natsuneko-laboratory/react-native-desktop-navigation";
@@ -14,11 +15,6 @@ import { ActivityIndicator, Image, Pressable, RefreshControl, View, type ViewPro
 const MIN = 300;
 const MAX = 400;
 const GAP = 4;
-
-// 各セルの幅は「コンテナ幅 / カラム数」になるため、ここではカラム数だけを決める
-const getColumnCount = (width: number): number => {
-  return Math.max(1, Math.floor(width / MIN), Math.ceil(width / MAX));
-}
 
 const getAspectRatio = (media: CatalystStatus["medias"][number]): number => {
   return media.metadata?.width && media.metadata?.height ? media.metadata.width / media.metadata.height : 1;
@@ -132,7 +128,7 @@ export const GalleryScreen = ({ navigation }: { navigation: Navigation }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isLoadingRef = useRef(false);
   const sets = useRef<Set<string>>(new Set());
-  const columns = useMemo(() => getColumnCount(container.width), [container.width]);
+  const columns = useMemo(() => getColumnCount(container.width, MIN, MAX), [container.width]);
   const slots = useMemo(() => buildSlots(items, columns), [items, columns]);
   const layout = useMemo(() => ({ columns, slots }), [columns, slots]);
 

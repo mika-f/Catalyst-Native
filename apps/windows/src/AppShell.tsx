@@ -26,12 +26,13 @@ import { CatalystTrend } from "./models/sdk-types";
 import type { RootParams, SidebarParams } from "./navigation";
 import { getSceneTitle, type Scene } from "./scenes/scene";
 import { SceneHostContext } from "./scenes/scene-host";
-import { ContestsScreen, ThemesScreen } from "./screens/collection";
+import { ContestsScreen } from "./screens/collection";
 import { ExplorerScreen } from "./screens/explorer";
 import { GalleryScreen } from "./screens/gallery";
 import { HomeScreen } from "./screens/home";
 import { NotificationsScreen } from "./screens/notifications";
 import { SceneContent } from "./screens/scene-content";
+import { ThemesScreen } from "./screens/themes";
 import { NavigationThemes, SidebarAppearance } from "./theme";
 
 const SidebarNavigator = createSidebarNavigator<SidebarParams>();
@@ -195,7 +196,7 @@ export const AppShell = ({
   const setTheme = useSetAtom(themeAtom);
 
   useInterval(async () => {
-    "worklets";
+    "worklet";
 
     // メインウィンドウでだけ実行する
     if (windowId) {
