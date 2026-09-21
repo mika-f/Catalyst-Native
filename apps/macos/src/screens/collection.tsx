@@ -105,19 +105,6 @@ export const CollectionScreen = <T extends string>({ title, subtitle, tabs, vari
   );
 };
 
-export const ContestsScreen = () => (
-  <CollectionScreen
-    title="コンテスト"
-    subtitle="テーマに沿った作品を投稿して参加しよう"
-    variant="card"
-    tabs={[
-      { key: "open", label: "開催中" },
-      { key: "upcoming", label: "開催予定" },
-      { key: "closed", label: "終了" },
-    ]}
-  />
-);
-
 export const ThemesScreen = () => (
   <CollectionScreen
     title="お題"

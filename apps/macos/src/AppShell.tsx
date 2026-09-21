@@ -18,7 +18,8 @@ import { SidebarFooter, type SidebarAccount } from "./components/sidebar-footer"
 import { useInterval } from "./hooks/use-interval";
 import { login } from "./models/auth";
 import { CatalystTrend } from "./models/sdk-types";
-import { ContestsScreen, GalleryScreen, ThemesScreen } from "./screens/collection";
+import { GalleryScreen, ThemesScreen } from "./screens/collection";
+import { ContestsScreen } from "./screens/contests";
 import { ExplorerScreen } from "./screens/explorer";
 import { HomeScreen } from "./screens/home";
 import { NotificationsScreen } from "./screens/notifications";
