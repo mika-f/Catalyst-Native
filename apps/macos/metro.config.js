@@ -15,6 +15,27 @@ const config = {
   resolver: {
     nodeModulesPaths: [path.resolve(__dirname, "node_modules"), path.resolve(workspaceRoot, "node_modules")],
     disableHierarchicalLookup: true,
+    // The CLI normally injects the macOS defaults (this, the serializer below, and the react-native -> react-native-macos
+    // redirect in resolveRequest) via setFrameworkDefaults(), but it does so on the hoisted @react-native/metro-config
+    // instance, not the one this app resolves, so they must be declared here.
+    platforms: ["ios", "android", "macos", "native"],
+    // Kept inside uniwind's base resolver: uniwind matches the literal "react-native" specifier to swap in
+    // its className-aware components, so the redirect must happen after that check, not before it.
+    resolveRequest: (context, moduleName, platform) => {
+      if (platform === "macos") {
+        if (moduleName === "react-native") {
+          moduleName = "react-native-macos";
+        } else if (moduleName.startsWith("react-native/")) {
+          moduleName = `react-native-macos/${moduleName.slice("react-native/".length)}`;
+        }
+      }
+      return context.resolveRequest(context, moduleName, platform);
+    },
+  },
+  serializer: {
+    getModulesRunBeforeMainModule: () => [
+      require.resolve("react-native-macos/Libraries/Core/InitializeCore", { paths: [__dirname] }),
+    ],
   },
 };
 
