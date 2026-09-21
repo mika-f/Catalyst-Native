@@ -26,16 +26,16 @@ const getCellHeightRatio = (item: CatalystStatus): number => {
   return media ? 1 / getAspectRatio(media) : 0;
 }
 
-type GallerySlot =
-  | { type: "item"; item: CatalystStatus; column: number; offsetRatio: number; heightRatio: number }
-  | { type: "spacer"; key: string };
+type GallerySlot = { item: CatalystStatus; column: number; offsetRatio: number; heightRatio: number };
+
+type GalleryLayout = { columns: number; slots: GallerySlot[]; overflowRatio: number };
 
 // FlashList の masonry は計測した高さで「最も短いカラム」を選ぶため、リサイズ中に計測値が 1px ずれるだけで
 // 同じ高さのカラムの選択が入れ替わり、以降のセルがカラムごと入れ替わってちらつく。
-// 縦横比から高さは計算できるので、カラムの割り当てと縦位置 (セル幅に対する比) はここで決定的に求め、
-// FlashList は optimizeItemArrangement={false} (i 番目を i % カラム数 のカラムへ順に積む) で同じ配置になるよう並べ替えて渡す
-const buildSlots = (items: CatalystStatus[], columns: number): GallerySlot[] => {
-  const stacks: Extract<GallerySlot, { type: "item" }>[][] = Array.from({ length: columns }, () => []);
+// 縦横比から高さは計算できるので、見た目のカラムの割り当てと縦位置 (セル幅に対する比) はここで決定的に求め、
+// GalleryCellContainer でその位置に描く。FlashList 自身の配置は仮想化 (どのセルを描画するか) にだけ使われる
+const buildLayout = (items: CatalystStatus[], columns: number): GalleryLayout => {
+  const slots: GallerySlot[] = [];
   const heights: number[] = Array(columns).fill(0);
   for (const item of items) {
     const heightRatio = getCellHeightRatio(item);
@@ -50,29 +50,20 @@ const buildSlots = (items: CatalystStatus[], columns: number): GallerySlot[] => 
       }
     }
 
-    stacks[column].push({ type: "item", item, column, offsetRatio: heights[column], heightRatio });
+    slots.push({ item, column, offsetRatio: heights[column], heightRatio });
     heights[column] += heightRatio;
   }
 
-  // 段数の足りないカラムは高さ 0 のスペーサーで埋め、i % カラム数 の対応を保つ
-  const rows = Math.max(0, ...stacks.map((stack) => stack.length));
-  const slots: GallerySlot[] = [];
-  for (let row = 0; row < rows; row++) {
-    for (let column = 0; column < columns; column++) {
-      slots.push(stacks[column][row] ?? { type: "spacer", key: `spacer-${row}-${column}` });
-    }
-  }
-
-  return slots;
+  return { columns, slots, overflowRatio: Math.max(0, ...heights) - Math.min(...heights) };
 }
 
 // 仮想化は FlashList 自身の配置 (未計測のセルはアイテムタイプごとの平均の高さで推定) で行われるため、
-// 推定がずれると buildSlots の位置では見えているセルが描画されず穴になる。縦横比ごとにタイプを分けて推定を実際の高さに揃える
+// 推定がずれると buildLayout の位置では見えているセルが描画されず穴になる。縦横比ごとにタイプを分けて推定を実際の高さに揃える
 const getSlotType = (slot: GallerySlot): string => {
-  return slot.type === "item" ? `item-${slot.heightRatio.toFixed(2)}` : slot.type;
+  return `item-${slot.heightRatio.toFixed(2)}`;
 }
 
-const GalleryLayoutContext = createContext<{ columns: number; slots: GallerySlot[] }>({ columns: 1, slots: [] });
+const GalleryLayoutContext = createContext<GalleryLayout>({ columns: 1, slots: [], overflowRatio: 0 });
 
 // FlashList はセルの left / top / width を JS で px 計算して絶対配置するため、ウィンドウを縮めると
 // JS の再レイアウトが追いつくまでセルが古い幅のままはみ出し、ドラッグ中はそれが繰り返されてちらつく。
@@ -83,7 +74,7 @@ const GalleryLayoutContext = createContext<{ columns: number; slots: GallerySlot
 const GalleryCellContainer = ({ ref, style, index, onLayout, ...props }: ViewProps & { ref?: Ref<View>; index: number }) => {
   const { columns, slots } = useContext(GalleryLayoutContext);
   const slot = slots[index];
-  if (slot?.type !== "item") {
+  if (!slot) {
     return <View ref={ref} style={style} onLayout={onLayout} {...props} />;
   }
 
@@ -129,8 +120,7 @@ export const GalleryScreen = ({ navigation }: { navigation: Navigation }) => {
   const isLoadingRef = useRef(false);
   const sets = useRef<Set<string>>(new Set());
   const columns = useMemo(() => getColumnCount(container.width, MIN, MAX), [container.width]);
-  const slots = useMemo(() => buildSlots(items, columns), [items, columns]);
-  const layout = useMemo(() => ({ columns, slots }), [columns, slots]);
+  const layout = useMemo(() => buildLayout(items, columns), [items, columns]);
 
   const fetchItems = useCallback(async () => {
     setIsInitialLoading(true);
@@ -190,26 +180,34 @@ export const GalleryScreen = ({ navigation }: { navigation: Navigation }) => {
   }, [items, client]);
 
   // リサイズのたびに GalleryScreen が再レンダリングされるため、全セルの再描画を避ける
-  const renderItem = useCallback(({ item }: { item: GallerySlot }) => item.type === "item" ? <GalleryCell item={item.item} navigation={navigation} /> : null, [navigation]);
+  const renderItem = useCallback(({ item }: { item: GallerySlot }) => <GalleryCell item={item.item} navigation={navigation} />, [navigation]);
 
   useAsyncOneTimeEffect(fetchItems);
 
   return <Page wide rightRail={false} scroll={false} header={<PageHeader title="ギャラリー" subtitle="Catalyst に投稿された写真を、タイムラインよりも写真中心のレイアウトで眺められます。" />}>
     <GalleryLayoutContext.Provider value={layout}>
       <FlashList
-        data={slots}
-        keyExtractor={(slot) => slot.type === "item" ? slot.item.id : slot.key}
+        data={layout.slots}
+        keyExtractor={(slot) => slot.item.id}
         getItemType={getSlotType}
         renderItem={renderItem}
         CellRendererComponent={GalleryCellContainer}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
         numColumns={columns}
         masonry
-        optimizeItemArrangement={false}
+        // 可視判定はレイアウトの y がインデックス順に単調増加している前提の二分探索なので、
+        // 投稿順のまま最も短いカラムへ積ませる (y は単調増加になる)。見た目の位置は buildLayout のものを使うため、
+        // 計測誤差でカラムの選択が入れ替わっても FlashList 側の y が最大でセル 1 つ分ずれるだけで、その分を drawDistance で吸収する
+        optimizeItemArrangement
+        drawDistance={MAX * 3}
         onLayout={container.onLayout}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.75}
-        ListFooterComponent={isLoadingMore ? <ActivityIndicator className="py-4" /> : null}
+        ListFooterComponent={<>
+          {/* FlashList のコンテンツの高さはカラムの割り当てが異なる分だけ実際より短くなり得るので、最大でカラム間の高さの差だけ下に余白を足す */}
+          {layout.overflowRatio > 0 && <View style={{ aspectRatio: layout.columns / layout.overflowRatio }} pointerEvents="none" />}
+          {isLoadingMore && <ActivityIndicator className="py-4" />}
+        </>}
       />
     </GalleryLayoutContext.Provider>
   </Page>
