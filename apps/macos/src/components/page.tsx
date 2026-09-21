@@ -1,7 +1,7 @@
 import { cn } from "cn";
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { RightRail } from "./right-rail";
+import { RightRail } from "./right-rails";
 
 // 右カラムを表示できるコンテンツ領域の最小幅 (メインカラム + 右カラム + 余白)
 const RIGHT_RAIL_BREAKPOINT = 980;

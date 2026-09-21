@@ -7,11 +7,17 @@ import {
 } from "@natsuneko-laboratory/react-native-desktop-navigation/native";
 import { Bell, CalendarDays, GalleryHorizontal, Home, Search, Trophy } from "lucide-react-native";
 import { accountAtom } from "@/atoms/account";
-import { useAtomValue } from "jotai";
+import { contestsAtom } from "@/atoms/contests";
+import { clientAtom } from "@/atoms/credential";
+import { themeAtom } from "@/atoms/theme";
+import { trendsAtom } from "@/atoms/trends";
+import { useAtomValue, useSetAtom } from "jotai";
 import { createContext, useContext } from "react";
 import { useColorScheme } from "react-native";
 import { SidebarFooter, type SidebarAccount } from "./components/sidebar-footer";
+import { useInterval } from "./hooks/use-interval";
 import { login } from "./models/auth";
+import { CatalystTrend } from "./models/sdk-types";
 import { ContestsScreen, GalleryScreen, ThemesScreen } from "./screens/collection";
 import { ExplorerScreen } from "./screens/explorer";
 import { HomeScreen } from "./screens/home";
@@ -115,6 +121,25 @@ export const AppShell = ({ initialState, account: accountOverride, unreadNotific
     (current ? { displayName: current.user.displayName, screenName: current.user.screenName } : null);
   const scheme = useColorScheme();
   const theme = NavigationThemes[scheme === "dark" ? "dark" : "light"];
+  const client = useAtomValue(clientAtom);
+  const setTrends = useSetAtom(trendsAtom);
+  const setContests = useSetAtom(contestsAtom);
+  const setWeeklyTheme = useSetAtom(themeAtom);
+
+  useInterval(async () => {
+    const [trends, contests, weeklyTheme] = await Promise.all([
+      client.catalyst.v1.trend
+        .get({ query: { format: "rich" } })
+        .then((w) => w.data)
+        .catch(() => [] as CatalystTrend[]),
+      client.catalyst.v1.contest.current.get().then((w) => w.data).catch(() => undefined),
+      client.catalyst.v1.weeklyThemes.current.get().then((w) => w.data).catch(() => null),
+    ]);
+
+    setTrends(trends ?? []);
+    setContests(contests?.contests ?? []);
+    setWeeklyTheme(weeklyTheme?.theme ?? null);
+  }, 1000 * 60 * 5);
 
   return (
     <ShellContext.Provider value={{ account, unreadNotifications }}>
