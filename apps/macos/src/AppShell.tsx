@@ -6,9 +6,12 @@ import {
   type RootNavigationState
 } from "@natsuneko-laboratory/react-native-desktop-navigation/native";
 import { Bell, CalendarDays, GalleryHorizontal, Home, Search, Trophy } from "lucide-react-native";
+import { accountAtom } from "@/atoms/account";
+import { useAtomValue } from "jotai";
 import { createContext, useContext } from "react";
 import { useColorScheme } from "react-native";
 import { SidebarFooter, type SidebarAccount } from "./components/sidebar-footer";
+import { login } from "./models/auth";
 import { ContestsScreen, GalleryScreen, ThemesScreen } from "./screens/collection";
 import { ExplorerScreen } from "./screens/explorer";
 import { HomeScreen } from "./screens/home";
@@ -44,7 +47,7 @@ const MainNavigator = () => {
     <SidebarNavigator.Navigator
       width={240}
       appearance={SidebarAppearance}
-      renderSidebarFooter={(props) => <SidebarFooter {...props} account={account} />}
+      renderSidebarFooter={(props) => <SidebarFooter {...props} account={account} onLogin={() => login().catch(console.error)} />}
     >
       <SidebarNavigator.Screen
         name="Home"
@@ -105,7 +108,11 @@ type Props = Partial<ShellState> & {
   initialState?: RootNavigationState;
 };
 
-export const AppShell = ({ initialState, account = null, unreadNotifications }: Props) => {
+export const AppShell = ({ initialState, account: accountOverride, unreadNotifications }: Props) => {
+  const current = useAtomValue(accountAtom);
+  const account =
+    accountOverride ??
+    (current ? { displayName: current.user.displayName, screenName: current.user.screenName } : null);
   const scheme = useColorScheme();
   const theme = NavigationThemes[scheme === "dark" ? "dark" : "light"];
 
