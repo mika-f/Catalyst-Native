@@ -49,14 +49,14 @@ export const Trends = () => {
   }
 
   return <RailCard title="トレンド">
-    <RailRow label="トレンド">
-      <View className="gap-1.5 px-4 py-2.5">
-        {trends.map((trend, i) => {
-          const movement = label(trend.movement);
-          const Arrow = withUniwind(movement.arrow);
+    <View className="gap-2 py-2.5">
+      {trends.map((trend, i) => {
+        const movement = label(trend.movement);
+        const Arrow = withUniwind(movement.arrow);
 
-          return (
-            <View key={trend.tag} className="flex flex-col gap-1">
+        return (
+          <RailRow key={trend.tag} label="トレンド">
+            <View className="flex flex-col gap-1 px-2 py-2.5">
               <View className="flex flex-row justify-between">
                 <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">#{i + 1} Trending</Text>
                 <Badge variant={MOVEMENT_TO_VARIANT[trend.movement]}>
@@ -66,13 +66,13 @@ export const Trends = () => {
                   </View>}
                 </Badge>
               </View>
-              <Text className="mt-2 text-lg text-light-text dark:text-dark-text">{trend.tag}</Text>
+              <Text className="text-lg text-light-text dark:text-dark-text">{trend.tag}</Text>
               <Text className="text-sm text-light-text-muted dark:text-dark-text-muted">前回 #{trend.previousRank ?? "-"}</Text>
             </View>
-          )
-        })}
-      </View>
-    </RailRow>
+          </RailRow>
+        )
+      })}
+    </View>
   </RailCard>
 };
 
