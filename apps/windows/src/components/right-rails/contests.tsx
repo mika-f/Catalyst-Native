@@ -18,7 +18,7 @@ const STATE_TO_VARIANT: Record<string, "success" | "info" | "error" | "warning" 
 
 export const Contests = () => {
   const contests = useAtomValue(contestsAtom);
-  const width = 320 - 32 * 2;
+  const width = 320 - 16 * 2;
 
   if (contests.length === 0) {
     return null;
@@ -30,12 +30,12 @@ export const Contests = () => {
 
         return (
           <RailRow key={contest.slug} label="コンテスト">
-            <View className="flex gap-2 px-4">
+            <View className="flex gap-2 pb-2">
               <View className="overflow-hidden rounded-sm">
                 <Image source={{ uri: getCdnUrl({ src: contest.headerUrl, variant: "header", width: 150 }) }} width={width} height={width / 3} />
               </View>
 
-              <View className="flex flex-col gap-2">
+              <View className="flex flex-col gap-2 px-4">
                 <View className="flex flex-row items-center gap-2">
                   <UniCalendarDays size={16} className={toVariantClassName(STATE_TO_VARIANT[contest.state])} />
                   <Badge variant={STATE_TO_VARIANT[contest.state]}>

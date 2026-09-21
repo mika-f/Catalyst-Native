@@ -9,7 +9,7 @@ import { SceneHostContext, useOpenScene } from "../scenes/scene-host";
 import { isMultiWindowSupported } from "../scenes/window-manager";
 import { SceneContent } from "../screens/scene-content";
 import { ContextMenuHost } from "./context-menu";
-import { RightRail } from "./right-rail";
+import { RightRail } from "./right-rails";
 import { SHORTCUTS, ShortcutScope } from "./shortcut-scope";
 import { IconButton } from "./ui";
 
@@ -28,7 +28,7 @@ type PageHeaderProps = {
 export const PageHeader = ({ title, subtitle, actions, children, compact = false }: PageHeaderProps) => {
   return (
     <View className="border-b-hairline border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-background">
-      <View className={cn("flex-row items-center gap-3 px-5", compact ? "min-h-12 py-2" : "min-h-14 pb-2 pt-4")}>
+      <View className={cn("flex-row items-center gap-3 px-5", compact ? "min-h-12 py-2" : "min-h-14 pt-4 pb-2")}>
         <View className="flex-1">
           <Text
             accessibilityRole="header"
@@ -61,7 +61,7 @@ const DetailPane = ({ scene, onClose }: DetailPaneProps) => {
 
   return (
     <View className="flex-1 border-l-hairline border-light-divider bg-light-background dark:border-dark-divider dark:bg-dark-background">
-      <View className="h-12 flex-row items-center gap-1 border-b-hairline border-light-divider pl-5 pr-2 dark:border-dark-divider">
+      <View className="h-12 flex-row items-center gap-1 border-b-hairline border-light-divider pr-2 pl-5 dark:border-dark-divider">
         <Text
           accessibilityRole="header"
           numberOfLines={1}

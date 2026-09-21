@@ -15,6 +15,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { useColorScheme, View } from "react-native";
 import { contestsAtom } from "./atoms/contests";
 import { clientAtom } from "./atoms/credential";
+import { themeAtom } from "./atoms/theme";
 import { trendsAtom } from "./atoms/trends";
 import { ContextMenuHost } from "./components/context-menu";
 import { ShortcutScope } from "./components/shortcut-scope";
@@ -190,20 +191,25 @@ export const AppShell = ({
   const client = useAtomValue(clientAtom);
   const setTrends = useSetAtom(trendsAtom);
   const setContests = useSetAtom(contestsAtom);
+  const setTheme = useSetAtom(themeAtom);
 
   useInterval(async () => {
+    "worklets";
+
     // メインウィンドウでだけ実行する
     if (windowId) {
       return;
     }
 
-    const [trends, contests] = await Promise.all([
+    const [trends, contests, weeklyTheme] = await Promise.all([
       client.catalyst.v1.trend.get({ query: { format: "rich" } }).then(w => w.data).catch(() => [] as CatalystTrend[]),
       client.catalyst.v1.contest.current.get().then(w => w.data).catch(() => undefined),
+      client.catalyst.v1.weeklyThemes.current.get().then(w => w.data).catch(() => null),
     ]);
 
     setTrends(trends ?? []);
     setContests(contests?.contests ?? []);
+    setTheme(weeklyTheme?.theme ?? null);
   }, 1000 * 60 * 5);
 
   return (
