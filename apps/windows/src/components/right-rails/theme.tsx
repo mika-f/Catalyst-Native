@@ -40,7 +40,6 @@ export const Theme = () => {
           </View>
         </View>
       </RailRow>
-
     </View>
   </RailCard>;
 };

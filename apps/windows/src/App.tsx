@@ -2,12 +2,15 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppShell } from "./AppShell";
 import { parseScene } from "./scenes/scene";
 
+import { WindowContextProvider } from "./context/window";
 import "./global.css";
 
 function App() {
   return (
     <SafeAreaProvider>
-      <AppShell />
+      <WindowContextProvider>
+        <AppShell />
+      </WindowContextProvider>
     </SafeAreaProvider>
   );
 }
@@ -22,7 +25,9 @@ type SceneWindowProps = {
 export function SceneWindow({ scene, windowId }: SceneWindowProps) {
   return (
     <SafeAreaProvider>
-      <AppShell scene={parseScene(scene)} windowId={windowId} />
+      <WindowContextProvider>
+        <AppShell scene={parseScene(scene)} windowId={windowId} />
+      </WindowContextProvider>
     </SafeAreaProvider>
   );
 }

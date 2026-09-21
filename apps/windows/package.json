@@ -20,6 +20,7 @@
     "@natsuneko-laboratory/react-native-desktop-window-size": "catalog:",
     "@natsuneko-laboratory/react-native-twitter-text": "catalog:",
     "@natsuneko-laboratory/react-native-webcrypto-digest": "catalog:",
+    "@shopify/flash-list": "^2.3.2",
     "cn": "catalog:",
     "jotai": "^3.0.0",
     "jotai-family": "^1.1.0",
