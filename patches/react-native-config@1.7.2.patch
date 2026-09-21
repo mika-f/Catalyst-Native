@@ -1,5 +1,57 @@
+diff --git a/ios/ReactNativeConfig/ReadDotEnv.rb b/ios/ReactNativeConfig/ReadDotEnv.rb
+index 19afd038b61f113ffefe7c20a6f14770de7d1fe4..7b9329da1c27da81653c6298a47a9751e61e5dd0 100755
+--- a/ios/ReactNativeConfig/ReadDotEnv.rb
++++ b/ios/ReactNativeConfig/ReadDotEnv.rb
+@@ -98,22 +98,34 @@ def read_dot_env(envs_root)
+       puts('ENVFILE or add the missing file.')
+     end
+ 
+-    raw = File.read(resolved_path)
+-
+-    raw.split("\n").each_with_object({}) do |line, h|
+-      next if line.strip.empty?
+-      next if line.match(/^\s*#/)
+-
+-      m = line.match(dotenv_pattern)
+-      if m.nil?
+-        abort('Invalid entry in .env file. Please verify your .env file is correctly formatted.')
++    parse_env_file = lambda do |path|
++      File.read(path).split("\n").each_with_object({}) do |line, h|
++        next if line.strip.empty?
++        next if line.match(/^\s*#/)
++
++        m = line.match(dotenv_pattern)
++        if m.nil?
++          abort('Invalid entry in .env file. Please verify your .env file is correctly formatted.')
++        end
++
++        key = m[:key]
++        # Ensure string (in case of empty value) and escape any quotes present in the value.
++        val = m[:val].to_s.gsub('"', '\"')
++        h[key] = val
+       end
++    end
+ 
+-      key = m[:key]
+-      # Ensure string (in case of empty value) and escape any quotes present in the value.
+-      val = m[:val].to_s.gsub('"', '\"')
+-      h[key] = val
++    values = parse_env_file.call(resolved_path)
++
++    # A gitignored ".local" sibling of the resolved file (.env -> .env.local,
++    # .env.staging -> .env.staging.local) overrides it, key by key.
++    local_path = "#{resolved_path}.local"
++    if File.exist?(local_path)
++      puts("Merging local overrides from #{local_path}")
++      values.merge!(parse_env_file.call(local_path))
+     end
++
++    values
+     rescue Errno::ENOENT
+       puts('**************************')
+       puts('*** Missing .env file ****')
 diff --git a/windows/RNCConfig/RNCConfig.vcxproj b/windows/RNCConfig/RNCConfig.vcxproj
-index cfe7208..84a980b 100644
+index cfe720860cb011abf9a4fa06f91dae6bc596964a..84a980b04f733886c47dca483b98eda1c6c3601a 100644
 --- a/windows/RNCConfig/RNCConfig.vcxproj
 +++ b/windows/RNCConfig/RNCConfig.vcxproj
 @@ -1,6 +1,17 @@
@@ -227,12 +279,66 @@ index cfe7208..84a980b 100644
 \ No newline at end of file
 diff --git a/windows/RNCConfig/packages.config b/windows/RNCConfig/packages.config
 deleted file mode 100644
-index 1447e71..0000000
---- a/windows/RNCConfig/packages.config
-+++ /dev/null
-@@ -1,4 +0,0 @@
--﻿<?xml version="1.0" encoding="utf-8"?>
--<packages>
--  <package id="Microsoft.Windows.CppWinRT" version="2.0.200316.3" targetFramework="native" />
--</packages>
-\ No newline at end of file
+index 1447e714afd9c03c8c7670dcbce4b70fd3a0430a..0000000000000000000000000000000000000000
+diff --git a/windows/code/generate-header.js b/windows/code/generate-header.js
+index 9acce64523462d2418dca3f212a84516fb4e029d..44c6310c3f8ea1002c5ae669faa609f8443939a6 100644
+--- a/windows/code/generate-header.js
++++ b/windows/code/generate-header.js
+@@ -1,6 +1,5 @@
+ const fs = require('fs')
+ const path = require('path')
+-const readline = require('readline')
+ 
+ const envFile = path.join(process.argv[2], '..', process.env['ENVFILE'] || '.env')
+ const outDir = path.join(process.argv[3], 'Generated Files')
+@@ -11,24 +10,31 @@ if (!fs.existsSync(outDir)) {
+   fs.mkdirSync(outDir)
+ }
+ 
+-if (fs.existsSync(envFile)) {
+-  const vars = []
+-  const regex = /^\s*(?:export\s+|)([\w\d\.\-_]+)\s*=\s*['"]?(.*?)?['"]?\s*$/
+-  readline.createInterface({
+-    input: fs.createReadStream(envFile),
+-    console: false
+-  }).on('line', (line)=>{
++// A ".local" sibling of the env file (.env -> .env.local, .env.staging -> .env.staging.local)
++// overrides it, key by key.
++const localEnvFile = `${envFile}.local`
++const regex = /^\s*(?:export\s+|)([\w\d\.\-_]+)\s*=\s*['"]?(.*?)?['"]?\s*$/
++
++function readVars(file) {
++  const vars = new Map()
++  for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+     const matches = line.match(regex)
+     if (matches)
+-      vars.push({key: matches[1], value: matches[2]})
+-  }).on('close', ()=> {
+-    generateFiles(vars)
+-  });
++      vars.set(matches[1], matches[2])
++  }
++  return vars
++}
++
++const vars = new Map()
++if (fs.existsSync(envFile)) {
++  for (const [key, value] of readVars(envFile)) vars.set(key, value)
+ } else {
+   console.warn(`waring: env file ${envFile} does not exit`)
+-  generateFiles([])
+ }
+-
++if (fs.existsSync(localEnvFile)) {
++  console.log(`Merging local overrides from ${localEnvFile}`)
++  for (const [key, value] of readVars(localEnvFile)) vars.set(key, value)
++}
+ function generateFiles(vars) {
+   // Native code
+   let nativeCode = '';
+@@ -75,3 +81,5 @@ function updateFile(content, filename) {
+     console.log(`Skipped ${filename} since content was not changed`)
+   }
+ }
++
++generateFiles(Array.from(vars, ([key, value]) => ({key, value})))
