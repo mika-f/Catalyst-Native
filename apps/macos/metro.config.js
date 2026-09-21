@@ -12,6 +12,10 @@ const workspaceRoot = path.resolve(__dirname, "../..");
  */
 const config = {
   watchFolders: [workspaceRoot],
+  serializer: {
+    // The default resolves InitializeCore from upstream react-native, which lacks the .macos files.
+    getModulesRunBeforeMainModule: () => [require.resolve("react-native-macos/Libraries/Core/InitializeCore")],
+  },
   resolver: {
     nodeModulesPaths: [path.resolve(__dirname, "node_modules"), path.resolve(workspaceRoot, "node_modules")],
     disableHierarchicalLookup: true,
@@ -30,6 +34,10 @@ const baseResolveRequest = uniwindConfig.resolver.resolveRequest;
 uniwindConfig.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName.startsWith("@/")) {
     return baseResolveRequest(context, path.resolve(__dirname, "src", moduleName.slice(2)), platform);
+  }
+  // Upstream react-native has no .macos variants (e.g. ReactDevToolsSettingsManager), so redirect to react-native-macos.
+  if (platform === "macos" && (moduleName === "react-native" || moduleName.startsWith("react-native/"))) {
+    return baseResolveRequest(context, moduleName.replace(/^react-native/, "react-native-macos"), platform);
   }
   return baseResolveRequest(context, moduleName, platform);
 };
