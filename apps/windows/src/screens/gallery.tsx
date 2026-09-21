@@ -8,17 +8,94 @@ import { CatalystStatus } from "@/models/sdk-types";
 import { Navigation } from "@natsuneko-laboratory/react-native-desktop-navigation";
 import { FlashList, useRecyclingState } from "@shopify/flash-list";
 import { useAtomValue } from "jotai";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Image, Pressable, RefreshControl, View } from "react-native";
+import { createContext, memo, useCallback, useContext, useMemo, useRef, useState, type Ref } from "react";
+import { ActivityIndicator, Image, Pressable, RefreshControl, View, type ViewProps } from "react-native";
 
 const MIN = 300;
 const MAX = 400;
 const GAP = 4;
 
-// masonry では各セルの幅は FlashList が「コンテナ幅 / カラム数」で強制するため、ここではカラム数だけを決める
+// 各セルの幅は「コンテナ幅 / カラム数」になるため、ここではカラム数だけを決める
 const getColumnCount = (width: number): number => {
   return Math.max(1, Math.floor(width / MIN), Math.ceil(width / MAX));
 }
+
+const getAspectRatio = (media: CatalystStatus["medias"][number]): number => {
+  return media.metadata?.width && media.metadata?.height ? media.metadata.width / media.metadata.height : 1;
+}
+
+// セルの高さ / セルの幅。GalleryCell はセル全体を aspectRatio で決め、隙間は内側に描くので縦横比の逆数になる
+const getCellHeightRatio = (item: CatalystStatus): number => {
+  const media = item.medias[0];
+  return media ? 1 / getAspectRatio(media) : 0;
+}
+
+type GallerySlot =
+  | { type: "item"; item: CatalystStatus; column: number; offsetRatio: number; heightRatio: number }
+  | { type: "spacer"; key: string };
+
+// FlashList の masonry は計測した高さで「最も短いカラム」を選ぶため、リサイズ中に計測値が 1px ずれるだけで
+// 同じ高さのカラムの選択が入れ替わり、以降のセルがカラムごと入れ替わってちらつく。
+// 縦横比から高さは計算できるので、カラムの割り当てと縦位置 (セル幅に対する比) はここで決定的に求め、
+// FlashList は optimizeItemArrangement={false} (i 番目を i % カラム数 のカラムへ順に積む) で同じ配置になるよう並べ替えて渡す
+const buildSlots = (items: CatalystStatus[], columns: number): GallerySlot[] => {
+  const stacks: Extract<GallerySlot, { type: "item" }>[][] = Array.from({ length: columns }, () => []);
+  const heights: number[] = Array(columns).fill(0);
+  for (const item of items) {
+    const heightRatio = getCellHeightRatio(item);
+    if (heightRatio <= 0) {
+      continue;
+    }
+
+    let column = 0;
+    for (let i = 1; i < columns; i++) {
+      if (heights[i] < heights[column]) {
+        column = i;
+      }
+    }
+
+    stacks[column].push({ type: "item", item, column, offsetRatio: heights[column], heightRatio });
+    heights[column] += heightRatio;
+  }
+
+  // 段数の足りないカラムは高さ 0 のスペーサーで埋め、i % カラム数 の対応を保つ
+  const rows = Math.max(0, ...stacks.map((stack) => stack.length));
+  const slots: GallerySlot[] = [];
+  for (let row = 0; row < rows; row++) {
+    for (let column = 0; column < columns; column++) {
+      slots.push(stacks[column][row] ?? { type: "spacer", key: `spacer-${row}-${column}` });
+    }
+  }
+
+  return slots;
+}
+
+// 仮想化は FlashList 自身の配置 (未計測のセルはアイテムタイプごとの平均の高さで推定) で行われるため、
+// 推定がずれると buildSlots の位置では見えているセルが描画されず穴になる。縦横比ごとにタイプを分けて推定を実際の高さに揃える
+const getSlotType = (slot: GallerySlot): string => {
+  return slot.type === "item" ? `item-${slot.heightRatio.toFixed(2)}` : slot.type;
+}
+
+const GalleryLayoutContext = createContext<{ columns: number; slots: GallerySlot[] }>({ columns: 1, slots: [] });
+
+// FlashList はセルの left / top / width を JS で px 計算して絶対配置するため、ウィンドウを縮めると
+// JS の再レイアウトが追いつくまでセルが古い幅のままはみ出し、ドラッグ中はそれが繰り返されてちらつく。
+// セルの高さはすべてリスト幅に比例するので、位置を幅に対する割合で指定し、再レイアウトを待たずに Yoga だけでリサイズへ追従させる。
+// left / width は親の幅に対する %。縦位置は RNW だと margin / top の % が親の高さ基準になり、translateY の % も丸めたセルの高さ基準で
+// 下の方ほど誤差が拡大するため、aspectRatio で「セル幅 × offsetRatio」の高さを持つスペーサーを上に置いて押し下げる。
+// FlashList が計測する ref / onLayout は内側の実セルに付け、スペーサーは計測にもタップにも関わらないようにする
+const GalleryCellContainer = ({ ref, style, index, onLayout, ...props }: ViewProps & { ref?: Ref<View>; index: number }) => {
+  const { columns, slots } = useContext(GalleryLayoutContext);
+  const slot = slots[index];
+  if (slot?.type !== "item") {
+    return <View ref={ref} style={style} onLayout={onLayout} {...props} />;
+  }
+
+  return <View style={[style, { left: `${(slot.column * 100) / columns}%`, top: 0, width: `${100 / columns}%` }]} pointerEvents="box-none">
+    {slot.offsetRatio > 0 && <View style={{ aspectRatio: 1 / slot.offsetRatio }} pointerEvents="none" />}
+    <View ref={ref} onLayout={onLayout} {...props} />
+  </View>;
+};
 
 const GalleryCell = memo(({ item, navigation }: { item: CatalystStatus; navigation: Navigation }) => {
   const media = item.medias[0];
@@ -28,14 +105,15 @@ const GalleryCell = memo(({ item, navigation }: { item: CatalystStatus; navigati
     return null;
   }
 
-  const aspectRatio = media.metadata?.width && media.metadata?.height ? media.metadata.width / media.metadata.height : 1;
+  const aspectRatio = getAspectRatio(media);
   const [realId] = item.id.split("/");
 
-  // 幅は FlashList が割り当てたカラム幅いっぱいに広げ、高さは aspectRatio から決める
+  // 幅は割り当てられたカラム幅いっぱいに広げ、高さは aspectRatio から決める。
+  // セルの高さを幅に比例させるため (GalleryCellContainer)、隙間は padding ではなく内側の絶対配置で空ける
   // RNW の ImageComponentView は source が変わっても前の画像サイズの DrawingSurface を使い回すため、
   // FlashList にセルをリサイクルされると新しい画像が前の画像の寸法で描かれてずれる。key で毎回ネイティブビューを作り直す
-  return <Pressable style={{ padding: GAP / 2 }}>
-    <View className="w-full overflow-hidden rounded-sm" style={{ aspectRatio }}>
+  return <Pressable style={{ aspectRatio }}>
+    <View className="absolute overflow-hidden rounded-sm" style={{ inset: GAP / 2 }}>
       <Image key={item.id} source={{ uri: getCdnUrl({ src: media.url, variant: "medium", width: 500 }) }} style={{ width: "100%", height: "100%" }} onLoadEnd={(() => setIsImageLoading(false))} />
       {isImageLoading && <View className="absolute inset-0 items-center justify-center bg-light-skeleton dark:bg-dark-skeleton">
         <ActivityIndicator />
@@ -55,6 +133,8 @@ export const GalleryScreen = ({ navigation }: { navigation: Navigation }) => {
   const isLoadingRef = useRef(false);
   const sets = useRef<Set<string>>(new Set());
   const columns = useMemo(() => getColumnCount(container.width), [container.width]);
+  const slots = useMemo(() => buildSlots(items, columns), [items, columns]);
+  const layout = useMemo(() => ({ columns, slots }), [columns, slots]);
 
   const fetchItems = useCallback(async () => {
     setIsInitialLoading(true);
@@ -113,20 +193,28 @@ export const GalleryScreen = ({ navigation }: { navigation: Navigation }) => {
     }
   }, [items, client]);
 
+  // リサイズのたびに GalleryScreen が再レンダリングされるため、全セルの再描画を避ける
+  const renderItem = useCallback(({ item }: { item: GallerySlot }) => item.type === "item" ? <GalleryCell item={item.item} navigation={navigation} /> : null, [navigation]);
+
   useAsyncOneTimeEffect(fetchItems);
 
   return <Page wide rightRail={false} scroll={false} header={<PageHeader title="ギャラリー" subtitle="Catalyst に投稿された写真を、タイムラインよりも写真中心のレイアウトで眺められます。" />}>
-    <FlashList
-      data={items}
-      keyExtractor={w => w.id}
-      renderItem={({ item }) => <GalleryCell item={item} navigation={navigation} />}
-      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
-      numColumns={columns}
-      masonry
-      onLayout={container.onLayout}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.75}
-      ListFooterComponent={isLoadingMore ? <ActivityIndicator className="py-4" /> : null}
-    />
+    <GalleryLayoutContext.Provider value={layout}>
+      <FlashList
+        data={slots}
+        keyExtractor={(slot) => slot.type === "item" ? slot.item.id : slot.key}
+        getItemType={getSlotType}
+        renderItem={renderItem}
+        CellRendererComponent={GalleryCellContainer}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        numColumns={columns}
+        masonry
+        optimizeItemArrangement={false}
+        onLayout={container.onLayout}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.75}
+        ListFooterComponent={isLoadingMore ? <ActivityIndicator className="py-4" /> : null}
+      />
+    </GalleryLayoutContext.Provider>
   </Page>
 };
