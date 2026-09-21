@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { GestureType } from "react-native-gesture-handler";
 import type { StyleProp, ViewStyle } from "react-native";
 import type { SharedValue } from "react-native-reanimated";
 
@@ -26,6 +27,13 @@ export type ImageGalleryProps = {
   reduceMotion?: boolean;
   /** When false, tapping the carousel does not open Detail. */
   detailEnabled?: boolean;
+  /**
+   * Gestures outside the carousel that must never receive a drag that started on it -- typically a
+   * horizontal pager the carousel sits inside. They are made to wait for the carousel's pan, and the
+   * carousel stops failing on a vertical drag so the touch is never handed to them. Scroll views that
+   * do not take part in gesture arbitration (a plain vertical list, say) still scroll either way.
+   */
+  competingGestures?: GestureType[];
   onIndexChange?: (index: number) => void;
   onOpenDetail?: (index: number) => void;
   onCloseDetail?: (index: number) => void;

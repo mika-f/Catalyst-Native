@@ -10,7 +10,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, type GestureType } from "react-native-gesture-handler";
 import { runOnJS } from "react-native-reanimated";
 import { CatalystDivider } from "./divider";
 import { CatalystText } from "./text";
@@ -21,6 +21,14 @@ export type CatalystTab = {
   key: string;
   label: string;
 };
+
+/**
+ * The pager's own gestures, published to the scenes inside it. A horizontal drag that starts on a
+ * scene's own horizontally-swipeable content (an image carousel) must not reach the pager, so that
+ * content blocks these instead of letting the pager win by default. Empty outside CatalystTabs.
+ */
+const PagerGesturesContext = React.createContext<GestureType[]>([]);
+export const usePagerGestures = () => React.useContext(PagerGesturesContext);
 
 export type CatalystTabsProps = {
   tabs: CatalystTab[];
@@ -69,10 +77,7 @@ export function CatalystTabs({
     });
   };
 
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-    { useNativeDriver: false },
-  );
+  const handleScroll = Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], { useNativeDriver: false });
 
   const handleMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (isScrollingProgrammatically.current) return;
@@ -107,65 +112,72 @@ export function CatalystTabs({
     [swipeRightGesture, nativeScrollGesture],
   );
 
+  const pagerGestures = useMemo<GestureType[]>(
+    () => [nativeScrollGesture, swipeRightGesture],
+    [nativeScrollGesture, swipeRightGesture],
+  );
+
   const renderItem: ListRenderItem<CatalystTab> = ({ item }) => (
     <View style={{ width: screenWidth, flex: 1 }}>{renderScene(item)}</View>
   );
 
   return (
-    <View className="flex-1">
-      <View className="relative flex-row">
-        {tabs.map((tab, index) => {
-          const isActive = index === activeIndex;
-          return (
-            <Pressable
-              key={tab.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              className="h-12 flex-1 items-center justify-center"
-              onPress={() => handleTabPress(index)}
-            >
-              <CatalystText
-                variant="label"
-                tone={isActive ? "default" : "subtle"}
-                className={isActive ? "font-bold" : undefined}
+    <PagerGesturesContext.Provider value={pagerGestures}>
+      <View className="flex-1">
+        <View className="relative flex-row">
+          {tabs.map((tab, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <Pressable
+                key={tab.key}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+                className="h-12 flex-1 items-center justify-center"
+                onPress={() => handleTabPress(index)}
               >
-                {tab.label}
-              </CatalystText>
-            </Pressable>
-          );
-        })}
-        <CatalystDivider className="absolute bottom-0" />
-        <Animated.View
-          className="absolute bottom-0 h-1 rounded-full bg-light-accent dark:bg-dark-accent"
-          style={[
-            {
-              width: indicatorWidth,
-              transform: [{ translateX: indicatorTranslateX }],
-            },
-          ]}
-        />
-      </View>
+                <CatalystText
+                  variant="label"
+                  tone={isActive ? "default" : "subtle"}
+                  className={isActive ? "font-bold" : undefined}
+                >
+                  {tab.label}
+                </CatalystText>
+              </Pressable>
+            );
+          })}
+          <CatalystDivider className="absolute bottom-0" />
+          <Animated.View
+            className="absolute bottom-0 h-1 rounded-full bg-light-accent dark:bg-dark-accent"
+            style={[
+              {
+                width: indicatorWidth,
+                transform: [{ translateX: indicatorTranslateX }],
+              },
+            ]}
+          />
+        </View>
 
-      <GestureDetector gesture={composedGesture}>
-        <AnimatedFlatList
-          ref={flatListRef}
-          data={tabs}
-          horizontal
-          pagingEnabled
-          scrollEnabled
-          bounces={false}
-          overScrollMode="never"
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.key}
-          renderItem={renderItem}
-          getItemLayout={(_, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
-          initialScrollIndex={defaultIndex}
-          scrollEventThrottle={16}
-          onScroll={handleScroll}
-          onMomentumScrollEnd={handleMomentumScrollEnd}
-          className="flex-1"
-        />
-      </GestureDetector>
-    </View>
+        <GestureDetector gesture={composedGesture}>
+          <AnimatedFlatList
+            ref={flatListRef}
+            data={tabs}
+            horizontal
+            pagingEnabled
+            scrollEnabled
+            bounces={false}
+            overScrollMode="never"
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.key}
+            renderItem={renderItem}
+            getItemLayout={(_, index) => ({ length: screenWidth, offset: screenWidth * index, index })}
+            initialScrollIndex={defaultIndex}
+            scrollEventThrottle={16}
+            onScroll={handleScroll}
+            onMomentumScrollEnd={handleMomentumScrollEnd}
+            className="flex-1"
+          />
+        </GestureDetector>
+      </View>
+    </PagerGesturesContext.Provider>
   );
 }

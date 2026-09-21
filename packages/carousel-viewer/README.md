@@ -53,6 +53,7 @@ Metro が TypeScript ソースを処理する workspace 向けパッケージで
 - `onLongPress(index)` / `longPressDuration = 500`: Detail 画像の長押し。指が動く・二本目の指が触れると取り消します。
 - `reduceMotion`: 指定するとシステムの Reduce Motion 設定より優先します。
 - `detailEnabled = true`: false の場合、Carousel のタップで Detail を開きません。
+- `competingGestures`: Carousel の外側にあり、Carousel 上で始まった drag を絶対に受け取ってほしくない gesture の配列。典型的には Carousel を内包する横ページャです。渡した gesture は Carousel の pan を待つようになり（`blocksExternalGesture`）、さらに垂直と判定した drag でも pan を fail させなくなるため、タッチがそれらへ渡りません。gesture の調停に参加しない普通の縦スクロールビューは、どちらの場合でもスクロールします。
 - `renderCarouselOverlay({ index, width, height })`: Carousel の画像領域の上に重ねる UI。gesture の外側に配置するため、overlay 上のタッチは Carousel の操作になりません。
 - `renderCarouselIndicator({ count, index, progress, setIndex })`: 既定の dot indicator を置き換えます。
 - `renderDetailForeground({ index, close })`: Detail の全画面・Safe Area 外に描画する UI（bottom sheet など）。dismiss 中もフェードしません。
@@ -77,8 +78,8 @@ Carousel のスワイプは、ドラッグ開始から 10pt 動いた時点で�
 
 fail した後にどの gesture がタッチを取るかは RNGH 通常の競合解決に委ねられます。
 外側に横スクロールできるもの（タブページャなど）があると、縦のスクロールビューではなく
-そちらが掴むことがあるため、行き先を限定したい場合はホスト側で
-`blocksExternalGesture` などの関係を張ってください。
+そちらが掴むことがあります。30〜50 度付近は横成分のほうが大きいため特に起きやすく、
+角度の調整では塞げません。その構成では `competingGestures` にその gesture を渡してください。
 
 操作の所有権は方向確定後に固定します。ページ送り・pan・dismiss 中に二本目の指を
 追加した場合は既存操作を settle し、完了後の move から新しい pinch 基準を作ります。

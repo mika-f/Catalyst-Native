@@ -29,6 +29,9 @@ function CarouselPages({
   ...props
 }: Props & { width: number; height: number; offset: SharedValue<number> }) {
   const { images, index, onIndexChange, onOpenDetail, renderImage, detailEnabled = true } = props;
+  // Only the boolean crosses into the worklet: Gesture objects are not serializable to the UI thread.
+  const competing = props.competingGestures ?? [];
+  const holdsTouch = competing.length > 0;
   const { reduced, spring } = useMotion(props.reduceMotion);
   // Page the track is at or springing to. Gestures read this instead of `index`, which lags behind until re-render.
   const page = useSharedValue(index);
@@ -92,9 +95,12 @@ function CarouselPages({
       const axis = decidePanAxis(e.allTouches[0].x - touchStartX.value, e.allTouches[0].y - touchStartY.value);
       if (axis === "undecided") return;
       decided.value = true;
-      // Failing releases the touch to the enclosing scroll view for the rest of the drag.
       if (axis === "horizontal") manager.activate();
-      else manager.fail();
+      // A vertical drag normally fails so the surrounding scroll view takes over. With competing
+      // gestures we instead stay in BEGAN for the rest of the drag: failing would release the touch
+      // to them, and a pager wins a 30-50 degree drag because its horizontal component still
+      // dominates. Holding keeps them waiting while a plain scroll view is free to scroll.
+      else if (!holdsTouch) manager.fail();
     })
     .onStart(() => {
       // Grab the track where it is, even mid-spring, so consecutive swipes are never dropped.
@@ -136,6 +142,7 @@ function CarouselPages({
       if (!success && !settling.value && offset.value !== -page.value * width)
         offset.value = withSpring(-page.value * width, spring);
     });
+  if (holdsTouch) pan.blocksExternalGesture(...competing);
 
   // Tap has no distance limit of its own, and Exclusive lets it through whenever the pan fails,
   // so without this a drag the pan handed to the scroll view would also open the detail view.

@@ -1,4 +1,4 @@
-import { CatalystActionSheetItem, CatalystDivider } from "@/components/design-system";
+import { CatalystActionSheetItem, CatalystDivider, usePagerGestures } from "@/components/design-system";
 import { MediaPinOverlay } from "@/components/status/media-pin-overlay";
 import { useHaptics } from "@/hooks/use-haptics";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -106,6 +106,9 @@ export const MediaCarousel = memo(({ medias, createdAt, onIndexChange, pins }: P
   const wifiUpgrade = useAtomValue(timelineWifiUpgradeAtom);
   const haptics = useHaptics();
   const reducedMotion = useReducedMotion();
+  // Inside the home tabs the carousel shares the horizontal axis with the tab pager. Block the
+  // pager's gestures so a drag starting on an image can never turn into a tab change (#45).
+  const pagerGestures = usePagerGestures();
   const [isWifi, setIsWifi] = useState(false);
 
   useEffect(() => {
@@ -417,6 +420,7 @@ export const MediaCarousel = memo(({ medias, createdAt, onIndexChange, pins }: P
       longPressDuration={600}
       reduceMotion={reducedMotion}
       detailEnabled={!isBlurred}
+      competingGestures={pagerGestures}
       style={{ height: carouselHeight, aspectRatio: undefined }}
       onIndexChange={handleIndexChange}
       onOpenDetail={setDetailIndex}
