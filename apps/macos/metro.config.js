@@ -18,7 +18,20 @@ const config = {
   },
 };
 
-module.exports = withUniwindConfig(mergeConfig(getDefaultConfig(__dirname), config), {
+const uniwindConfig = withUniwindConfig(mergeConfig(getDefaultConfig(__dirname), config), {
   cssEntryFile: "./src/global.css",
   dtsFile: "./src/uniwind-types.d.ts",
 });
+
+// Mirror the "@/*" -> "./src/*" path mapping from tsconfig.json, which Metro does not read.
+// This wraps uniwind's resolver from the outside so that the resolver chain it builds is left untouched.
+const baseResolveRequest = uniwindConfig.resolver.resolveRequest;
+
+uniwindConfig.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName.startsWith("@/")) {
+    return baseResolveRequest(context, path.resolve(__dirname, "src", moduleName.slice(2)), platform);
+  }
+  return baseResolveRequest(context, moduleName, platform);
+};
+
+module.exports = uniwindConfig;
