@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   clamp,
+  decidePanAxis,
   getContainSize,
   getPanBounds,
   getPagingTarget,
@@ -65,4 +66,25 @@ test("dismiss recognizes both directions, short flicks, and cancellation", () =>
   assert.ok(shouldDismiss(1, 801, 800));
   assert.ok(shouldDismiss(-1, -801, 800));
   assert.equal(shouldDismiss(120, 800, 800), false);
+});
+
+test("pan axis stays undecided until either component clears the threshold", () => {
+  assert.equal(decidePanAxis(0, 0), "undecided");
+  assert.equal(decidePanAxis(10, 10), "undecided");
+  assert.equal(decidePanAxis(-10, -10), "undecided");
+  assert.equal(decidePanAxis(11, 0), "horizontal");
+  assert.equal(decidePanAxis(0, 11), "vertical");
+});
+test("pan axis commits by angle and ignores direction signs", () => {
+  // ~30 degrees off horizontal is the cutoff: tan(30) = 0.577 < 1 / 1.7 = 0.588.
+  assert.equal(decidePanAxis(100, 57), "horizontal");
+  assert.equal(decidePanAxis(100, 60), "vertical");
+  // A 45 degree drag scrolls the timeline; the old per-axis boxes made it a swipe up to ~56 degrees.
+  assert.equal(decidePanAxis(100, 100), "vertical");
+  for (const [x, y] of [
+    [100, 20],
+    [100, 80],
+  ] as const)
+    for (const sx of [1, -1])
+      for (const sy of [1, -1]) assert.equal(decidePanAxis(sx * x, sy * y), decidePanAxis(x, y));
 });

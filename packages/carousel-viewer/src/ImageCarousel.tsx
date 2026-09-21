@@ -12,7 +12,7 @@ import Animated, {
 import { scheduleOnRN } from "react-native-worklets";
 import { useMotion } from "./animation";
 import { ImageContent } from "./ImageContent";
-import { clamp, getPagingTarget, rubberBand } from "./math";
+import { clamp, decidePanAxis, DIRECTION_THRESHOLD, getPagingTarget, rubberBand } from "./math";
 import { PageIndicator } from "./PageIndicator";
 import { styles } from "./styles";
 import type { PagerProps } from "./types";
@@ -34,6 +34,11 @@ function CarouselPages({
   const page = useSharedValue(index);
   const settling = useSharedValue(false);
   const dragStart = useSharedValue(0);
+  // Where the first finger of this drag went down, and whether the drag has committed to an axis.
+  const tracking = useSharedValue(false);
+  const touchStartX = useSharedValue(0);
+  const touchStartY = useSharedValue(0);
+  const decided = useSharedValue(false);
   const count = images.length;
   const previous = useRef({ index, width });
   // Page the animation starts from, so pages in between stay mounted while jumping several pages.
@@ -70,8 +75,27 @@ function CarouselPages({
 
   const pan = Gesture.Pan()
     .maxPointers(1)
-    .activeOffsetX([-8, 8])
-    .failOffsetY([-12, 12])
+    // activeOffsetX/failOffsetY are independent per-axis boxes: with 8/12 a drag up to ~56 degrees
+    // off horizontal still crossed the x box first and stole the touch, so the timeline felt stuck
+    // under any diagonal. Commit to one axis by angle instead, the way a UIPanGestureRecognizer
+    // that fails itself in touchesMoved does.
+    .manualActivation(true)
+    .onTouchesDown((e) => {
+      // Only the first finger of the drag sets the origin; later ones must not move the baseline.
+      if (tracking.value || e.allTouches.length === 0) return;
+      tracking.value = true;
+      touchStartX.value = e.allTouches[0].x;
+      touchStartY.value = e.allTouches[0].y;
+    })
+    .onTouchesMove((e, manager) => {
+      if (decided.value || !tracking.value || e.allTouches.length === 0) return;
+      const axis = decidePanAxis(e.allTouches[0].x - touchStartX.value, e.allTouches[0].y - touchStartY.value);
+      if (axis === "undecided") return;
+      decided.value = true;
+      // Failing releases the touch to the enclosing scroll view for the rest of the drag.
+      if (axis === "horizontal") manager.activate();
+      else manager.fail();
+    })
     .onStart(() => {
       // Grab the track where it is, even mid-spring, so consecutive swipes are never dropped.
       cancelAnimation(offset);
@@ -106,13 +130,20 @@ function CarouselPages({
       if (target !== from) scheduleOnRN(onIndexChange, target);
     })
     .onFinalize((_e, success) => {
+      // Clear the axis decision however the drag ended, so the next one starts from scratch.
+      tracking.value = false;
+      decided.value = false;
       if (!success && !settling.value && offset.value !== -page.value * width)
         offset.value = withSpring(-page.value * width, spring);
     });
 
-  const tap = Gesture.Tap().onEnd((_e, success) => {
-    if (success && detailEnabled && !settling.value) scheduleOnRN(onOpenDetail, page.value);
-  });
+  // Tap has no distance limit of its own, and Exclusive lets it through whenever the pan fails,
+  // so without this a drag the pan handed to the scroll view would also open the detail view.
+  const tap = Gesture.Tap()
+    .maxDistance(DIRECTION_THRESHOLD)
+    .onEnd((_e, success) => {
+      if (success && detailEnabled && !settling.value) scheduleOnRN(onOpenDetail, page.value);
+    });
 
   const animated = useAnimatedStyle(() => ({ transform: [{ translateX: offset.value }] }));
 

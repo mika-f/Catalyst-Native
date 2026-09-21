@@ -5,6 +5,10 @@ ImageGallery を表示して確認してください。全項目が実機で通�
 v1 acceptance criteria をすべて確認済みとは扱いません。
 
 - [ ] Carousel の左右 drag、高速 flick、先頭・末尾の抵抗と spring 復帰。
+- [ ] スクロール可能なリストに載せた Carousel で、ほぼ水平の drag は画像が切り替わり、
+      斜め（水平から 30 度以上）や垂直の drag はリストがそのままスクロールする。
+      水平と確定した後に指を縦へ動かしてもリストはスクロールしない。
+- [ ] リストを斜めに drag して指を離しても Detail が開かない。
 - [ ] Carousel / Detail の隣接ページを往復しても、読み込み済み画像に spinner やちらつきが再発しない。
 - [ ] Carousel の dot indicator が画像の外側・下部に表示され、画像の aspect ratio を変えない。
 - [ ] Detail を開いて pinch しても `Cannot copy value of type 'ManualGesture'` が出ない。

@@ -20,6 +20,8 @@ function builder(manual = false) {
     "maxPointers",
     "activeOffsetX",
     "failOffsetY",
+    "manualActivation",
+    "maxDistance",
     "onStart",
     "onUpdate",
     "onEnd",
@@ -67,12 +69,19 @@ const mock = {
   },
   useSafeAreaInsets: () => ({ bottom: 0 }),
   useSharedValue: (value) => useState(() => ({ value }))[0],
-  useDerivedValue: (fn) => ({ get value() { return fn(); } }),
+  useDerivedValue: (fn) => ({
+    get value() {
+      return fn();
+    },
+  }),
   useReducedMotion: () => false,
   useAnimatedStyle: (fn) => {
     assert.ok(fn.__closure, "test must exercise Babel-transformed worklets");
     assertSerializable(fn.__closure);
-    return Object.defineProperties({}, Object.fromEntries(Object.keys(fn()).map((key) => [key, { enumerable: true, get: () => fn()[key] }])));
+    return Object.defineProperties(
+      {},
+      Object.fromEntries(Object.keys(fn()).map((key) => [key, { enumerable: true, get: () => fn()[key] }])),
+    );
   },
   cancelAnimation() {},
   withSpring: (target) => target,
@@ -249,5 +258,40 @@ test("carousel pages on a short drag and accepts the next swipe before re-render
   // A drag under 10% of the width returns to the current page.
   swipe(-30);
   assert.deepEqual(changes, [1, 2]);
+  await act(() => renderer.unmount());
+});
+
+test("carousel commits to one axis and hands steeper drags to the scroll view", async () => {
+  let renderer;
+  await act(() => {
+    renderer = create(React.createElement(ImageCarousel, props));
+  });
+  await act(() =>
+    renderer.root
+      .find((node) => typeof node.props.onLayout === "function")
+      .props.onLayout({ nativeEvent: { layout: { width: 400, height: 400 } } }),
+  );
+  const [pan] = renderer.root.findByType("GestureDetector").props.gesture;
+  // Drags from the same origin to (dx, dy), reported in steps so only the first move past the
+  // threshold gets to decide, then continuing well past it.
+  const decide = (dx, dy) => {
+    const decisions = [];
+    const manager = { activate: () => decisions.push("activate"), fail: () => decisions.push("fail") };
+    const at = (x, y) => ({ allTouches: [{ id: 0, x: 100 + x, y: 100 + y }] });
+    pan.callbacks.onTouchesDown(at(0, 0), manager);
+    for (const step of [0.25, 1, 4]) pan.callbacks.onTouchesMove(at(dx * step, dy * step), manager);
+    // Finalizing clears the decision so the next drag in this test starts from scratch.
+    pan.callbacks.onFinalize({}, decisions[0] === "activate");
+    return decisions;
+  };
+  assert.deepEqual(decide(60, 0), ["activate"]);
+  assert.deepEqual(decide(-60, 0), ["activate"]);
+  assert.deepEqual(decide(0, 60), ["fail"]);
+  // ~45 degrees scrolls the timeline; the old activeOffsetX/failOffsetY boxes made it a swipe.
+  assert.deepEqual(decide(60, 60), ["fail"]);
+  assert.deepEqual(decide(-60, -60), ["fail"]);
+  // Decided once and only once: a drag that starts horizontal stays the carousel's even when it
+  // turns vertical later (the third step above is 4x steeper).
+  assert.deepEqual(decide(60, 10), ["activate"]);
   await act(() => renderer.unmount());
 });
