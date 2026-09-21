@@ -72,15 +72,13 @@ export const HORIZONTAL_RATIO = 1.7;
  * scroll view behind it. Mirrors a UIPanGestureRecognizer that sets `state = .failed` in
  * `touchesMoved` when the vertical component wins, which hands the touch back to the scroll view.
  */
-export function decidePanAxis(
-  dx: number,
-  dy: number,
-  threshold = DIRECTION_THRESHOLD,
-  ratio = HORIZONTAL_RATIO,
-): "undecided" | "horizontal" | "vertical" {
+export function decidePanAxis(dx: number, dy: number): "undecided" | "horizontal" | "vertical" {
   "worklet";
+  // The constants are read in the body, never as parameter defaults: the Worklets plugin unpacks
+  // `this.__closure` at the top of the body, which is after default parameters are evaluated, so a
+  // default referencing one throws "Property 'X' doesn't exist" once the worklet runs on the UI thread.
   const x = Math.abs(dx),
     y = Math.abs(dy);
-  if (x <= threshold && y <= threshold) return "undecided";
-  return y > x / ratio ? "vertical" : "horizontal";
+  if (x <= DIRECTION_THRESHOLD && y <= DIRECTION_THRESHOLD) return "undecided";
+  return y > x / HORIZONTAL_RATIO ? "vertical" : "horizontal";
 }

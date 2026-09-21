@@ -133,6 +133,7 @@ registerHooks({
   },
 });
 
+const math = await import("../src/math.ts");
 const { ImageCarousel } = await import("../src/ImageCarousel.tsx");
 const { ImageDetailViewer } = await import("../src/ImageDetailViewer.tsx");
 const images = Array.from({ length: 4 }, (_, i) => ({
@@ -294,4 +295,26 @@ test("carousel commits to one axis and hands steeper drags to the scroll view", 
   // turns vertical later (the third step above is 4x steeper).
   assert.deepEqual(decide(60, 10), ["activate"]);
   await act(() => renderer.unmount());
+});
+
+test("worklets run from their serialized form with only __closure in scope", () => {
+  // The UI runtime rebuilds each worklet from __initData.code and supplies __closure as `this`;
+  // module scope is gone there. The plugin unpacks the closure at the top of the body, so anything
+  // evaluated earlier -- a parameter default referencing a captured constant, say -- throws on the
+  // UI thread while still working when the test calls the worklet as an ordinary function.
+  const run = (worklet, ...args) => {
+    assert.ok(worklet.__initData?.code, "expected a Babel-transformed worklet");
+    return new Function(`return (${worklet.__initData.code})`)().apply({ __closure: worklet.__closure }, args);
+  };
+  assert.equal(run(math.decidePanAxis, 0, 0), "undecided");
+  assert.equal(run(math.decidePanAxis, 60, 0), "horizontal");
+  assert.equal(run(math.decidePanAxis, 60, 60), "vertical");
+  assert.equal(run(math.clamp, 5, 0, 3), 3);
+  assert.equal(run(math.rubberBand, 40, -100, 100, 400), 40);
+  assert.deepEqual(run(math.getContainSize, 400, 800, 1600, 800), { width: 400, height: 200 });
+  assert.deepEqual(run(math.getPanBounds, 400, 800, 400, 400, 1), { x: 0, y: 0 });
+  assert.equal(run(math.getPagingTarget, 1, 3, -81, 0, 400), 2);
+  assert.equal(run(math.shouldDismiss, 200, 0, 800), true);
+  assert.equal(run(math.getZoomTranslationForFocalPoint, 100, 100, 0, 1, 2), -100);
+  assert.equal(run(math.lockDirection, 20, 0), "paging");
 });
