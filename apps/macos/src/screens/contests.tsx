@@ -94,22 +94,22 @@ const ContestCard = ({ contest }: { contest: CatalystContest }) => {
             {({ textClassName }) => <Text className={cn("px-1 py-0.5 text-xs", textClassName)}>{state.label}</Text>}
           </Badge>
         </View>
-        <View className="overflow-hidden" style={{ height: 48 }}>
-          <Text numberOfLines={2} className="text-[15px] font-semibold leading-6 text-light-text dark:text-dark-text">
+        <View className="h-12 overflow-hidden">
+          <Text numberOfLines={2} className="text-[15px] leading-6 font-semibold text-light-text dark:text-dark-text">
             {`${contest.title}\n\u00a0`}
           </Text>
         </View>
-        <View className="overflow-hidden" style={{ height: 20 }}>
+        <View className="h-5 overflow-hidden">
           <Text numberOfLines={1} className="text-[13px] leading-5 text-light-text-muted dark:text-dark-text-muted">
             {contest.theme.length > 0 ? `テーマ: ${contest.theme}` : "\u00a0"}
           </Text>
         </View>
-        <View className="overflow-hidden" style={{ height: 16 }}>
+        <View className="h-4 overflow-hidden">
           <Text numberOfLines={1} className="text-xs leading-4 text-light-text-subtle dark:text-dark-text-subtle">
             {period.length > 0 ? period : "\u00a0"}
           </Text>
         </View>
-        <View className="overflow-hidden" style={{ height: 16 }}>
+        <View className="h-4 overflow-hidden">
           <Text numberOfLines={1} className="text-xs leading-4 text-light-text-muted dark:text-dark-text-muted">
             {`主催: ${contest.organizer.displayName}`}
           </Text>
@@ -122,7 +122,7 @@ const ContestCard = ({ contest }: { contest: CatalystContest }) => {
 const CardSkeleton = () => {
   return (
     <View className="overflow-hidden rounded-2xl border border-light-divider bg-light-surface dark:border-dark-divider dark:bg-dark-surface">
-      <Skeleton className="aspect-[3/1] w-full rounded-none" />
+      <Skeleton className="aspect-3/1 w-full rounded-none" />
       <View className="gap-2 p-4">
         <Skeleton className="h-4 w-16" />
         <Skeleton className="h-4 w-3/5" />
