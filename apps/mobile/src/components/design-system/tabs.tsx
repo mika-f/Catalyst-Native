@@ -85,7 +85,9 @@ export function CatalystTabs({
     }
   };
 
-  const nativeScrollGesture = useMemo(() => Gesture.Native(), []);
+  // Android の ScrollView は ACTION_CANCEL を受けるとページングのスナップをせず途中で止まるため、
+  // スクロール開始後は内側のカルーセルやドロワーの Pan に割り込まれないようにする
+  const nativeScrollGesture = useMemo(() => Gesture.Native().disallowInterruption(true), []);
 
   const swipeRightGesture = useMemo(() => {
     const callback = onSwipeRightFromStart;
