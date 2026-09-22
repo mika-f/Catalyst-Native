@@ -28,7 +28,7 @@ PODS:
     - SocketRocket
     - Yoga
   - boost (1.84.0)
-  - DesktopNavigation (0.1.0-alpha.18):
+  - DesktopNavigation (0.1.0-alpha.19):
     - boost
     - DoubleConversion
     - fast_float
@@ -2830,7 +2830,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AsyncStorage: 10b4956c3184302f5003b3360acc30b9c59dce1e
   boost: cea1d4f90a3a59537f3deb03ff5656489d7133dd
-  DesktopNavigation: b58367244a4e6611bdb17cdf551666f2bfc0195c
+  DesktopNavigation: c59ba92dda64215afe961a1e2696c92ccd22051a
   DoubleConversion: d31b1eb37f6d6f456530c4fd9124b857d6889cab
   fast_float: 20817c22759af6ac8d4d67e6e059b8b499953656
   FBLazyVector: 3cde5aa3abeda29fd70560e5a3e3199e6add163f

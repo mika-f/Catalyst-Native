@@ -1,9 +1,8 @@
+import { createStackNavigator } from "@natsuneko-laboratory/react-native-desktop-navigation";
 import {
-  createNavigationRef,
   createSidebarNavigator,
-  createStackNavigator,
   NavigationContainer,
-  type RootNavigationState
+  type RootNavigationState,
 } from "@natsuneko-laboratory/react-native-desktop-navigation/native";
 import { Bell, CalendarDays, GalleryHorizontal, Home, Search, Trophy } from "lucide-react-native";
 import { accountAtom } from "@/atoms/account";
@@ -18,22 +17,22 @@ import { SidebarFooter, type SidebarAccount } from "./components/sidebar-footer"
 import { useInterval } from "./hooks/use-interval";
 import { login } from "./models/auth";
 import { CatalystTrend } from "./models/sdk-types";
+import { NavigationRef, type RootParams } from "./navigation";
 import { GalleryScreen, ThemesScreen } from "./screens/collection";
 import { ContestsScreen } from "./screens/contests";
 import { ExplorerScreen } from "./screens/explorer";
 import { HomeScreen } from "./screens/home";
 import { NotificationsScreen } from "./screens/notifications";
+import { SettingsScreen } from "./screens/settings";
 import { NavigationThemes, SidebarAppearance } from "./theme";
-
-type RootPages = "Main";
-type RootParams = { [key in RootPages]: undefined };
 
 type SidebarPages = "Home" | "Explorer" | "Notifications" | "Contests" | "Theme" | "Gallery";
 type SidebarParams = { [key in SidebarPages]: undefined };
 
-export const NavigationRef = createNavigationRef<RootParams>();
-export const SidebarNavigator = createSidebarNavigator<SidebarParams>();
+const SidebarNavigator = createSidebarNavigator<SidebarParams>();
 
+// Native stack (alpha.18) reports pushed scenes outside the window with zero width on macOS.
+// Use the React stack until native content-slot measurements are fixed.
 const RootStack = createStackNavigator<RootParams>();
 
 type ShellState = {
@@ -54,7 +53,14 @@ const MainNavigator = () => {
     <SidebarNavigator.Navigator
       width={240}
       appearance={SidebarAppearance}
-      renderSidebarFooter={(props) => <SidebarFooter {...props} account={account} onLogin={() => login().catch(console.error)} />}
+      renderSidebarFooter={(props) => (
+        <SidebarFooter
+          {...props}
+          account={account}
+          onLogin={() => login().catch(console.error)}
+          onOpenSettings={() => NavigationRef.navigate("Settings")}
+        />
+      )}
     >
       <SidebarNavigator.Screen
         name="Home"
@@ -145,8 +151,9 @@ export const AppShell = ({ initialState, account: accountOverride, unreadNotific
   return (
     <ShellContext.Provider value={{ account, unreadNotifications }}>
       <NavigationContainer ref={NavigationRef} initialState={initialState} theme={theme}>
-        <RootStack.Navigator>
+        <RootStack.Navigator screenOptions={{ headerBackTitle: "戻る" }}>
           <RootStack.Screen name="Main" component={MainNavigator} options={{ headerShown: false }} />
+          <RootStack.Screen name="Settings" component={SettingsScreen} options={{ title: "設定" }} />
         </RootStack.Navigator>
       </NavigationContainer>
     </ShellContext.Provider>

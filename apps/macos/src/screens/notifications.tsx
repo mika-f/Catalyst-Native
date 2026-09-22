@@ -3,6 +3,7 @@ import { useState } from "react";
 import { withUniwind } from "uniwind";
 import { Page, PageHeader } from "../components/page";
 import { EmptyState, IconButton, SegmentedTabs, type SegmentedTab } from "../components/ui";
+import { NavigationRef } from "../navigation";
 
 const UniBell = withUniwind(Bell);
 const UniSettings2 = withUniwind(Settings2);
@@ -24,7 +25,7 @@ export const NotificationsScreen = () => {
         <PageHeader
           title="通知"
           actions={
-            <IconButton label="通知の設定">
+            <IconButton label="通知の設定" onPress={() => NavigationRef.navigate("Settings", { category: "notifications" })}>
               <UniSettings2 size={18} className="text-light-icon dark:text-dark-icon" />
             </IconButton>
           }

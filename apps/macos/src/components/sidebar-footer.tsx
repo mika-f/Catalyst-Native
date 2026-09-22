@@ -1,5 +1,7 @@
 import type { SidebarFooterProps } from "@natsuneko-laboratory/react-native-desktop-navigation/native";
+import { boostTextContrastAtom } from "@/atoms/accessibility";
 import { cn } from "cn";
+import { useAtomValue } from "jotai";
 import { LogIn, Settings, SquarePen } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 import { withUniwind } from "uniwind";
@@ -24,6 +26,7 @@ type Props = SidebarFooterProps & {
 
 const AccountButton = ({ account, onPress }: { account: SidebarAccount | null; onPress?: () => void }) => {
   const { hovered, hoverProps } = useHover();
+  const boostContrast = useAtomValue(boostTextContrastAtom);
 
   return (
     <Pressable
@@ -42,7 +45,14 @@ const AccountButton = ({ account, onPress }: { account: SidebarAccount | null; o
         <Text numberOfLines={1} className="text-[13px] font-semibold text-light-text dark:text-dark-text">
           {account?.displayName ?? "ゲスト"}
         </Text>
-        <Text numberOfLines={1} className="text-[11px] text-light-text-muted dark:text-dark-text-muted">
+        <Text
+          numberOfLines={1}
+          className={
+            boostContrast
+              ? "text-[11px] text-light-text dark:text-dark-text"
+              : "text-[11px] text-light-text-muted dark:text-dark-text-muted"
+          }
+        >
           {account ? `@${account.screenName}` : "ログインしていません"}
         </Text>
       </View>
