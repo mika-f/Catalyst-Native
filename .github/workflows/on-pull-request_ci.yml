@@ -42,3 +42,11 @@ jobs:
       - name: Test
         run: |
           pnpm --dir apps/mobile test --ci
+
+      - name: Test (packages)
+        run: |
+          pnpm --dir packages/carousel-viewer test
+
+      - name: Typecheck (packages)
+        run: |
+          pnpm --dir packages/carousel-viewer typecheck

@@ -61,3 +61,24 @@ export function lockDirection(x: number, y: number): "undecided" | "paging" | "d
   if (Math.abs(y) > Math.abs(x) * 1.2) return "dismissing";
   return "undecided";
 }
+
+// Distance either axis must travel before the drag commits to an axis.
+export const DIRECTION_THRESHOLD = 10;
+// 1.7 ≒ tan(60°): drags within ~30° of horizontal stay swipes, steeper ones go to the scroll view.
+export const HORIZONTAL_RATIO = 1.7;
+
+/**
+ * Decides once, from the first few pixels of a drag, whether it belongs to the carousel or to the
+ * scroll view behind it. Mirrors a UIPanGestureRecognizer that sets `state = .failed` in
+ * `touchesMoved` when the vertical component wins, which hands the touch back to the scroll view.
+ */
+export function decidePanAxis(dx: number, dy: number): "undecided" | "horizontal" | "vertical" {
+  "worklet";
+  // The constants are read in the body, never as parameter defaults: the Worklets plugin unpacks
+  // `this.__closure` at the top of the body, which is after default parameters are evaluated, so a
+  // default referencing one throws "Property 'X' doesn't exist" once the worklet runs on the UI thread.
+  const x = Math.abs(dx),
+    y = Math.abs(dy);
+  if (x <= DIRECTION_THRESHOLD && y <= DIRECTION_THRESHOLD) return "undecided";
+  return y > x / HORIZONTAL_RATIO ? "vertical" : "horizontal";
+}
