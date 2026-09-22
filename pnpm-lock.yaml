@@ -180,8 +180,8 @@ catalogs:
       specifier: 0.1.0-alpha.3
       version: 0.1.0-alpha.3
     '@natsuneko-laboratory/react-native-desktop-navigation':
-      specifier: 0.1.0-alpha.18
-      version: 0.1.0-alpha.18
+      specifier: 0.1.0-alpha.20
+      version: 0.1.0-alpha.20
     '@natsuneko-laboratory/react-native-desktop-window-size':
       specifier: 0.1.2
       version: 0.1.2
@@ -293,7 +293,7 @@ importers:
         version: 0.1.0-alpha.3(react-native-macos@0.81.9(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)(supports-color@8.1.1))(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))
       '@natsuneko-laboratory/react-native-desktop-navigation':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.18(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)
+        version: 0.1.0-alpha.20(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)
       '@natsuneko-laboratory/react-native-desktop-window-size':
         specifier: 'catalog:'
         version: 0.1.2(react-native-macos@0.81.9(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)(supports-color@8.1.1))(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)
@@ -721,7 +721,7 @@ importers:
         version: 0.1.0-alpha.3(6ffe10960321532b96a16444815fd35e)
       '@natsuneko-laboratory/react-native-desktop-navigation':
         specifier: 'catalog:'
-        version: 0.1.0-alpha.18(react-native@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.1.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
+        version: 0.1.0-alpha.20(react-native@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.1.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)
       '@natsuneko-laboratory/react-native-desktop-window-size':
         specifier: 'catalog:'
         version: 0.1.2(d433597d5862505ba6ce59067b6ed26d)
@@ -2529,8 +2529,8 @@ packages:
       react-native-windows:
         optional: true
 
-  '@natsuneko-laboratory/react-native-desktop-navigation@0.1.0-alpha.18':
-    resolution: {integrity: sha512-hGHkLOfHnyJJ+WNbtWR+4LtdrLa06Ofs+kfbycoLEqkin39WGN5WHZyLENn3TTV7iPD6HBD7TX89W+SteA7ZUg==}
+  '@natsuneko-laboratory/react-native-desktop-navigation@0.1.0-alpha.20':
+    resolution: {integrity: sha512-iqUacjqu30V2n9atVtfgtKV/ETZwuF7KxPhX/fZ9SGV+xjs0Cd2jweW4QSMTU8h6DQZ79odPVGJyrFGYA/rt1Q==}
     peerDependencies:
       react: '>=18'
       react-native: '>=0.78'
@@ -12341,12 +12341,12 @@ snapshots:
     optionalDependencies:
       react-native-macos: 0.81.9(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)(supports-color@8.1.1)
 
-  '@natsuneko-laboratory/react-native-desktop-navigation@0.1.0-alpha.18(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)':
+  '@natsuneko-laboratory/react-native-desktop-navigation@0.1.0-alpha.20(react-native@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1))(react@19.1.4)':
     dependencies:
       react: 19.1.4
       react-native: 0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.0.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.1.4)(supports-color@8.1.1)
 
-  '@natsuneko-laboratory/react-native-desktop-navigation@0.1.0-alpha.18(react-native@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.1.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)':
+  '@natsuneko-laboratory/react-native-desktop-navigation@0.1.0-alpha.20(react-native@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.1.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)':
     dependencies:
       react: 19.2.3
       react-native: 0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(@react-native-community/cli@20.1.0(supports-color@8.1.1)(typescript@5.9.3))(@react-native/metro-config@0.84.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.3.0)(react@19.2.3)(supports-color@8.1.1)
