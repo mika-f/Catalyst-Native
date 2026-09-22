@@ -22,6 +22,7 @@ function builder(manual = false) {
     "failOffsetY",
     "manualActivation",
     "maxDistance",
+    "blocksExternalGesture",
     "onStart",
     "onUpdate",
     "onEnd",
@@ -31,8 +32,8 @@ function builder(manual = false) {
     "onTouchesUp",
     "onTouchesCancelled",
   ]) {
-    result[name] = (callback) => {
-      result.callbacks[name] = callback;
+    result[name] = (...args) => {
+      result.callbacks[name] = args.length > 1 ? args : args[0];
       return result;
     };
   }
@@ -135,6 +136,18 @@ registerHooks({
 
 const math = await import("../src/math.ts");
 const { ImageCarousel } = await import("../src/ImageCarousel.tsx");
+// Drives one drag from a fixed origin to (dx, dy), reported in steps so only the first move past
+// the threshold gets to decide, then continuing well past it. Returns what the gesture asked for.
+function drag(pan, dx, dy) {
+  const decisions = [];
+  const manager = { activate: () => decisions.push("activate"), fail: () => decisions.push("fail") };
+  const at = (x, y) => ({ allTouches: [{ id: 0, x: 100 + x, y: 100 + y }] });
+  pan.callbacks.onTouchesDown(at(0, 0), manager);
+  for (const step of [0.25, 1, 4]) pan.callbacks.onTouchesMove(at(dx * step, dy * step), manager);
+  // Finalizing clears the decision so the next drag starts from scratch.
+  pan.callbacks.onFinalize({}, decisions[0] === "activate");
+  return decisions;
+}
 const { ImageDetailViewer } = await import("../src/ImageDetailViewer.tsx");
 const images = Array.from({ length: 4 }, (_, i) => ({
   id: String(i),
@@ -273,18 +286,7 @@ test("carousel commits to one axis and hands steeper drags to the scroll view", 
       .props.onLayout({ nativeEvent: { layout: { width: 400, height: 400 } } }),
   );
   const [pan] = renderer.root.findByType("GestureDetector").props.gesture;
-  // Drags from the same origin to (dx, dy), reported in steps so only the first move past the
-  // threshold gets to decide, then continuing well past it.
-  const decide = (dx, dy) => {
-    const decisions = [];
-    const manager = { activate: () => decisions.push("activate"), fail: () => decisions.push("fail") };
-    const at = (x, y) => ({ allTouches: [{ id: 0, x: 100 + x, y: 100 + y }] });
-    pan.callbacks.onTouchesDown(at(0, 0), manager);
-    for (const step of [0.25, 1, 4]) pan.callbacks.onTouchesMove(at(dx * step, dy * step), manager);
-    // Finalizing clears the decision so the next drag in this test starts from scratch.
-    pan.callbacks.onFinalize({}, decisions[0] === "activate");
-    return decisions;
-  };
+  const decide = (dx, dy) => drag(pan, dx, dy);
   assert.deepEqual(decide(60, 0), ["activate"]);
   assert.deepEqual(decide(-60, 0), ["activate"]);
   assert.deepEqual(decide(0, 60), ["fail"]);
@@ -317,4 +319,27 @@ test("worklets run from their serialized form with only __closure in scope", () 
   assert.equal(run(math.shouldDismiss, 200, 0, 800), true);
   assert.equal(run(math.getZoomTranslationForFocalPoint, 100, 100, 0, 1, 2), -100);
   assert.equal(run(math.lockDirection, 20, 0), "paging");
+});
+
+test("competing gestures are blocked and a vertical drag holds the touch instead of failing", async () => {
+  const pager = { name: "pagerScroll" },
+    drawer = { name: "drawerSwipe" };
+  let renderer;
+  await act(() => {
+    renderer = create(React.createElement(ImageCarousel, { ...props, competingGestures: [pager, drawer] }));
+  });
+  await act(() =>
+    renderer.root
+      .find((node) => typeof node.props.onLayout === "function")
+      .props.onLayout({ nativeEvent: { layout: { width: 400, height: 400 } } }),
+  );
+  const [pan] = renderer.root.findByType("GestureDetector").props.gesture;
+  assert.deepEqual(pan.callbacks.blocksExternalGesture, [pager, drawer]);
+  // Horizontal still pages the carousel.
+  assert.deepEqual(drag(pan, 60, 0), ["activate"]);
+  // Steeper drags no longer fail: failing would let the pager take a drag whose horizontal
+  // component still dominates, which is the tab-switch symptom. Holding leaves it in BEGAN.
+  assert.deepEqual(drag(pan, 60, 60), []);
+  assert.deepEqual(drag(pan, 0, 60), []);
+  await act(() => renderer.unmount());
 });

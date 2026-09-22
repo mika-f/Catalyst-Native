@@ -1,18 +1,34 @@
 export { CatalystActionSheetItem, type CatalystActionSheetItemProps } from "./action-sheet-item";
 export { CatalystAvatar, type CatalystAvatarProps } from "./avatar";
 export { CatalystBadge, CatalystBadgeText, type CatalystBadgeProps, type CatalystBadgeTextProps } from "./badge";
-export { CatalystButton, CatalystButtonIcon, CatalystButtonText, type CatalystButtonIconProps, type CatalystButtonProps, type CatalystButtonTextProps } from "./button";
+export {
+  CatalystButton,
+  CatalystButtonIcon,
+  CatalystButtonText,
+  type CatalystButtonIconProps,
+  type CatalystButtonProps,
+  type CatalystButtonTextProps,
+} from "./button";
 export { CatalystDivider, type CatalystDividerProps } from "./divider";
 export { CatalystEmptyState, type CatalystEmptyStateProps } from "./empty-state";
 export { CatalystIconButton, type CatalystIconButtonProps } from "./icon-button";
-export { CatalystListItem, CatalystListItemContent, type CatalystListItemContentProps, type CatalystListItemProps } from "./list-item";
+export {
+  CatalystListItem,
+  CatalystListItemContent,
+  type CatalystListItemContentProps,
+  type CatalystListItemProps,
+} from "./list-item";
 export { CatalystMediaFrame, type CatalystMediaFrameProps } from "./media-frame";
 export { CatalystSearchField, type CatalystSearchFieldProps } from "./search-field";
-export { CatalystSegmentedControl, type CatalystSegmentedControlOption, type CatalystSegmentedControlProps } from "./segmented-control";
+export {
+  CatalystSegmentedControl,
+  type CatalystSegmentedControlOption,
+  type CatalystSegmentedControlProps,
+} from "./segmented-control";
 export { CatalystSkeleton, type CatalystSkeletonProps } from "./skeleton";
 export { CatalystSurface, type CatalystSurfaceProps } from "./surface";
 export { CatalystSwitch, type CatalystSwitchProps } from "./switch";
-export { CatalystTabs, type CatalystTab, type CatalystTabsProps } from "./tabs";
+export { CatalystTabs, usePagerGestures, type CatalystTab, type CatalystTabsProps } from "./tabs";
 export { CatalystText, type CatalystTextProps } from "./text";
 export { CatalystTextField, type CatalystTextFieldProps } from "./text-field";
 export { catalystLinkClassName } from "./shared";
